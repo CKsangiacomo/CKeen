@@ -36,7 +36,7 @@ export default function WidgetDetail({ params }: { params: Promise<{ id: string 
 
   if (!w) return <div className="p-6">Loading…</div>;
 
-  const embed = `<script async src="${process.env.NEXT_PUBLIC_APP_URL}/embed/${w.public_key}"></script>\n<div id="xw-${w.public_key}"></div>`;
+  const embed = `<div id="xw-${w.public_key}"></div>\n<script async src="${process.env.NEXT_PUBLIC_APP_URL}/embed/${w.public_key}"></script>`;
 
   return (
     <div className="max-w-3xl space-y-6 p-6">
