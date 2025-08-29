@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+
 export const runtime = "nodejs";
 
 export async function GET(
@@ -7,6 +8,7 @@ export async function GET(
   ctx: { params: Promise<{ publicKey: string }> }
 ) {
   const { publicKey } = await ctx.params;
+
   const { data, error } = await supabaseAdmin
     .from("widgets")
     .select("id, type, status, config")
@@ -16,5 +18,10 @@ export async function GET(
   if (error || !data || data.status !== "active") {
     return NextResponse.json({ error: "Widget not found or inactive" }, { status: 404 });
   }
-  return NextResponse.json({ widgetId: data.id, type: data.type, config: data.config });
+
+  return NextResponse.json({
+    widgetId: data.id,
+    type: data.type,
+    config: data.config,
+  });
 }
