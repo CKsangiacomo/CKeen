@@ -13,11 +13,29 @@ export async function GET(
     const KEY = "${publicKey}";
     const APP = "${APP}";
     
+    var css = \`
+      :host { all: initial; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; color: #0b0f15; }
+      .card { box-sizing:border-box; width:100%; max-width: 520px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; box-shadow:0 1px 2px rgba(0,0,0,0.04); }
+      .title { font-size:20px; font-weight:600; letter-spacing:-0.01em; margin:4px 0 12px; }
+      .row { display:flex; flex-direction:column; gap:6px; margin:10px 0; }
+      label { font-size:12px; color:#6b7280; }
+      input, textarea { width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; background:#fff; outline:none; font-size:14px; }
+      input:focus, textarea:focus { border-color:#4f46e5; box-shadow:0 0 0 3px rgba(79,70,229,0.15); }
+      button { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; background:#111827; color:#fff; border:none; border-radius:10px; font-weight:600; cursor:pointer; }
+      button:hover { filter:brightness(0.95); }
+      button:active { transform:translateY(1px); }
+      button:disabled { opacity:0.6; cursor:not-allowed; }
+      .success { margin-top:12px; color:#16a34a; font-weight:500; opacity:0; transition:opacity .2s ease; }
+      .success.show { opacity:1; }
+    \`;
+    
     function mount() {
-      var el = document.getElementById("xw-" + KEY);
-      if (!el) return setTimeout(mount, 50);
+      var host = document.getElementById("xw-" + KEY);
+      if (!host) return setTimeout(mount, 50);
       
-      // Track impression on load
+      var root = host.shadowRoot || host.attachShadow({ mode: "open" });
+      
+      // Track impression on first mount
       try {
         fetch(APP + "/api/events", {
           method: "POST",
@@ -31,24 +49,43 @@ export async function GET(
       try {
         fetch(APP + "/api/public/widget/" + KEY)
           .then(r => r.json())
-          .then(cfg => {
-            if(!cfg || cfg.error) throw new Error("Widget not found");
+          .then(CFG => {
+            if(!CFG || CFG.error) throw new Error("Widget not found");
 
-            if (cfg.type === "contact_form") {
-              el.innerHTML = '<div style="font-family:system-ui;border:1px solid #ddd;padding:12px;border-radius:10px;max-width:420px;">'
-                + '<h3>' + (cfg.config.title || 'Contact us') + '</h3>'
-                + '<form id="xw-form">'
-                + '<input name="name" placeholder="Your name" style="width:100%;padding:8px;margin:6px 0;">'
-                + '<input name="email" placeholder="Email" style="width:100%;padding:8px;margin:6px 0;">'
-                + '<textarea name="message" placeholder="Message" style="width:100%;padding:8px;margin:6px 0;"></textarea>'
-                + '<button type="submit" style="padding:8px 12px;">' + (cfg.config.buttonText || 'Send') + '</button>'
-                + '</form>'
-                + '<div id="xw-success" style="display:none;color:green;margin-top:10px;">Message sent successfully!</div>'
-                + '</div>';
+            if (CFG.type === "contact_form") {
+              var html = \`
+                <div class="card">
+                  <div class="title">\${CFG?.config?.title || "Contact us"}</div>
+                  <form id="xw-form">
+                    <div class="row"><label for="xw-name">Your name</label><input id="xw-name" name="name" placeholder="Jane Doe" autocomplete="name" /></div>
+                    <div class="row"><label for="xw-email">Email</label><input id="xw-email" name="email" type="email" placeholder="you@domain.com" autocomplete="email" /></div>
+                    <div class="row"><label for="xw-message">Message</label><textarea id="xw-message" name="message" rows="4" placeholder="How can we help?"></textarea></div>
+                    <button type="submit" id="xw-submit">\${CFG?.config?.buttonText || "Send"}</button>
+                    <div class="success" id="xw-success">Message sent successfully!</div>
+                  </form>
+                </div>\`;
+              
+              // Create and inject styles
+              var style = document.createElement('style');
+              style.textContent = css;
+              root.appendChild(style);
+              
+              // Create and inject HTML
+              var container = document.createElement('div');
+              container.innerHTML = html;
+              root.appendChild(container);
 
               // Handle form submission
-              document.getElementById('xw-form').addEventListener('submit', function(e) {
+              var form = root.getElementById('xw-form');
+              var submitBtn = root.getElementById('xw-submit');
+              var successEl = root.getElementById('xw-success');
+              
+              form.addEventListener('submit', function(e) {
                 e.preventDefault();
+                
+                // Disable button while sending
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Sending...';
                 
                 const formData = new FormData(e.target);
                 const payload = {
@@ -78,15 +115,30 @@ export async function GET(
                   .then(r => r.json())
                   .then(result => {
                     if (result.ok) {
-                      document.getElementById('xw-success').style.display = 'block';
+                      // Show success message with animation
+                      successEl.classList.add('show');
+                      
+                      // Reset form
                       e.target.reset();
+                      
+                      // Hide success message after 3 seconds
+                      setTimeout(() => {
+                        successEl.classList.remove('show');
+                      }, 3000);
                     } else {
                       console.error("Submission failed:", result.error);
                     }
                   })
-                  .catch(err => console.error("Submission error:", err));
+                  .catch(err => console.error("Submission error:", err))
+                  .finally(() => {
+                    // Re-enable button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = CFG?.config?.buttonText || "Send";
+                  });
                 } catch (err) {
                   console.error("Submission request error:", err);
+                  submitBtn.disabled = false;
+                  submitBtn.textContent = CFG?.config?.buttonText || "Send";
                 }
               });
             }
