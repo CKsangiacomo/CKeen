@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 type Widget = { id:string; name:string; type:string; public_key:string; status:string; config:Record<string, unknown> };
 
@@ -14,7 +14,7 @@ const getUserId = () => {
       localStorage.setItem("demo_user_id", id); 
     }
     return id;
-  } catch (error) {
+  } catch {
     // Fallback if localStorage is not available
     return generateUUID();
   }
@@ -36,18 +36,18 @@ export default function WidgetsPage() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const loadWidgets = async () => {
+  const loadWidgets = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/widgets?userId=${userId}`);
       const data = await res.json();
       setWidgets(data);
-    } catch (error) {
-      console.error("Failed to load widgets:", error);
+    } catch {
+      console.error("Failed to load widgets");
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     const id = getUserId();
@@ -58,7 +58,7 @@ export default function WidgetsPage() {
     if (userId) {
       loadWidgets();
     }
-  }, [userId]);
+  }, [userId, loadWidgets]);
 
   const create = async () => {
     setSaving(true);

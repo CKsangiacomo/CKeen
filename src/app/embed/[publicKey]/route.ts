@@ -1,12 +1,17 @@
+import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
-import { NextResponse } from "next/server";
-
-export async function GET(_req: Request, { params }: { params: { publicKey: string } }) {
+export async function GET(
+  _req: NextRequest,
+  ctx: { params: Promise<{ publicKey: string }> }
+) {
+  const { publicKey } = await ctx.params;
+  const APP = process.env.NEXT_PUBLIC_APP_URL || "";
+  
   const code = `
   (function(){
-    const KEY = "${params.publicKey}";
-    const APP = "${process.env.NEXT_PUBLIC_APP_URL}";
+    const KEY = "${publicKey}";
+    const APP = "${APP}";
     const mountId = "xw-" + KEY;
 
     var mount = document.getElementById(mountId);
@@ -82,7 +87,7 @@ export async function GET(_req: Request, { params }: { params: { publicKey: stri
 
   return new NextResponse(code, {
     headers: {
-      "Content-Type": "application/javascript",
+      "Content-Type": "application/javascript; charset=utf-8",
       "Cache-Control": "public, max-age=60"
     }
   });

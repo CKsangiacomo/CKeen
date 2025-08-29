@@ -1,8 +1,8 @@
 export const runtime = "nodejs";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   let body: { publicKey?: string; type?: "impression" | "click" | "submission"; meta?: Record<string, unknown> };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 

@@ -1,8 +1,8 @@
 export const runtime = "nodejs";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   let body: { publicKey?: string; payload?: Record<string, unknown> };
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
@@ -19,7 +19,8 @@ export async function POST(req: Request) {
   const { error: serr } = await supabaseAdmin.from("widget_submissions").insert([{ widget_id: widget.id, payload }]);
   if (serr) return NextResponse.json({ error: serr.message }, { status: 400 });
 
-  await supabaseAdmin.from("widget_events").insert([{ widget_id: widget.id, type: "submission", meta: { ok: true } }]).catch(() => {});
+  // Best effort event tracking - ignore errors
+  await supabaseAdmin.from("widget_events").insert([{ widget_id: widget.id, type: "submission", meta: { ok: true } }]);
 
   return NextResponse.json({ ok: true }, { status: 201 });
 }
