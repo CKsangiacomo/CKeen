@@ -49,7 +49,7 @@ function SnippetBox({ publicId, version, isDev }: { publicId: string; version: n
           fontSize: '14px'
         }}
       >
-        {copied ? 'Copied!' : 'Copy'}
+        {copied ? 'Copiato!' : 'Copia'}
       </button>
     </div>
   );
@@ -60,7 +60,7 @@ const EMBED_VERSION = process.env.EMBED_VERSION || 1;
 const isDev = process.env.NODE_ENV === 'development';
 
 export const metadata = { 
-  title: 'Contact Form Widget – Clickeen',
+  title: 'Widget modulo contatti – Clickeen',
   alternates: { 
     languages: { 
       en: '/widgets/contact-form', 
@@ -75,10 +75,10 @@ export default function Page() {
       {/* Hero Section */}
       <section style={{ textAlign: 'center', marginBottom: '48px' }}>
         <h1 style={{ fontSize: '2.5rem', marginBottom: '16px', color: '#1a1a1a' }}>
-          Contact Form Widget, Instant.
+          Widget modulo contatti, istantaneo.
         </h1>
         <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: '32px', lineHeight: '1.6' }}>
-          Under 28 KB. 100ms to interaction. No iframe until click.
+          Meno di 28 KB. 100 ms all'interazione. Nessun iframe fino al clic.
         </p>
         <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
           <a 
@@ -92,7 +92,7 @@ export default function Page() {
               fontWeight: '500'
             }}
           >
-            Try Live Demo
+            Prova dal vivo
           </a>
           <button 
             onClick={() => document.getElementById('snippet')?.scrollIntoView({ behavior: 'smooth' })}
@@ -106,14 +106,14 @@ export default function Page() {
               fontWeight: '500'
             }}
           >
-            Copy Snippet
+            Copia snippet
           </button>
         </div>
       </section>
 
       {/* Live Demo */}
       <section id="demo" style={{ marginBottom: '48px' }}>
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Live Demo</h2>
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Demo dal vivo</h2>
         <div 
           id={`ckeen-${PUBLIC_ID}`}
           style={{ 
@@ -135,51 +135,51 @@ export default function Page() {
 
       {/* Why It's Faster */}
       <section style={{ marginBottom: '48px' }}>
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Why It's Faster</h2>
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Perché è più veloce</h2>
         <div style={{ display: 'grid', gap: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '8px', height: '8px', backgroundColor: '#007bff', borderRadius: '50%' }}></div>
-            <span style={{ fontSize: '1.1rem' }}>Payload limited to 28 KB</span>
+            <span style={{ fontSize: '1.1rem' }}>Payload limitato a 28 KB</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '8px', height: '8px', backgroundColor: '#007bff', borderRadius: '50%' }}></div>
-            <span style={{ fontSize: '1.1rem' }}>Distributed via Edge and immutable cache</span>
+            <span style={{ fontSize: '1.1rem' }}>Distribuito via Edge e cache immutabile</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ width: '8px', height: '8px', backgroundColor: '#007bff', borderRadius: '50%' }}></div>
-            <span style={{ fontSize: '1.1rem' }}>No heavy iframe on load</span>
+            <span style={{ fontSize: '1.1rem' }}>Nessun iframe pesante al caricamento</span>
           </div>
         </div>
       </section>
 
       {/* Copy-paste Snippet */}
       <section id="snippet" style={{ marginBottom: '48px' }}>
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Copy-paste Snippet</h2>
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Snippet copia-incolla</h2>
         <SnippetBox publicId={PUBLIC_ID} version={EMBED_VERSION} isDev={isDev} />
       </section>
 
       {/* Customization */}
       <section style={{ marginBottom: '48px' }}>
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Customization</h2>
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Personalizzazione</h2>
         <p style={{ fontSize: '1.1rem', lineHeight: '1.6', color: '#666' }}>
-          The widget automatically adapts to your site's theme. Customize colors, fonts, and behavior through our dashboard or API.
+          Il widget si adatta automaticamente al tema del tuo sito. Personalizza colori, font e comportamento tramite la nostra dashboard o API.
         </p>
       </section>
 
       {/* Accessibility & Privacy */}
       <section style={{ marginBottom: '48px' }}>
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Accessibility & Privacy</h2>
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Accessibilità e Privacy</h2>
         <div style={{ display: 'grid', gap: '16px' }}>
           <div>
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>Accessibility</h3>
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>Accessibilità</h3>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
-              Keyboard navigation, ARIA labels, respects 'reduce motion' preferences.
+              Navigazione da tastiera, ARIA, rispetto 'riduci animazioni'.
             </p>
           </div>
           <div>
             <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>Privacy</h3>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
-              No trackers in the script; anonymous analytics optional.
+              Nessun tracker nello script; analytics anonimi e opzionali.
             </p>
           </div>
         </div>
@@ -190,21 +190,21 @@ export default function Page() {
         <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>FAQ</h2>
         <div style={{ display: 'grid', gap: '24px' }}>
           <div>
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>How fast is it?</h3>
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>Quanto è veloce?</h3>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
-              The widget loads in under 100ms and is cached globally via CDN.
+              Il widget si carica in meno di 100ms ed è memorizzato nella cache globalmente tramite CDN.
             </p>
           </div>
           <div>
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>Is it GDPR compliant?</h3>
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>È conforme al GDPR?</h3>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
-              Yes, we only collect data you explicitly allow and provide full data export/deletion.
+              Sì, raccogliamo solo i dati che esplicitamente permetti e forniamo esportazione/eliminazione completa dei dati.
             </p>
           </div>
           <div>
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>Can I customize the styling?</h3>
+            <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>Posso personalizzare lo stile?</h3>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
-              Absolutely. Use CSS custom properties or our dashboard to match your brand.
+              Assolutamente. Usa proprietà CSS personalizzate o la nostra dashboard per abbinare il tuo brand.
             </p>
           </div>
         </div>
@@ -212,9 +212,9 @@ export default function Page() {
 
       {/* Final CTA */}
       <section style={{ textAlign: 'center', marginBottom: '48px' }}>
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '16px', color: '#1a1a1a' }}>Ready to get started?</h2>
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '16px', color: '#1a1a1a' }}>Pronto a iniziare?</h2>
         <p style={{ fontSize: '1.1rem', color: '#666', marginBottom: '24px' }}>
-          Join thousands of developers using Clickeen widgets.
+          Unisciti a migliaia di sviluppatori che usano i widget Clickeen.
         </p>
         <a 
           href="/dashboard" 
@@ -228,7 +228,7 @@ export default function Page() {
             fontSize: '1.1rem'
           }}
         >
-          Get Started Free
+          Inizia Gratis
         </a>
       </section>
     </main>
