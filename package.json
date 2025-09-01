@@ -10,7 +10,10 @@
     "test": "turbo test",
     "typecheck": "turbo typecheck",
     "e2e": "turbo run e2e",
-    "size-check": "turbo run size-check"
+    "size-check": "turbo run size-check",
+    "dev:site": "turbo dev --filter=@ck/site",
+    "dev:app": "turbo dev --filter=@ck/app",
+    "dev:embed": "turbo dev --filter=@ck/embed-service"
   },
   "devDependencies": {
     "turbo": "^2.0.6",
