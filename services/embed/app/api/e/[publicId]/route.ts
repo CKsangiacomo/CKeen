@@ -1,5 +1,8 @@
 export const runtime = 'edge';
-export async function GET(_: Request, { params }: { params: { publicId: string }}) {
+export async function GET(request: Request, { params }: { params: { publicId: string }}) {
+  const url = new URL(request.url);
+  const isPreview = params.publicId === 'DEMO' || url.searchParams.has('preview') || url.searchParams.has('cfg');
+  
   const js = `
 (()=> {
   var id = 'ckeen-${params.publicId}';
@@ -12,10 +15,38 @@ export async function GET(_: Request, { params }: { params: { publicId: string }
   s.textContent = \`
     const ORIGIN = \${embedOrigin};
     import { renderContactForm } from \${ORIGIN ? \`\${ORIGIN}/embed-bundle.js\` : '/embed-bundle.js'};
-    renderContactForm(host, {});
+    
+    // Initialize widget with config
+    const initialConfig = ${url.searchParams.get('cfg') ? `JSON.parse(atob('${url.searchParams.get('cfg')}'))` : '{}'};
+    const widget = renderContactForm(host, initialConfig);
+    
+    ${isPreview ? `
+    // Preview mode: add postMessage listener for live updates
+    window.addEventListener('message', (ev) => {
+      const allowed = ['http://localhost:3000', 'https://c-keen-site.vercel.app'];
+      if (!allowed.includes(ev.origin)) return;
+      
+      const msg = ev.data;
+      if (!msg || msg.type !== 'ckeen:preview:update') return;
+      
+      try {
+        // Validate and update config
+        const next = { ...initialConfig, ...msg.config };
+        if (widget && typeof widget.update === 'function') {
+          widget.update(next);
+        }
+      } catch (e) {
+        console.warn('Preview update failed:', e);
+      }
+    });
+    
+    // Signal ready to parent
+    window.parent?.postMessage({ type: 'ckeen:preview:ready' }, '*');
+    ` : ''}
   \`;
   document.currentScript?.after(s);
 })();`;
+  
   return new Response(js, {
     headers: {
       'content-type': 'application/javascript; charset=utf-8',

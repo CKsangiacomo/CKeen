@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 interface ConfigState {
   title: string;
@@ -34,6 +34,10 @@ export default function ConfiguratorIT() {
   const [error, setError] = useState('');
   const [snippet, setSnippet] = useState('');
   const [publicKey, setPublicKey] = useState('');
+  const [previewReady, setPreviewReady] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Load config from localStorage on mount
   useEffect(() => {
@@ -48,14 +52,79 @@ export default function ConfiguratorIT() {
     }
   }, []);
 
-  // Update base64 config when config changes
+  // Listen for preview ready message
+  useEffect(() => {
+    const handleMessage = (ev: MessageEvent) => {
+      if (ev.data?.type === 'ckeen:preview:ready') {
+        setPreviewReady(true);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  // Debounced preview update
+  const updatePreview = useCallback((newConfig: ConfigState) => {
+    if (!iframeRef.current?.contentWindow || !previewReady) return;
+
+    // Cap serialized config size to ~10KB
+    const configStr = JSON.stringify(newConfig);
+    if (configStr.length > 10000) {
+      console.warn('Config too large, skipping preview update');
+      return;
+    }
+
+    setIsUpdating(true);
+
+    // Clear existing timeout
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+
+    // Debounce for 250ms
+    debounceTimeoutRef.current = setTimeout(() => {
+      const EMBED_ORIGIN = process.env.NODE_ENV === 'development'
+        ? 'http://localhost:3002'
+        : 'https://c-keen-embed.vercel.app';
+
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: 'ckeen:preview:update', config: newConfig },
+        EMBED_ORIGIN
+      );
+
+      setIsUpdating(false);
+    }, 250);
+  }, [previewReady]);
+
+  // Update base64 config and trigger preview update when config changes
   useEffect(() => {
     const b64 = btoa(JSON.stringify(config));
     setConfigB64(b64);
     
     // Save to localStorage
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-  }, [config]);
+
+    // Update preview
+    updatePreview(config);
+  }, [config, updatePreview]);
+
+  // Fallback if preview not ready after 1s
+  useEffect(() => {
+    if (!previewReady) {
+      const timeout = setTimeout(() => {
+        if (!previewReady && iframeRef.current) {
+          // Fallback to cfg parameter
+          const fallbackUrl = process.env.NODE_ENV === 'development'
+            ? `http://localhost:3002/api/e/DEMO?v=1&cfg=${configB64}`
+            : `https://c-keen-embed.vercel.app/api/e/DEMO?v=1&cfg=${configB64}`;
+          iframeRef.current.src = fallbackUrl;
+        }
+      }, 1000);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [previewReady, configB64]);
 
   const updateConfig = (updates: Partial<ConfigState>) => {
     setConfig(prev => ({ ...prev, ...updates }));
@@ -126,8 +195,8 @@ export default function ConfiguratorIT() {
 
   const isDev = process.env.NODE_ENV === 'development';
   const embedUrl = isDev
-    ? `http://localhost:3002/api/e/DEMO?v=1&cfg=${configB64}`
-    : `https://c-keen-embed.vercel.app/api/e/DEMO?v=1&cfg=${configB64}`;
+    ? `http://localhost:3002/api/e/DEMO?v=1&preview=1`
+    : `https://c-keen-embed.vercel.app/api/e/DEMO?v=1&preview=1`;
 
   return (
     <div style={{ marginBottom: '48px' }}>
@@ -258,6 +327,22 @@ export default function ConfiguratorIT() {
           }}>
             Anteprima
           </div>
+          {isUpdating && (
+            <div style={{ 
+              position: 'absolute', 
+              top: '8px', 
+              left: '8px', 
+              backgroundColor: '#ffc107', 
+              color: '#000', 
+              padding: '4px 8px', 
+              borderRadius: '4px', 
+              fontSize: '12px', 
+              fontWeight: '500',
+              zIndex: 10
+            }}>
+              Aggiornamento...
+            </div>
+          )}
           <div style={{ 
             border: '1px solid #e1e5e9', 
             borderRadius: '8px', 
@@ -267,7 +352,7 @@ export default function ConfiguratorIT() {
             position: 'relative'
           }}>
             <iframe
-              id="configurator-preview-iframe-it"
+              ref={iframeRef}
               src={embedUrl}
               style={{
                 width: '100%',
@@ -278,30 +363,6 @@ export default function ConfiguratorIT() {
               title="Widget Preview"
             />
           </div>
-          <button
-            onClick={() => {
-              const iframe = document.getElementById('configurator-preview-iframe-it') as HTMLIFrameElement;
-              if (iframe) {
-                iframe.src = embedUrl;
-              }
-            }}
-            style={{
-              position: 'absolute',
-              top: '8px',
-              left: '8px',
-              padding: '4px 8px',
-              backgroundColor: '#28a745',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '12px',
-              fontWeight: '500',
-              cursor: 'pointer',
-              zIndex: 10
-            }}
-          >
-            Aggiorna Anteprima
-          </button>
         </div>
       </div>
 
