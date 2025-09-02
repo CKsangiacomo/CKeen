@@ -55,6 +55,129 @@ function SnippetBox({ publicId, version, isDev }: { publicId: string; version: n
   );
 }
 
+// Client component for email capture and snippet generation
+function GetSnippetBox() {
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [generatedSnippet, setGeneratedSnippet] = useState('');
+  const [generatedPublicId, setGeneratedPublicId] = useState('');
+
+  const handleGetSnippet = async () => {
+    if (!email) {
+      setError('Please enter your email');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/widgets/anonymous', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          type: 'contact-form',
+          config: {
+            // Default config for preview
+            theme: 'light',
+            position: 'bottom-right'
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate snippet');
+      }
+
+      const { publicId } = await response.json();
+      setGeneratedPublicId(publicId);
+      
+      const snippet = `<div id="ckeen-${publicId}"></div>
+<script async src="https://c-keen-embed.vercel.app/api/e/${publicId}?v=1"></script>`;
+      
+      setGeneratedSnippet(snippet);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ margin: '24px 0' }}>
+      {!generatedSnippet ? (
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ flex: '1', minWidth: '200px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              Your email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #e1e5e9',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
+            />
+          </div>
+          <button
+            onClick={handleGetSnippet}
+            disabled={isLoading}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: isLoading ? '#ccc' : '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            {isLoading ? 'Generating...' : 'Get Snippet'}
+          </button>
+        </div>
+      ) : (
+        <div>
+          <textarea
+            value={generatedSnippet}
+            readOnly
+            style={{
+              width: '100%',
+              minHeight: '80px',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              padding: '12px',
+              border: '1px solid #e1e5e9',
+              borderRadius: '8px',
+              backgroundColor: '#f8f9fa',
+              resize: 'vertical'
+            }}
+          />
+          <p style={{ fontSize: '14px', color: '#666', marginTop: '8px' }}>
+            Want to edit and save it? You can create an account later — the widget works right now.
+          </p>
+        </div>
+      )}
+      {error && (
+        <p style={{ color: '#dc3545', fontSize: '14px', marginTop: '8px' }}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 const PUBLIC_ID = process.env.DEMO_PUBLIC_ID || 'DEMO';
 const EMBED_VERSION = Number(process.env.EMBED_VERSION) || 1;
 const isDev = process.env.NODE_ENV === 'development';
@@ -144,7 +267,10 @@ export default function Page() {
 
       {/* Copy-paste Snippet */}
       <section id="snippet" style={{ marginBottom: '48px' }}>
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Copy-paste Snippet</h2>
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Get Your Snippet</h2>
+        <GetSnippetBox />
+        
+        <h3 style={{ fontSize: '1.4rem', marginTop: '48px', marginBottom: '24px', color: '#1a1a1a' }}>Demo Snippet</h3>
         <SnippetBox publicId={PUBLIC_ID} version={EMBED_VERSION} isDev={isDev} />
       </section>
 

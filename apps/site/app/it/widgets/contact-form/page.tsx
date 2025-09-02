@@ -55,6 +55,129 @@ function SnippetBox({ publicId, version, isDev }: { publicId: string; version: n
   );
 }
 
+// Client component for email capture and snippet generation
+function GetSnippetBox() {
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [generatedSnippet, setGeneratedSnippet] = useState('');
+  const [generatedPublicId, setGeneratedPublicId] = useState('');
+
+  const handleGetSnippet = async () => {
+    if (!email) {
+      setError('Inserisci la tua email');
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/widgets/anonymous', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          type: 'contact-form',
+          config: {
+            // Default config for preview
+            theme: 'light',
+            position: 'bottom-right'
+          }
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Impossibile generare lo snippet');
+      }
+
+      const { publicId } = await response.json();
+      setGeneratedPublicId(publicId);
+      
+      const snippet = `<div id="ckeen-${publicId}"></div>
+<script async src="https://c-keen-embed.vercel.app/api/e/${publicId}?v=1"></script>`;
+      
+      setGeneratedSnippet(snippet);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Qualcosa è andato storto');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ margin: '24px 0' }}>
+      {!generatedSnippet ? (
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ flex: '1', minWidth: '200px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
+              La tua email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tua@email.com"
+              style={{
+                width: '100%',
+                padding: '12px',
+                border: '1px solid #e1e5e9',
+                borderRadius: '8px',
+                fontSize: '14px'
+              }}
+            />
+          </div>
+          <button
+            onClick={handleGetSnippet}
+            disabled={isLoading}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: isLoading ? '#ccc' : '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              fontSize: '14px',
+              fontWeight: '500'
+            }}
+          >
+            {isLoading ? 'Generando...' : 'Ottieni Snippet'}
+          </button>
+        </div>
+      ) : (
+        <div>
+          <textarea
+            value={generatedSnippet}
+            readOnly
+            style={{
+              width: '100%',
+              minHeight: '80px',
+              fontFamily: 'monospace',
+              fontSize: '14px',
+              padding: '12px',
+              border: '1px solid #e1e5e9',
+              borderRadius: '8px',
+              backgroundColor: '#f8f9fa',
+              resize: 'vertical'
+            }}
+          />
+          <p style={{ fontSize: '14px', color: '#666', marginTop: '8px' }}>
+            Vuoi modificarlo e salvarlo? Puoi creare un account più tardi — il widget funziona subito.
+          </p>
+        </div>
+      )}
+      {error && (
+        <p style={{ color: '#dc3545', fontSize: '14px', marginTop: '8px' }}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 const PUBLIC_ID = process.env.DEMO_PUBLIC_ID || 'DEMO';
 const EMBED_VERSION = Number(process.env.EMBED_VERSION) || 1;
 const isDev = process.env.NODE_ENV === 'development';
@@ -142,9 +265,12 @@ export default function Page() {
         </div>
       </section>
 
-      {/* Copy-paste Snippet */}
+      {/* Get Your Snippet */}
       <section id="snippet" style={{ marginBottom: '48px' }}>
-        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Snippet copia-incolla</h2>
+        <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Ottieni il tuo snippet</h2>
+        <GetSnippetBox />
+        
+        <h3 style={{ fontSize: '1.4rem', marginTop: '48px', marginBottom: '24px', color: '#1a1a1a' }}>Snippet demo</h3>
         <SnippetBox publicId={PUBLIC_ID} version={EMBED_VERSION} isDev={isDev} />
       </section>
 
@@ -163,13 +289,13 @@ export default function Page() {
           <div>
             <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>Accessibilità</h3>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
-              Navigazione da tastiera, ARIA, rispetto 'riduci animazioni'.
+              Navigazione da tastiera, etichette ARIA, rispetta le preferenze 'riduci movimento'.
             </p>
           </div>
           <div>
             <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>Privacy</h3>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
-              Nessun tracker nello script; analytics anonimi e opzionali.
+              Nessun tracker nello script; analytics anonimi opzionali.
             </p>
           </div>
         </div>
@@ -182,19 +308,19 @@ export default function Page() {
           <div>
             <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>Quanto è veloce?</h3>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
-              Il widget si carica in meno di 100ms ed è memorizzato nella cache globalmente tramite CDN.
+              Il widget si carica in meno di 100ms ed è memorizzato globalmente via CDN.
             </p>
           </div>
           <div>
             <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>È conforme al GDPR?</h3>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
-              Sì, raccogliamo solo i dati che esplicitamente permetti e forniamo esportazione/eliminazione completa dei dati.
+              Sì, raccogliamo solo i dati che permetti esplicitamente e forniamo esportazione/cancellazione completa dei dati.
             </p>
           </div>
           <div>
             <h3 style={{ fontSize: '1.2rem', marginBottom: '8px', color: '#1a1a1a' }}>Posso personalizzare lo stile?</h3>
             <p style={{ color: '#666', lineHeight: '1.6' }}>
-              Assolutamente. Usa proprietà CSS personalizzate o la nostra dashboard per abbinare il tuo brand.
+              Assolutamente. Usa le proprietà CSS personalizzate o la nostra dashboard per abbinare il tuo brand.
             </p>
           </div>
         </div>
@@ -218,7 +344,7 @@ export default function Page() {
             fontSize: '1.1rem'
           }}
         >
-          Inizia Gratis
+          Inizia gratis
         </a>
       </section>
     </main>
