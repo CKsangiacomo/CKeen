@@ -258,22 +258,50 @@ export default function ConfiguratorIT() {
           }}>
             Anteprima
           </div>
-          <div 
-            id="ckeen-configurator-preview"
-            style={{ 
-              border: '1px solid #e1e5e9', 
-              borderRadius: '8px', 
-              padding: '24px',
-              backgroundColor: config.theme === 'dark' ? '#1a1a1a' : '#f8f9fa',
-              minHeight: '200px',
-              position: 'relative'
+          <div style={{ 
+            border: '1px solid #e1e5e9', 
+            borderRadius: '8px', 
+            padding: '24px',
+            backgroundColor: config.theme === 'dark' ? '#1a1a1a' : '#f8f9fa',
+            minHeight: '200px',
+            position: 'relative'
+          }}>
+            <iframe
+              id="configurator-preview-iframe-it"
+              src={embedUrl}
+              style={{
+                width: '100%',
+                height: '200px',
+                border: 'none',
+                borderRadius: '4px'
+              }}
+              title="Widget Preview"
+            />
+          </div>
+          <button
+            onClick={() => {
+              const iframe = document.getElementById('configurator-preview-iframe-it') as HTMLIFrameElement;
+              if (iframe) {
+                iframe.src = embedUrl;
+              }
             }}
-          />
-          <script 
-            async 
-            defer 
-            src={embedUrl}
-          />
+            style={{
+              position: 'absolute',
+              top: '8px',
+              left: '8px',
+              padding: '4px 8px',
+              backgroundColor: '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '12px',
+              fontWeight: '500',
+              cursor: 'pointer',
+              zIndex: 10
+            }}
+          >
+            Aggiorna Anteprima
+          </button>
         </div>
       </div>
 

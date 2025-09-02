@@ -186,45 +186,6 @@ const isDev = process.env.NODE_ENV === 'development';
 export default function Page() {
   return (
     <main style={{ maxWidth: '800px', margin: '0 auto', padding: '24px' }}>
-      {/* Hero Section */}
-      <section style={{ textAlign: 'center', marginBottom: '48px' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '16px', color: '#1a1a1a' }}>
-          Contact Form Widget, Instant.
-        </h1>
-        <p style={{ fontSize: '1.2rem', color: '#666', marginBottom: '32px', lineHeight: '1.6' }}>
-          Under 28 KB. 100ms to interaction. No iframe until click.
-        </p>
-        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <a 
-            href="#demo" 
-            style={{
-              padding: '12px 24px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              textDecoration: 'none',
-              borderRadius: '6px',
-              fontWeight: '500'
-            }}
-          >
-            Try Live Demo
-          </a>
-          <button 
-            onClick={() => document.getElementById('snippet')?.scrollIntoView({ behavior: 'smooth' })}
-            style={{
-              padding: '12px 24px',
-              backgroundColor: 'transparent',
-              color: '#007bff',
-              border: '1px solid #007bff',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontWeight: '500'
-            }}
-          >
-            Copy Snippet
-          </button>
-        </div>
-      </section>
-
       {/* Live Demo */}
       <section id="demo" style={{ marginBottom: '48px' }}>
         <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>Live Demo</h2>
