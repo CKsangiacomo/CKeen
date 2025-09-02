@@ -34,16 +34,42 @@ export default function ConfiguratorIT() {
   const [snippet, setSnippet] = useState('');
   const [publicKey, setPublicKey] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [previewSrcDoc, setPreviewSrcDoc] = useState('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const encodeCfg = (cfg: ConfigState) => btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
 
-  const previewHtml = (cfg: ConfigState) => {
-    const encodedCfg = btoa(JSON.stringify(cfg));
-    return `<!doctype html><html><head><meta charset="utf-8"/></head><body>
-     <div id="ckeen-DEMO"></div>
-     <script async src="https://c-keen-embed.vercel.app/api/e/DEMO?v=1&cfg=${encodedCfg}"></` + `script>
-   </body></html>`;
-  };
+  const previewHtml = (cfg: ConfigState) => `
+     <!doctype html>
+     <html>
+       <head>
+         <meta charset="utf-8" />
+         <meta name="viewport" content="width=device-width,initial-scale=1" />
+         <style>
+           html,body{margin:0;padding:0;background:#f7f8fa;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;}
+           #root{padding:12px}
+           .err{font:12px/1.4 system-ui;color:#b00020;background:#fff3f3;border:1px solid #ffd7d7;border-radius:6px;padding:8px}
+         </style>
+       </head>
+       <body>
+         <div id="ckeen-DEMO"></div>
+         <script>
+           window.__CKEEN_PREVIEW__ = {
+             config: ${JSON.stringify(cfg)},
+             embedOrigin: 'https://c-keen-embed.vercel.app'
+           };
+         </script>
+         <script async src="https://c-keen-embed.vercel.app/api/e/DEMO?v=1&cfg=${encodeCfg(cfg)}"></` + `script>
+         <script>
+           window.addEventListener('error', (e) => {
+             const d=document.createElement('div');
+             d.className='err';
+             d.textContent='Preview error: ' + (e.message||'unknown');
+             document.body.appendChild(d);
+           });
+         </script>
+       </body>
+     </html>`;
 
   // Load config from localStorage on mount
   useEffect(() => {
@@ -63,9 +89,7 @@ export default function ConfiguratorIT() {
     setIsUpdating(true);
     if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     debounceTimeoutRef.current = setTimeout(() => {
-      if (iframeRef.current) {
-        iframeRef.current.srcdoc = previewHtml(cfg);
-      }
+      setPreviewSrcDoc(previewHtml(cfg));
       setIsUpdating(false);
     }, 250);
   }, []);
@@ -303,14 +327,20 @@ export default function ConfiguratorIT() {
             <iframe
               ref={iframeRef}
               sandbox="allow-scripts allow-same-origin"
+              srcDoc={previewSrcDoc}
               style={{
                 width: '100%',
-                height: '200px',
+                height: '280px',
                 border: 'none',
                 borderRadius: '4px'
               }}
               title="Anteprima Widget"
             />
+            <div style={{ marginTop: '8px' }}>
+              <a href={`https://c-keen-embed.vercel.app/api/e/DEMO?v=1&cfg=${encodeCfg(config)}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', color: '#007bff' }}>
+                Apri anteprima in una nuova scheda
+              </a>
+            </div>
           </div>
         </div>
       </div>
