@@ -1,37 +1,83 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 
-export async function middleware(request: NextRequest) {
-  const res = NextResponse.next({ request: { headers: request.headers } });
+const PUBLIC_PATHS = [
+  '/auth/login',
+  '/auth/confirm',
+  '/auth/magic',
+  '/invites/accept',
+  '/favicon.ico',
+  '/robots.txt',
+  '/sitemap.xml',
+  '/manifest.webmanifest',
+  '/_next', // static assets
+];
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get: (name: string) => request.cookies.get(name)?.value,
-        set: (name: string, value: string, options: CookieOptions) => {
-          res.cookies.set({ name, value, ...options });
-        },
-        remove: (name: string, options: CookieOptions) => {
-          res.cookies.set({ name, value: '', ...options });
-        },
-      },
-    }
-  );
-
-  const { data: { user } } = await supabase.auth.getUser();
-
-  const path = request.nextUrl.pathname;
-  const isPublic = path.startsWith('/auth') || path.startsWith('/invites/accept') || path.startsWith('/api/auth');
-  if (!user && !isPublic) {
-    const url = new URL('/auth/login', request.url);
-    return NextResponse.redirect(url);
-  }
-
-  return res;
+function isPublic(pathname: string) {
+  return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p));
 }
 
+export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Always allow public paths through
+  if (isPublic(pathname)) return NextResponse.next();
+
+  // Never break the site if envs are missing in Preview
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anon) {
+    // Soft-allow: do not block, but don't crash middleware
+    return NextResponse.next();
+  }
+
+  // Keep response mutable for cookie writes
+  let response = NextResponse.next({
+    request: { headers: request.headers },
+  });
+
+  try {
+    const supabase = createServerClient(url, anon, {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          response = NextResponse.next({ request: { headers: request.headers } });
+          response.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          response = NextResponse.next({ request: { headers: request.headers } });
+          response.cookies.set({ name, value: '', ...options });
+        },
+      },
+    });
+
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error) {
+      // Don't throw from middleware – just allow and log
+      console.error('supabase.auth.getUser error in middleware:', error);
+      return response;
+    }
+
+    if (!user) {
+      const loginUrl = new URL('/auth/login', request.url);
+      loginUrl.searchParams.set('next', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return response;
+  } catch (err) {
+    // Last-resort guard: never 500 the app from middleware
+    console.error('Middleware fatal guard:', err);
+    return NextResponse.next();
+  }
+}
+
+// Only run on real app routes, skip assets and the auth callback
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|auth/callback).*)',
+  ],
 };
