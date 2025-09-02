@@ -1,7 +1,11 @@
 export const runtime = 'edge';
 export async function GET(request: Request, { params }: { params: { publicId: string }}) {
   const url = new URL(request.url);
-  const isPreview = params.publicId === 'DEMO' || url.searchParams.has('preview') || url.searchParams.has('cfg');
+  const isPreview = url.searchParams.has('preview') || url.searchParams.has('cfg');
+  const cacheControl = isPreview
+    ? 'no-store'
+    : 'public, max-age=60, stale-while-revalidate=300';
+  const templateVersion = url.searchParams.get('v') || '1';
   
   const js = `
 (()=> {
@@ -50,7 +54,10 @@ export async function GET(request: Request, { params }: { params: { publicId: st
   return new Response(js, {
     headers: {
       'content-type': 'application/javascript; charset=utf-8',
-      'cache-control': 'public, max-age=31536000, immutable'
+      'Cache-Control': cacheControl,
+      'X-Cache-TTL': '60',
+      'X-Cache-Fresh': isPreview ? 'false' : 'true',
+      'X-Template-Version': templateVersion
     }
   });
 }
