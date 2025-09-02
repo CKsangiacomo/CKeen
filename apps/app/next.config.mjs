@@ -1,4 +1,8 @@
-export default {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    serverComponentsExternalPackages: [],
+  },
   headers: async () => [{
     source: "/(.*)",
     headers: [
@@ -8,3 +12,5 @@ export default {
     ]
   }]
 };
+
+export default nextConfig;

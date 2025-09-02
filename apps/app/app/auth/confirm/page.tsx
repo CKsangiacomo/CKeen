@@ -1,5 +1,7 @@
 import { createSupabaseServer } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ConfirmPage() {
   // Supabase SSR client will read the code from the URL and set the session via cookies
   const supabase = createSupabaseServer();

@@ -1,5 +1,7 @@
 import { createSupabaseServer, getCurrentUser } from '@/lib/supabase';
 
+export const dynamic = 'force-dynamic';
+
 async function acceptInvite(token: string, userId: string) {
   const db = createSupabaseServer();
 
