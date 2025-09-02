@@ -34,10 +34,20 @@ export default function Configurator() {
   const [error, setError] = useState('');
   const [snippet, setSnippet] = useState('');
   const [publicKey, setPublicKey] = useState('');
-  const [previewReady, setPreviewReady] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [previewSrcDoc, setPreviewSrcDoc] = useState('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  const buildSrcDoc = (base64Cfg: string) =>
+    `<!doctype html><html><head>
+     <meta charset="utf-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+     <style>html,body{margin:0;padding:0;background:transparent}</style>
+   </head><body>
+     <div id="ckeen-DEMO"></div>
+     <script async src="https://c-keen-embed.vercel.app/api/e/DEMO?v=1&cfg=${base64Cfg}"></` + `script>
+   </body></html>`;
 
   // Load config from localStorage on mount
   useEffect(() => {
@@ -52,79 +62,31 @@ export default function Configurator() {
     }
   }, []);
 
-  // Listen for preview ready message
-  useEffect(() => {
-    const handleMessage = (ev: MessageEvent) => {
-      if (ev.data?.type === 'ckeen:preview:ready') {
-        setPreviewReady(true);
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
-    return () => window.removeEventListener('message', handleMessage);
-  }, []);
-
-  // Debounced preview update
-  const updatePreview = useCallback((newConfig: ConfigState) => {
-    if (!iframeRef.current?.contentWindow || !previewReady) return;
-
-    // Cap serialized config size to ~10KB
-    const configStr = JSON.stringify(newConfig);
-    if (configStr.length > 10000) {
-      console.warn('Config too large, skipping preview update');
-      return;
-    }
-
+  // Debounced preview srcDoc rebuild
+  const rebuildPreview = useCallback((base64Cfg: string) => {
     setIsUpdating(true);
-
-    // Clear existing timeout
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
-
-    // Debounce for 250ms
+    if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     debounceTimeoutRef.current = setTimeout(() => {
-      const EMBED_ORIGIN = process.env.NODE_ENV === 'development'
-        ? 'http://localhost:3002'
-        : 'https://c-keen-embed.vercel.app';
-
-      iframeRef.current?.contentWindow?.postMessage(
-        { type: 'ckeen:preview:update', config: newConfig },
-        EMBED_ORIGIN
-      );
-
+      setPreviewSrcDoc(buildSrcDoc(base64Cfg));
       setIsUpdating(false);
     }, 250);
-  }, [previewReady]);
+  }, []);
 
   // Update base64 config and trigger preview update when config changes
   useEffect(() => {
-    const b64 = btoa(JSON.stringify(config));
+    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(config))));
     setConfigB64(b64);
-    
     // Save to localStorage
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  }, [config]);
 
-    // Update preview
-    updatePreview(config);
-  }, [config, updatePreview]);
-
-  // Fallback if preview not ready after 1s
+  // Rebuild srcDoc when base64 config changes
   useEffect(() => {
-    if (!previewReady) {
-      const timeout = setTimeout(() => {
-        if (!previewReady && iframeRef.current) {
-          // Fallback to cfg parameter
-          const fallbackUrl = process.env.NODE_ENV === 'development'
-            ? `http://localhost:3002/api/e/DEMO?v=1&cfg=${configB64}`
-            : `https://c-keen-embed.vercel.app/api/e/DEMO?v=1&cfg=${configB64}`;
-          iframeRef.current.src = fallbackUrl;
-        }
-      }, 1000);
+    if (!configB64) return;
+    rebuildPreview(configB64);
+  }, [configB64, rebuildPreview]);
 
-      return () => clearTimeout(timeout);
-    }
-  }, [previewReady, configB64]);
+  // No fallback needed with srcDoc
 
   const updateConfig = (updates: Partial<ConfigState>) => {
     setConfig(prev => ({ ...prev, ...updates }));
@@ -193,10 +155,7 @@ export default function Configurator() {
     }
   };
 
-  const isDev = process.env.NODE_ENV === 'development';
-  const embedUrl = isDev
-    ? `http://localhost:3002/api/e/DEMO?v=1&preview=1`
-    : `https://c-keen-embed.vercel.app/api/e/DEMO?v=1&preview=1`;
+  // Using srcDoc-based preview; no external src URL required
 
   return (
     <div style={{ marginBottom: '48px' }}>
@@ -353,7 +312,8 @@ export default function Configurator() {
           }}>
             <iframe
               ref={iframeRef}
-              src={embedUrl}
+              sandbox="allow-scripts allow-same-origin"
+              srcDoc={previewSrcDoc}
               style={{
                 width: '100%',
                 height: '200px',
