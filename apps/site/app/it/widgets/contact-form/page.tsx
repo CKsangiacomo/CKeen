@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Configurator from '@/app/widgets/contact-form/Configurator';
+import ConfiguratorIT from '@/app/widgets/contact-form/ConfiguratorIT';
 
 // Client component for the snippet box
 function SnippetBox({ publicId, version, isDev }: { publicId: string; version: number; isDev: boolean }) {
@@ -248,7 +248,7 @@ export default function Page() {
       </section>
 
       {/* Widget Configurator */}
-      <Configurator />
+      <ConfiguratorIT />
 
       {/* Why It's Faster */}
       <section style={{ marginBottom: '48px' }}>

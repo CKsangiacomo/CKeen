@@ -16,8 +16,8 @@ interface ConfigState {
 const STORAGE_KEY = 'cf_cfg';
 
 const defaultConfig: ConfigState = {
-  title: 'Contact us',
-  successText: 'Thanks! We\'ll get back to you soon.',
+  title: 'Contattaci',
+  successText: 'Grazie! Ti risponderemo presto.',
   theme: 'light',
   fields: {
     name: true,
@@ -26,7 +26,7 @@ const defaultConfig: ConfigState = {
   },
 };
 
-export default function Configurator() {
+export default function ConfiguratorIT() {
   const [config, setConfig] = useState<ConfigState>(defaultConfig);
   const [configB64, setConfigB64] = useState('');
   const [email, setEmail] = useState('');
@@ -75,7 +75,7 @@ export default function Configurator() {
 
   const handleGetSnippet = async () => {
     if (!validateEmail(email)) {
-      setError('Please enter a valid email address');
+      setError('Inserisci un indirizzo email valido');
       return;
     }
 
@@ -97,7 +97,7 @@ export default function Configurator() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate snippet');
+        throw new Error(errorData.error || 'Impossibile generare lo snippet');
       }
 
       const data = await response.json();
@@ -109,7 +109,7 @@ export default function Configurator() {
       
       setSnippet(snippetText);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to generate snippet');
+      setError(err instanceof Error ? err.message : 'Impossibile generare lo snippet');
     } finally {
       setIsLoading(false);
     }
@@ -132,7 +132,7 @@ export default function Configurator() {
   return (
     <div style={{ marginBottom: '48px' }}>
       <h2 style={{ fontSize: '1.8rem', marginBottom: '24px', color: '#1a1a1a' }}>
-        Configure Your Widget
+        Configura il tuo Widget
       </h2>
       
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', alignItems: 'start' }}>
@@ -141,7 +141,7 @@ export default function Configurator() {
           {/* Title */}
           <div>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              Form Title
+              Titolo del Form
             </label>
             <input
               type="text"
@@ -160,7 +160,7 @@ export default function Configurator() {
           {/* Success Text */}
           <div>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              Success Message
+              Messaggio di Successo
             </label>
             <input
               type="text"
@@ -179,7 +179,7 @@ export default function Configurator() {
           {/* Fields */}
           <div>
             <label style={{ display: 'block', marginBottom: '12px', fontSize: '14px', fontWeight: '500' }}>
-              Form Fields
+              Campi del Form
             </label>
             <div style={{ display: 'grid', gap: '8px' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
@@ -189,7 +189,7 @@ export default function Configurator() {
                   onChange={(e) => updateFields('name', e.target.checked)}
                   style={{ width: '16px', height: '16px' }}
                 />
-                Name field
+                Campo nome
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', opacity: 0.6 }}>
                 <input
@@ -198,7 +198,7 @@ export default function Configurator() {
                   disabled
                   style={{ width: '16px', height: '16px' }}
                 />
-                Email field (always required)
+                Campo email (sempre richiesto)
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
                 <input
@@ -207,7 +207,7 @@ export default function Configurator() {
                   onChange={(e) => updateFields('message', e.target.checked)}
                   style={{ width: '16px', height: '16px' }}
                 />
-                Message field
+                Campo messaggio
               </label>
             </div>
           </div>
@@ -215,7 +215,7 @@ export default function Configurator() {
           {/* Theme */}
           <div>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              Theme
+              Tema
             </label>
             <div style={{ display: 'flex', gap: '12px' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
@@ -226,7 +226,7 @@ export default function Configurator() {
                   onChange={() => updateConfig({ theme: 'light' })}
                   style={{ width: '16px', height: '16px' }}
                 />
-                Light
+                Chiaro
               </label>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}>
                 <input
@@ -236,7 +236,7 @@ export default function Configurator() {
                   onChange={() => updateConfig({ theme: 'dark' })}
                   style={{ width: '16px', height: '16px' }}
                 />
-                Dark
+                Scuro
               </label>
             </div>
           </div>
@@ -256,7 +256,7 @@ export default function Configurator() {
             fontWeight: '500',
             zIndex: 10
           }}>
-            Preview
+            Anteprima
           </div>
           <div 
             id="ckeen-configurator-preview"
@@ -279,18 +279,18 @@ export default function Configurator() {
 
       {/* Snippet Generation */}
       <div style={{ marginTop: '32px', padding: '24px', border: '1px solid #e1e5e9', borderRadius: '8px', backgroundColor: '#f8f9fa' }}>
-        <h3 style={{ fontSize: '1.4rem', marginBottom: '16px', color: '#1a1a1a' }}>Get Your Snippet</h3>
+        <h3 style={{ fontSize: '1.4rem', marginBottom: '16px', color: '#1a1a1a' }}>Ottieni il tuo Snippet</h3>
         
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: '16px' }}>
           <div style={{ flex: 1, minWidth: '200px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>
-              Your email
+              La tua email
             </label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder="la tua email"
               style={{
                 width: '100%',
                 padding: '12px',
@@ -315,7 +315,7 @@ export default function Configurator() {
               opacity: isLoading ? 0.6 : 1
             }}
           >
-            {isLoading ? 'Generating...' : 'Get Snippet'}
+            {isLoading ? 'Generazione...' : 'Ottieni snippet'}
           </button>
         </div>
 
@@ -328,7 +328,7 @@ export default function Configurator() {
         {snippet && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <h4 style={{ fontSize: '1.1rem', margin: 0, color: '#1a1a1a' }}>Your Snippet</h4>
+              <h4 style={{ fontSize: '1.1rem', margin: 0, color: '#1a1a1a' }}>Il tuo Snippet</h4>
               <button
                 onClick={copySnippet}
                 style={{
@@ -342,7 +342,7 @@ export default function Configurator() {
                   fontWeight: '500'
                 }}
               >
-                Copy
+                Copia
               </button>
             </div>
             <textarea
@@ -361,7 +361,7 @@ export default function Configurator() {
               }}
             />
             <p style={{ fontSize: '13px', color: '#666', marginTop: '8px', marginBottom: 0 }}>
-              Free plan includes a small Powered by Clickeen badge.
+              Il piano gratuito include un piccolo badge Powered by Clickeen.
             </p>
           </div>
         )}

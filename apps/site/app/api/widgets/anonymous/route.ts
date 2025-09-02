@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ publicId: data.public_key });
+    return NextResponse.json({ publicKey: data.public_key });
 
   } catch (error) {
     console.error('API error:', error);
