@@ -28,26 +28,22 @@ const defaultConfig: ConfigState = {
 
 export default function Configurator() {
   const [config, setConfig] = useState<ConfigState>(defaultConfig);
-  const [configB64, setConfigB64] = useState('');
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [snippet, setSnippet] = useState('');
   const [publicKey, setPublicKey] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
-  const [previewSrcDoc, setPreviewSrcDoc] = useState('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const debounceTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
-  const buildSrcDoc = (base64Cfg: string) =>
-    `<!doctype html><html><head>
-     <meta charset="utf-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1" />
-     <style>html,body{margin:0;padding:0;background:transparent}</style>
-   </head><body>
+  const previewHtml = (cfg: ConfigState) => {
+    const encodedCfg = btoa(JSON.stringify(cfg));
+    return `<!doctype html><html><head><meta charset="utf-8"/></head><body>
      <div id="ckeen-DEMO"></div>
-     <script async src="https://c-keen-embed.vercel.app/api/e/DEMO?v=1&cfg=${base64Cfg}"></` + `script>
+     <script async src="https://c-keen-embed.vercel.app/api/e/DEMO?v=1&cfg=${encodedCfg}"></` + `script>
    </body></html>`;
+  };
 
   // Load config from localStorage on mount
   useEffect(() => {
@@ -62,29 +58,23 @@ export default function Configurator() {
     }
   }, []);
 
-  // Debounced preview srcDoc rebuild
-  const rebuildPreview = useCallback((base64Cfg: string) => {
+  // Debounced preview srcDoc rebuild (external script via srcDoc)
+  const rebuildPreview = useCallback((cfg: ConfigState) => {
     setIsUpdating(true);
     if (debounceTimeoutRef.current) clearTimeout(debounceTimeoutRef.current);
     debounceTimeoutRef.current = setTimeout(() => {
-      setPreviewSrcDoc(buildSrcDoc(base64Cfg));
+      if (iframeRef.current) {
+        iframeRef.current.srcdoc = previewHtml(cfg);
+      }
       setIsUpdating(false);
     }, 250);
   }, []);
 
-  // Update base64 config and trigger preview update when config changes
+  // Save config and rebuild preview on changes
   useEffect(() => {
-    const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(config))));
-    setConfigB64(b64);
-    // Save to localStorage
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-  }, [config]);
-
-  // Rebuild srcDoc when base64 config changes
-  useEffect(() => {
-    if (!configB64) return;
-    rebuildPreview(configB64);
-  }, [configB64, rebuildPreview]);
+    rebuildPreview(config);
+  }, [config, rebuildPreview]);
 
   // No fallback needed with srcDoc
 
@@ -313,7 +303,6 @@ export default function Configurator() {
             <iframe
               ref={iframeRef}
               sandbox="allow-scripts allow-same-origin"
-              srcDoc={previewSrcDoc}
               style={{
                 width: '100%',
                 height: '200px',
