@@ -1,38 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Clickeen Monorepo
 
-## Getting Started
+Fast, lightweight widgets platform built with Next.js and Supabase.
 
-First, run the development server:
+## Dev servers
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- `pnpm dev:site` → http://localhost:3000 (marketing site)
+- `pnpm dev:app` → http://localhost:3001 (dashboard)
+- `pnpm dev:embed` → http://localhost:3002 (embed service)
+- `pnpm dev` → run all three in parallel
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Quick start
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies:
+   ```bash
+   pnpm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Set up environment variables:
+   ```bash
+   cp .env.local.example .env.local
+   # Edit .env.local with your Supabase credentials
+   ```
 
-## Learn More
+3. Start development:
+   ```bash
+   pnpm dev:site    # Marketing site
+   pnpm dev:app     # Dashboard
+   pnpm dev:embed   # Embed service
+   # or run all: pnpm dev
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-# Redeploy triggered at Fri Aug 29 14:27:18 PDT 2025
+- `apps/site` - Marketing site with widget landing pages
+- `apps/app` - Dashboard for managing widgets
+- `services/embed` - Edge service for widget delivery
+- `packages/` - Shared packages and widgets
+- `infra/supabase` - Database migrations and schema

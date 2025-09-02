@@ -1,4 +1,5 @@
-apps/*
-services/*
-packages/*
-infra/*
+packages:
+  - "apps/*"
+  - "services/*"
+  - "packages/*"
+  - "infra/*"

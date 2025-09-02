@@ -1,5 +1,4 @@
 export default {
-  i18n: { locales: ['en','it'], defaultLocale: 'en' },
   headers: async () => [{
     source: "/(.*)",
     headers: [

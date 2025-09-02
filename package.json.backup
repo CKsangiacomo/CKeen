@@ -5,15 +5,15 @@
   "workspaces": ["apps/*", "services/*", "packages/*", "infra/*"],
   "scripts": {
     "build": "turbo build",
-    "dev": "concurrently -n site,app,embed -c blue,green,yellow \"pnpm dev:site\" \"pnpm dev:app\" \"pnpm dev:embed\"",
+    "dev": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",
     "typecheck": "turbo typecheck",
     "e2e": "turbo run e2e",
     "size-check": "turbo run size-check",
-    "dev:site": "pnpm --filter @ck/site dev",
-    "dev:app": "pnpm --filter @ck/app dev",
-    "dev:embed": "pnpm --filter @ck/embed-service dev"
+    "dev:site": "turbo dev --filter=@ck/site",
+    "dev:app": "turbo dev --filter=@ck/app",
+    "dev:embed": "turbo dev --filter=@ck/embed-service"
   },
   "devDependencies": {
     "turbo": "^2.0.6",
@@ -23,7 +23,6 @@
     "@size-limit/preset-app": "^11.1.4",
     "size-limit": "^11.1.4",
     "playwright": "^1.45.0",
-    "axe-core": "^4.9.1",
-    "concurrently": "^8.2.2"
+    "axe-core": "^4.9.1"
   }
 }
