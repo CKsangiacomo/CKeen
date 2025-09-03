@@ -17,16 +17,10 @@ export async function POST(req: Request) {
     const type: string = body?.type || 'contact-form';
     const config = (body?.config ?? {}) as Record<string, unknown>;
 
-    const publicKey = nanoid(12).toLowerCase();
-    const publicId = nanoid(12).toLowerCase();
-
     const { data, error } = await supabase.rpc('create_widget_with_instance', {
       p_name: `Anonymous Widget - ${email}`,
       p_type: type,
-      p_public_key: publicKey,
-      p_public_id: publicId,
-      p_widget_config: config,
-      p_instance_config: config,
+      p_config: config,
     });
 
     if (error) {
@@ -34,10 +28,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Internal server error', detail: error.message }, { status: 500 });
     }
 
-    const row: any = Array.isArray(data) ? data[0] : data;
     return NextResponse.json({
-      publicKey: row?.public_key,
-      publicId: row?.public_id
+      publicKey: (data as any)?.public_key,
+      publicId: (data as any)?.public_id
     });
   } catch (e) {
     console.error('Anon create failed:', e);
