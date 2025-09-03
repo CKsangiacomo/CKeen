@@ -92,22 +92,15 @@ export async function POST(request: NextRequest) {
 
     // Ensure required foreign keys exist in the embed DB
     await instanceAdmin.from('widget_types').upsert({ id: 'contact_form', title: 'Contact Form', config_schema: {} as any });
-    const DEMO_WORKSPACE_ID = '00000000-0000-0000-0000-000000000001';
-    await instanceAdmin.from('workspaces').upsert({ id: DEMO_WORKSPACE_ID, name: 'Anonymous Widgets', created_by: DEMO_WORKSPACE_ID });
 
     // Create published instance in embed DB for form submissions
     const { error: instanceErr } = await instanceAdmin
       .from('widget_instances')
       .insert({
-        workspace_id: DEMO_WORKSPACE_ID,
-        type_id: 'contact_form',
         public_id: publicId,
-        version: 1,
         status: 'published',
         config: widgetConfig,
-        allowed_domains: [],
-        show_badge: true,
-        created_by: DEMO_WORKSPACE_ID
+        created_at: new Date().toISOString()
       });
 
     if (instanceErr) {
