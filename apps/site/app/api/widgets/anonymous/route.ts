@@ -1,119 +1,67 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { nanoid } from 'nanoid';
 import { getServerClient } from '@/lib/supabase';
-import { createClient } from '@supabase/supabase-js';
 
 // Email validation regex (simple RFC-like)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type CreateAnonBody = {
+  email: string;
+  type: 'contact-form';
+  config?: Record<string, unknown>;
+};
+
+type CreateWidgetWithInstanceResult = {
+  public_key: string;
+  public_id: string;
+};
 
 export async function POST(request: NextRequest) {
   try {
     // Check payload size limit (25KB)
     const contentLength = request.headers.get('content-length');
     if (contentLength && parseInt(contentLength) > 25 * 1024) {
-      return NextResponse.json(
-        { error: 'Payload too large' },
-        { status: 413 }
-      );
+      return NextResponse.json({ error: 'Payload too large' }, { status: 413 });
     }
 
-    const body = await request.json();
-    const { email, type, config } = body || {};
+    // Parse and validate body
+    let body: CreateAnonBody;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
+    const { email, type, config } = body || {} as CreateAnonBody;
 
-    // Validate required fields
     if (!email || typeof email !== 'string') {
-      return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
-
     if (!EMAIL_REGEX.test(email)) {
-      return NextResponse.json(
-        { error: 'Invalid email format' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 });
     }
-
     if (type !== 'contact-form') {
-      return NextResponse.json(
-        { error: 'Invalid widget type' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid widget type' }, { status: 400 });
     }
 
-    // Generate identifiers
-    const publicKey = nanoid(12).toLowerCase();
-    const publicId = nanoid(12).toLowerCase();
-
-    // Prepare widget config
-    const widgetConfig = {
-      ...(config || {}),
-      _meta: {
-        created_via: 'anonymous',
-        email,
-        show_attribution: true,
-        ...(config?._meta || {})
-      }
-    };
-
-    // Admin for site DB (widgets table lives here)
     const admin = getServerClient();
 
-    // Admin for embed DB (widget_instances live here) - prefer EMBED_* envs
-    const embedUrl = process.env.EMBED_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const embedSrv = process.env.EMBED_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if (!embedUrl || !embedSrv) {
-      return NextResponse.json({ error: 'Server misconfigured: missing EMBED Supabase env' }, { status: 500 });
-    }
-    const instanceAdmin = createClient(embedUrl, embedSrv, { auth: { persistSession: false } });
-
-    // Create (or upsert) widget record in site DB
-    const { data: widgetData, error: widgetErr } = await admin
-      .from('widgets')
-      .insert({
-        user_id: '00000000-0000-0000-0000-000000000000',
-        name: 'Contact Form',
-        type: 'contact_form',
-        public_key: publicKey,
-        status: 'active',
-        config: widgetConfig
-      })
-      .select('id, public_key')
-      .single();
-
-    if (widgetErr || !widgetData) {
-      console.error('Database error (widgets):', widgetErr?.message || widgetErr);
-      return NextResponse.json(
-        { error: 'Failed to create widget' },
-        { status: 500 }
-      );
-    }
-
-    // Ensure required foreign keys exist in the embed DB
-    await instanceAdmin.from('widget_types').upsert({ id: 'contact_form', title: 'Contact Form', config_schema: {} as any });
-
-    // Create published instance in embed DB for form submissions
-    const { error: instanceErr } = await instanceAdmin
-      .from('widget_instances')
-      .insert({
-        public_id: publicId,
-        status: 'published',
-        config: widgetConfig,
-        created_at: new Date().toISOString()
+    // Invoke RPC to create widget and its published instance atomically
+    const { data, error } = await admin
+      .rpc('create_widget_with_instance', {
+        name: 'Anonymous Widget',
+        config: (config as Record<string, unknown>) || {}
       });
 
-    if (instanceErr) {
-      // Best-effort rollback of the app-level widget to avoid orphans
-      try { await admin.from('widgets').delete().eq('id', widgetData.id); } catch {}
-      console.error('Database error (widget_instances):', instanceErr.message || instanceErr);
-      return NextResponse.json({
-        error: 'Failed to create widget instance',
-        detail: instanceErr.message || String(instanceErr)
-      }, { status: 500 });
+    if (error) {
+      console.error('RPC error (create_widget_with_instance):', error.message || error);
+      return NextResponse.json({ error: 'Internal server error', detail: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ publicKey: widgetData.public_key, publicId });
+    const result = data as CreateWidgetWithInstanceResult | null;
+    if (!result || !result.public_key || !result.public_id) {
+      return NextResponse.json({ error: 'Internal server error', detail: 'rpc_missing_fields' }, { status: 500 });
+    }
+
+    return NextResponse.json({ publicKey: result.public_key, publicId: result.public_id });
 
   } catch (error: any) {
     console.error('API error:', error?.message || error);
