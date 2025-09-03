@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
         workspace_id: '00000000-0000-0000-0000-000000000001',
         type_id: 'contact_form',
         public_id: publicId,
+        version: 1,
         status: 'published',
         config: widgetConfig,
         allowed_domains: [],
@@ -99,10 +100,10 @@ export async function POST(request: NextRequest) {
       // Best-effort rollback of the app-level widget to avoid orphans
       try { await admin.from('widgets').delete().eq('id', widgetData.id); } catch {}
       console.error('Database error (widget_instances):', instanceErr.message || instanceErr);
-      return NextResponse.json(
-        { error: 'Failed to create widget instance' },
-        { status: 500 }
-      );
+      return NextResponse.json({
+        error: 'Failed to create widget instance',
+        detail: instanceErr.message || String(instanceErr)
+      }, { status: 500 });
     }
 
     return NextResponse.json({ publicKey: widgetData.public_key, publicId });
