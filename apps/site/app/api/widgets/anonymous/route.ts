@@ -58,6 +58,14 @@ export async function POST(request: NextRequest) {
 
     const admin = getServerClient();
 
+    // Ensure required foreign keys exist in production
+    // 1) widget_types: 'contact_form'
+    await admin.from('widget_types').upsert({ id: 'contact_form', title: 'Contact Form', config_schema: {} as any });
+
+    // 2) demo workspace (if schema requires non-null workspace_id)
+    const DEMO_WORKSPACE_ID = '00000000-0000-0000-0000-000000000001';
+    await admin.from('workspaces').upsert({ id: DEMO_WORKSPACE_ID, name: 'Anonymous Widgets', created_by: DEMO_WORKSPACE_ID });
+
     // Create (or upsert) widget record
     const { data: widgetData, error: widgetErr } = await admin
       .from('widgets')
@@ -85,7 +93,7 @@ export async function POST(request: NextRequest) {
       .from('widget_instances')
       .insert({
         // Use demo workspace in prod if NULL is not allowed in the deployed schema
-        workspace_id: '00000000-0000-0000-0000-000000000001',
+        workspace_id: DEMO_WORKSPACE_ID,
         type_id: 'contact_form',
         public_id: publicId,
         version: 1,
