@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import { getServerClient } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 // Email validation regex (simple RFC-like)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -56,17 +57,18 @@ export async function POST(request: NextRequest) {
       }
     };
 
+    // Admin for site DB (widgets table lives here)
     const admin = getServerClient();
 
-    // Ensure required foreign keys exist in production
-    // 1) widget_types: 'contact_form'
-    await admin.from('widget_types').upsert({ id: 'contact_form', title: 'Contact Form', config_schema: {} as any });
+    // Admin for embed DB (widget_instances live here) - prefer EMBED_* envs
+    const embedUrl = process.env.EMBED_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const embedSrv = process.env.EMBED_SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!embedUrl || !embedSrv) {
+      return NextResponse.json({ error: 'Server misconfigured: missing EMBED Supabase env' }, { status: 500 });
+    }
+    const instanceAdmin = createClient(embedUrl, embedSrv, { auth: { persistSession: false } });
 
-    // 2) demo workspace (if schema requires non-null workspace_id)
-    const DEMO_WORKSPACE_ID = '00000000-0000-0000-0000-000000000001';
-    await admin.from('workspaces').upsert({ id: DEMO_WORKSPACE_ID, name: 'Anonymous Widgets', created_by: DEMO_WORKSPACE_ID });
-
-    // Create (or upsert) widget record
+    // Create (or upsert) widget record in site DB
     const { data: widgetData, error: widgetErr } = await admin
       .from('widgets')
       .insert({
@@ -88,11 +90,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create published instance for embed form submissions
-    const { error: instanceErr } = await admin
+    // Ensure required foreign keys exist in the embed DB
+    await instanceAdmin.from('widget_types').upsert({ id: 'contact_form', title: 'Contact Form', config_schema: {} as any });
+    const DEMO_WORKSPACE_ID = '00000000-0000-0000-0000-000000000001';
+    await instanceAdmin.from('workspaces').upsert({ id: DEMO_WORKSPACE_ID, name: 'Anonymous Widgets', created_by: DEMO_WORKSPACE_ID });
+
+    // Create published instance in embed DB for form submissions
+    const { error: instanceErr } = await instanceAdmin
       .from('widget_instances')
       .insert({
-        // Use demo workspace in prod if NULL is not allowed in the deployed schema
         workspace_id: DEMO_WORKSPACE_ID,
         type_id: 'contact_form',
         public_id: publicId,
@@ -101,7 +107,7 @@ export async function POST(request: NextRequest) {
         config: widgetConfig,
         allowed_domains: [],
         show_badge: true,
-        created_by: '00000000-0000-0000-0000-000000000001'
+        created_by: DEMO_WORKSPACE_ID
       });
 
     if (instanceErr) {
