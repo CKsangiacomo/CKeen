@@ -56,6 +56,9 @@ importers:
 
   apps/site:
     dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.56.1
+        version: 2.56.1
       nanoid:
         specifier: ^5.1.5
         version: 5.1.5
