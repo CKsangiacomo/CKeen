@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
 import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 // Email validation regex (simple RFC-like)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -49,8 +50,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique public ID
-    const publicId = nanoid(12);
+    // Generate identifiers
+    const publicKey = nanoid(12).toLowerCase();
+    const publicId = nanoid(12).toLowerCase();
 
     // Prepare widget config
     const widgetConfig = {
@@ -63,29 +65,54 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    // Insert widget instance
-    const { data, error } = await supabase
+    // Insert app-level widget (publicKey) using anon client
+    const { data: widgetRow, error: widgetErr } = await supabase
       .from('widgets')
       .insert({
-        user_id: '00000000-0000-0000-0000-000000000000', // Anonymous user UUID
+        user_id: '00000000-0000-0000-0000-000000000000',
         name: 'Contact Form',
         type: 'contact_form',
-        public_key: publicId,
+        public_key: publicKey,
         status: 'active',
         config: widgetConfig
       })
       .select('public_key')
       .single();
 
-    if (error) {
-      console.error('Database error:', error);
+    if (widgetErr) {
+      console.error('Database error (widgets):', widgetErr);
       return NextResponse.json(
         { error: 'Failed to create widget' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ publicKey: data.public_key });
+    // Create published instance for embed form submissions using service role
+    const admin = supabaseAdmin();
+    const { error: instanceErr } = await admin
+      .from('widget_instances')
+      .insert({
+        workspace_id: null,
+        type_id: 'contact_form',
+        public_id: publicId,
+        status: 'published',
+        config: widgetConfig,
+        allowed_domains: [],
+        show_badge: true,
+        created_by: '00000000-0000-0000-0000-000000000000'
+      });
+
+    if (instanceErr) {
+      // Best-effort rollback of the app-level widget to avoid orphans
+      try { await admin.from('widgets').delete().eq('public_key', publicKey); } catch {}
+      console.error('Database error (widget_instances):', instanceErr);
+      return NextResponse.json(
+        { error: 'Failed to create widget instance' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ publicKey: widgetRow.public_key, publicId });
 
   } catch (error) {
     console.error('API error:', error);
