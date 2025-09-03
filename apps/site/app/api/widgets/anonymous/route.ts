@@ -84,14 +84,15 @@ export async function POST(request: NextRequest) {
     const { error: instanceErr } = await admin
       .from('widget_instances')
       .insert({
-        workspace_id: null,
+        // Use demo workspace in prod if NULL is not allowed in the deployed schema
+        workspace_id: '00000000-0000-0000-0000-000000000001',
         type_id: 'contact_form',
         public_id: publicId,
         status: 'published',
         config: widgetConfig,
         allowed_domains: [],
         show_badge: true,
-        created_by: '00000000-0000-0000-0000-000000000000'
+        created_by: '00000000-0000-0000-0000-000000000001'
       });
 
     if (instanceErr) {
