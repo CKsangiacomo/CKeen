@@ -154,6 +154,8 @@ export default function Configurator() {
 <!-- Powered by Clickeen — remove with Pro -->`;
       
       setSnippet(snippetText);
+      // Optionally show publicId hint in UI without changing layout
+      console.log('PublicId for direct POST smoke:', data.publicId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate snippet');
     } finally {

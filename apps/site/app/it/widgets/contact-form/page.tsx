@@ -95,13 +95,15 @@ function GetSnippetBox() {
         throw new Error(errorData.error || 'Impossibile generare lo snippet');
       }
 
-      const { publicId } = await response.json();
+      const { publicId, publicKey } = await response.json();
       setGeneratedPublicId(publicId);
       
-      const snippet = `<div id="ckeen-${publicId}"></div>
-<script async src="https://c-keen-embed.vercel.app/api/e/${publicId}?v=1"></script>`;
+      const snippet = `<div id="ckeen-${publicKey}"></div>
+<script async src="https://c-keen-embed.vercel.app/api/e/${publicKey}?v=1"></script>`;
       
       setGeneratedSnippet(snippet);
+      // Minimal hint (dev console) for direct form smoke
+      console.log('PublicId for form POST:', publicId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Qualcosa è andato storto');
     } finally {

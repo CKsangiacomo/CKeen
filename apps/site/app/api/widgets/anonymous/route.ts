@@ -1,21 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { nanoid } from 'nanoid';
-import { supabase } from '@/lib/supabase';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { getServerClient } from '@/lib/supabase';
 
 // Email validation regex (simple RFC-like)
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if Supabase client is available
-    if (!supabase) {
-      return NextResponse.json(
-        { error: 'Database not configured' },
-        { status: 500 }
-      );
-    }
-
     // Check payload size limit (25KB)
     const contentLength = request.headers.get('content-length');
     if (contentLength && parseInt(contentLength) > 25 * 1024) {
@@ -26,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { email, type, config } = body;
+    const { email, type, config } = body || {};
 
     // Validate required fields
     if (!email || typeof email !== 'string') {
@@ -65,8 +56,10 @@ export async function POST(request: NextRequest) {
       }
     };
 
-    // Insert app-level widget (publicKey) using anon client
-    const { data: widgetRow, error: widgetErr } = await supabase
+    const admin = getServerClient();
+
+    // Create (or upsert) widget record
+    const { data: widgetData, error: widgetErr } = await admin
       .from('widgets')
       .insert({
         user_id: '00000000-0000-0000-0000-000000000000',
@@ -76,19 +69,18 @@ export async function POST(request: NextRequest) {
         status: 'active',
         config: widgetConfig
       })
-      .select('public_key')
+      .select('id, public_key')
       .single();
 
-    if (widgetErr) {
-      console.error('Database error (widgets):', widgetErr);
+    if (widgetErr || !widgetData) {
+      console.error('Database error (widgets):', widgetErr?.message || widgetErr);
       return NextResponse.json(
         { error: 'Failed to create widget' },
         { status: 500 }
       );
     }
 
-    // Create published instance for embed form submissions using service role
-    const admin = supabaseAdmin();
+    // Create published instance for embed form submissions
     const { error: instanceErr } = await admin
       .from('widget_instances')
       .insert({
@@ -104,18 +96,18 @@ export async function POST(request: NextRequest) {
 
     if (instanceErr) {
       // Best-effort rollback of the app-level widget to avoid orphans
-      try { await admin.from('widgets').delete().eq('public_key', publicKey); } catch {}
-      console.error('Database error (widget_instances):', instanceErr);
+      try { await admin.from('widgets').delete().eq('id', widgetData.id); } catch {}
+      console.error('Database error (widget_instances):', instanceErr.message || instanceErr);
       return NextResponse.json(
         { error: 'Failed to create widget instance' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ publicKey: widgetRow.public_key, publicId });
+    return NextResponse.json({ publicKey: widgetData.public_key, publicId });
 
-  } catch (error) {
-    console.error('API error:', error);
+  } catch (error: any) {
+    console.error('API error:', error?.message || error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
