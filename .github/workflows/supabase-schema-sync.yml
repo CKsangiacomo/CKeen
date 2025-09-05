@@ -1,4 +1,3 @@
-```yaml
 name: Sync Supabase Schema
 
 on:
