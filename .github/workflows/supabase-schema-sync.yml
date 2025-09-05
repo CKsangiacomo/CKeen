@@ -26,15 +26,32 @@ jobs:
           supabase --version
 
       # Dump the public schema into docs/architecture/DBschema/schema.sql
-      - name: Dump public schema
+      - name: Dump public schema (force IPv4, SSL)
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
+          set -euo pipefail
+
+          # 1) Resolve the IPv4 address of your Supabase DB host
+          DB_HOST="$(echo "$SUPABASE_DB_URL" | sed -E 's|^.*://[^@]*@([^/:]+).*|\1|')"
+          IPV4="$(getent ahostsv4 "$DB_HOST" | awk '{print $1; exit}')"
+
+          if [ -z "$IPV4" ]; then
+            echo "Could not resolve IPv4 for $DB_HOST"
+            exit 1
+          fi
+
+          # 2) Append hostaddr & sslmode to the URI so libpq uses IPv4 and SSL
+          #    (URI query parameters are supported by libpq)
+          if [[ "$SUPABASE_DB_URL" == *"?"* ]]; then
+            DB_URL_V4="${SUPABASE_DB_URL}&hostaddr=${IPV4}&sslmode=require"
+          else
+            DB_URL_V4="${SUPABASE_DB_URL}?hostaddr=${IPV4}&sslmode=require"
+          fi
+
           mkdir -p docs/architecture/DBschema
-          supabase db dump \
-            --db-url "$SUPABASE_DB_URL" \
-            --schema public \
-            > docs/architecture/DBschema/schema.sql
+          # Use Supabase CLI without Docker to avoid more networking surprises
+          supabase db dump --no-docker --db-url "$DB_URL_V4" --schema public > docs/architecture/DBschema/schema.sql
 
       - name: Commit changes
         run: |
