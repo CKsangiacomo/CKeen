@@ -1,0 +1,37 @@
+name: Supabase Schema Sync
+
+on:
+  schedule:
+    - cron: "0 2 * * *"   # every day at 2am UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  schema-dump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        run: |
+          npm install -g supabase
+
+      - name: Dump public schema
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          mkdir -p supabase
+          supabase db dump \
+            --db-url "$SUPABASE_DB_URL" \
+            --schema public \
+            > supabase/schema.sql
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add supabase/schema.sql
+          git commit -m "chore(schema): update schema [skip ci]" || echo "No changes to commit"
+          git push
