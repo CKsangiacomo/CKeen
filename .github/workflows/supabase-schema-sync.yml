@@ -1,62 +1,138 @@
-name: Supabase Schema Sync
+```yaml
+name: Sync Supabase Schema
 
 on:
-  workflow_dispatch: {}
   schedule:
-    - cron: "0 2 * * *"   # daily at 02:00 UTC
+    - cron: '0 2 * * *'  # Daily at 02:00 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: schema-sync
+  cancel-in-progress: false
 
 permissions:
   contents: write
 
 jobs:
-  schema-dump:
+  dump-schema:
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install Supabase CLI
+        with:
+          fetch-depth: 0
+      
+      - name: Install PostgreSQL client
         run: |
-          set -euo pipefail
-          rm -f /tmp/supabase /tmp/supabase.tgz || true
-          curl -L -o /tmp/supabase.tgz \
-            https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz
-          tar -xzf /tmp/supabase.tgz -C /tmp
-          sudo mv -f /tmp/supabase /usr/local/bin/supabase
-          sudo chmod +x /usr/local/bin/supabase
-          supabase --version
-
-      # Dump the public schema into docs/architecture/DBschema/schema.sql
-      - name: Dump public schema (force IPv4, SSL)
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-16 dnsutils
+      
+      - name: Dump public schema
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -euo pipefail
-
-          # 1) Resolve the IPv4 address of your Supabase DB host
-          DB_HOST="$(echo "$SUPABASE_DB_URL" | sed -E 's|^.*://[^@]*@([^/:]+).*|\1|')"
-          IPV4="$(getent ahostsv4 "$DB_HOST" | awk '{print $1; exit}')"
-
-          if [ -z "$IPV4" ]; then
-            echo "Could not resolve IPv4 for $DB_HOST"
+          
+          # Extract components from DB URL
+          echo "::group::Parsing connection string"
+          if [[ ! "$SUPABASE_DB_URL" =~ postgres(ql)?://([^:]+):([^@]+)@([^:/]+)(:([0-9]+))?(/(.+))? ]]; then
+            echo "ERROR: Cannot parse SUPABASE_DB_URL"
             exit 1
           fi
-
-          # 2) Append hostaddr & sslmode to the URI so libpq uses IPv4 and SSL
-          #    (URI query parameters are supported by libpq)
-          if [[ "$SUPABASE_DB_URL" == *"?"* ]]; then
-            DB_URL_V4="${SUPABASE_DB_URL}&hostaddr=${IPV4}&sslmode=require"
-          else
-            DB_URL_V4="${SUPABASE_DB_URL}?hostaddr=${IPV4}&sslmode=require"
+          
+          DB_USER="${BASH_REMATCH[2]}"
+          DB_PASS="${BASH_REMATCH[3]}"
+          DB_HOST="${BASH_REMATCH[4]}"
+          DB_PORT="${BASH_REMATCH[6]:-5432}"
+          DB_NAME="${BASH_REMATCH[8]:-postgres}"
+          
+          echo "Parsed host: $DB_HOST"
+          echo "Parsed port: $DB_PORT"
+          echo "Parsed database: $DB_NAME"
+          echo "Parsed user: $DB_USER"
+          echo "::endgroup::"
+          
+          # Resolve to IPv4
+          echo "::group::Resolving to IPv4"
+          IPV4=""
+          
+          # Try getent first
+          if command -v getent &> /dev/null; then
+            IPV4=$(getent ahostsv4 "$DB_HOST" 2>/dev/null | head -n1 | awk '{print $1}' || true)
           fi
-
+          
+          # Fallback to dig
+          if [ -z "$IPV4" ]; then
+            echo "getent failed, trying dig..."
+            IPV4=$(dig +short A "$DB_HOST" 2>/dev/null | grep -E '^[0-9]+\.' | head -n1 || true)
+          fi
+          
+          # Final fallback to host command
+          if [ -z "$IPV4" ]; then
+            echo "dig failed, trying host..."
+            IPV4=$(host -t A "$DB_HOST" 2>/dev/null | grep "has address" | head -n1 | awk '{print $4}' || true)
+          fi
+          
+          if [ -z "$IPV4" ]; then
+            echo "ERROR: Could not resolve $DB_HOST to IPv4"
+            exit 1
+          fi
+          
+          echo "Resolved to IPv4: $IPV4"
+          echo "::endgroup::"
+          
+          # Test connection
+          echo "::group::Testing connection"
+          export PGPASSWORD="$DB_PASS"
+          export PGSSLMODE=require
+          export PGHOSTADDR="$IPV4"
+          
+          echo "Testing connection to database..."
+          if ! psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -p "$DB_PORT" \
+               -c "SELECT version();" > /dev/null 2>&1; then
+            echo "ERROR: Connection test failed"
+            exit 1
+          fi
+          echo "Connection successful"
+          echo "::endgroup::"
+          
+          # Create directory if needed
           mkdir -p docs/architecture/DBschema
-          # Use Supabase CLI without Docker to avoid more networking surprises
-          supabase db dump --no-docker --db-url "$DB_URL_V4" --schema public > docs/architecture/DBschema/schema.sql
-
-      - name: Commit changes
+          
+          # Dump schema
+          echo "::group::Dumping schema"
+          echo "Dumping public schema (structure only)..."
+          
+          pg_dump -h "$DB_HOST" \
+                  -U "$DB_USER" \
+                  -d "$DB_NAME" \
+                  -p "$DB_PORT" \
+                  --schema=public \
+                  --schema-only \
+                  --no-owner \
+                  --no-privileges \
+                  --no-tablespaces \
+                  --no-security-labels \
+                  --no-comments \
+                  --no-publications \
+                  --no-subscriptions \
+                  -f docs/architecture/DBschema/schema.sql
+          
+          echo "Schema dumped successfully"
+          echo "::endgroup::"
+      
+      - name: Commit changes if any
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add docs/architecture/DBschema/schema.sql
-          git commit -m "chore(schema): update schema [skip ci]" || echo "No changes to commit"
-          git push
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          if git diff --quiet docs/architecture/DBschema/schema.sql 2>/dev/null; then
+            echo "No schema changes detected"
+          else
+            git add docs/architecture/DBschema/schema.sql
+            git commit -m "chore(schema): update schema [skip ci]"
+            git push
+            echo "Schema changes committed"
+          fi
+```
