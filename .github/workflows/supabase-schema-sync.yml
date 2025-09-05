@@ -1,103 +1,54 @@
-name: Sync Supabase Schema
+name: Supabase Schema Sync
 
 on:
-  schedule:
-    - cron: '0 2 * * *'  # Daily at 02:00 UTC
   workflow_dispatch:
-
-concurrency:
-  group: schema-sync
-  cancel-in-progress: false
+  schedule:
+    - cron: '5 2 * * *'   # daily at 02:05 UTC
 
 permissions:
   contents: write
 
 jobs:
-  dump-schema:
+  dump:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Install PostgreSQL client
         run: |
           sudo apt-get update
-          sudo apt-get install -y postgresql-client-16 dnsutils
+          sudo apt-get install -y postgresql-client
 
-      - name: Dump public schema
+      - name: Dump public schema (pg_dump over SSL)
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -euo pipefail
-
-          echo "::group::Resolve DB host to IPv4"
-          # Extract host from URI without exposing credentials
-          HOST=$(printf '%s' "$SUPABASE_DB_URL" | sed -E 's#^postgres(ql)?://[^@]+@([^:/?]+).*#\2#')
-          if [ -z "${HOST:-}" ]; then
-            echo "ERROR: Could not extract host from SUPABASE_DB_URL"
-            exit 1
-          fi
-          echo "DB host: $HOST"
-
-          # Resolve IPv4
-          IPV4=""
-          if command -v getent >/dev/null 2>&1; then
-            IPV4=$(getent ahostsv4 "$HOST" | awk '{print $1; exit}' || true)
-          fi
-          if [ -z "$IPV4" ] && command -v dig >/dev/null 2>&1; then
-            IPV4=$(dig +short A "$HOST" | head -n1 || true)
-          fi
-          if [ -z "$IPV4" ] && command -v host >/dev/null 2>&1; then
-            IPV4=$(host -t A "$HOST" | awk '/has address/ {print $4; exit}' || true)
-          fi
-          if [ -z "$IPV4" ]; then
-            echo "ERROR: Failed to resolve $HOST to IPv4"
-            exit 1
-          fi
-          echo "Resolved IPv4: $IPV4"
-          echo "::endgroup::"
-
-          # Test connection
-          echo "::group::Testing connection"
-          export PGSSLMODE=require
-          echo "Testing connection to database..."
-          if ! psql "$SUPABASE_DB_URL" -c "SELECT version();" > /dev/null 2>&1; then
-            echo "ERROR: Connection test failed"
-            exit 1
-          fi
-          echo "Connection successful"
-          echo "::endgroup::"
-
-          # Create directory if needed
           mkdir -p docs/architecture/DBschema
 
-          # Dump schema
-          echo "::group::Dumping schema"
-          pg_dump "$SUPABASE_DB_URL" \
-                  --schema=public \
-                  --schema-only \
-                  --no-owner \
-                  --no-privileges \
-                  --no-tablespaces \
-                  --no-security-labels \
-                  --no-comments \
-                  -f docs/architecture/DBschema/schema.sql
-          echo "Schema dumped successfully"
-          echo "::endgroup::"
+          # Optional: quick connectivity probe with clear error
+          echo "Probing DB connectivity…"
+          psql "${URL}?sslmode=require" -Atqc 'select 1' >/dev/null
 
-      - name: Commit changes if any
+          # Dump structure only
+          pg_dump "${URL}?sslmode=require" \
+            --schema=public \
+            --schema-only \
+            --no-owner \
+            --no-privileges \
+            --if-exists \
+            > docs/architecture/DBschema/schema.sql
+
+      - name: Commit if schema changed
         run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-
-          if git diff --quiet docs/architecture/DBschema/schema.sql 2>/dev/null; then
-            echo "No schema changes detected"
-          else
+          set -e
+          if ! git diff --quiet -- docs/architecture/DBschema/schema.sql; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
             git add docs/architecture/DBschema/schema.sql
             git commit -m "chore(schema): update schema [skip ci]"
             git push
-            echo "Schema changes committed"
+          else
+            echo "No schema changes"
           fi
