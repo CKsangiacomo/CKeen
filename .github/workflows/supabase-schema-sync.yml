@@ -15,12 +15,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # Install Supabase CLI (official Linux binary)
-      - name: Install Supabase CLI
+            - name: Install Supabase CLI
         run: |
-          curl -L https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz \
-          | tar -xz
-          sudo mv supabase /usr/local/bin/supabase
+          set -euo pipefail
+          rm -f /tmp/supabase /tmp/supabase.tgz || true
+          curl -L -o /tmp/supabase.tgz \
+            https://github.com/supabase/cli/releases/latest/download/supabase_linux_amd64.tar.gz
+          tar -xzf /tmp/supabase.tgz -C /tmp
+          sudo mv -f /tmp/supabase /usr/local/bin/supabase
+          sudo chmod +x /usr/local/bin/supabase
           supabase --version
 
       # Dump the public schema into docs/architecture/DBschema/schema.sql
