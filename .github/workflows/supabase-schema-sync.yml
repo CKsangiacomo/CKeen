@@ -20,25 +20,50 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client
 
-      - name: Dump public schema (pg_dump over SSL)
+      - name: Dump public schema (pg_dump over SSL, force IPv4)
         env:
           URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -euo pipefail
           mkdir -p docs/architecture/DBschema
 
-          # Optional: quick connectivity probe with clear error
-          echo "Probing DB connectivity…"
-          psql "${URL}?sslmode=require" -Atqc 'select 1' >/dev/null
+          # Tools for DNS
+          sudo apt-get update -y
+          sudo apt-get install -y dnsutils >/dev/null
 
-          # Dump structure only
-          pg_dump "${URL}?sslmode=require" \
+          # Extract host from connection string (no secrets echoed)
+          HOST=$(printf '%s' "$URL" | sed -E 's#^postgres(ql)?://[^@]+@([^:/?]+).*#\2#')
+          if [ -z "${HOST:-}" ]; then
+            echo "Could not parse host from SUPABASE_DB_URL"; exit 1
+          fi
+          echo "DB host: $HOST"
+
+          # Resolve IPv4 (A record)
+          IPV4=$(dig +short A "$HOST" | head -n1)
+          if [ -z "${IPV4:-}" ]; then
+            echo "Failed to resolve $HOST to IPv4"; exit 1
+          fi
+          echo "Resolved IPv4: $IPV4"
+
+          # Add hostaddr=<IPv4> to the URL so libpq dials IPv4 even if DNS returns IPv6
+          SEP='?'
+          case "$URL" in *\?*) SEP='&';; esac
+          URL4="${URL}${SEP}sslmode=require&hostaddr=${IPV4}"
+
+          echo "Probing DB connectivity (IPv4)…"
+          PGPASSWORD=$(printf '%s' "$URL" | sed -E 's#^postgres(ql)?://([^:]+):([^@]+)@.*#\3#') \
+          psql "$URL4" -Atqc "select 1" >/dev/null
+
+          echo "Dumping schema…"
+          pg_dump "$URL4" \
             --schema=public \
             --schema-only \
             --no-owner \
             --no-privileges \
             --if-exists \
             > docs/architecture/DBschema/schema.sql
+
+          echo "Schema dump complete."
 
       - name: Commit if schema changed
         run: |
