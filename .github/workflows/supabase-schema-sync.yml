@@ -21,92 +21,62 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Install PostgreSQL client
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client-16 dnsutils
-      
+
       - name: Dump public schema
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -euo pipefail
-          
-          # Extract components from DB URL
-          echo "::group::Parsing connection string"
-          if [[ ! "$SUPABASE_DB_URL" =~ postgres(ql)?://([^:]+):([^@]+)@([^:/]+)(:([0-9]+))?(/(.+))? ]]; then
-            echo "ERROR: Cannot parse SUPABASE_DB_URL"
+
+          echo "::group::Resolve DB host to IPv4"
+          # Extract host from URI without exposing credentials
+          HOST=$(printf '%s' "$SUPABASE_DB_URL" | sed -E 's#^postgres(ql)?://[^@]+@([^:/?]+).*#\2#')
+          if [ -z "${HOST:-}" ]; then
+            echo "ERROR: Could not extract host from SUPABASE_DB_URL"
             exit 1
           fi
-          
-          DB_USER="${BASH_REMATCH[2]}"
-          DB_PASS="${BASH_REMATCH[3]}"
-          DB_HOST="${BASH_REMATCH[4]}"
-          DB_PORT="${BASH_REMATCH[6]:-5432}"
-          DB_NAME="${BASH_REMATCH[8]:-postgres}"
-          
-          echo "Parsed host: $DB_HOST"
-          echo "Parsed port: $DB_PORT"
-          echo "Parsed database: $DB_NAME"
-          echo "Parsed user: $DB_USER"
-          echo "::endgroup::"
-          
-          # Resolve to IPv4
-          echo "::group::Resolving to IPv4"
+          echo "DB host: $HOST"
+
+          # Resolve IPv4
           IPV4=""
-          
-          # Try getent first
-          if command -v getent &> /dev/null; then
-            IPV4=$(getent ahostsv4 "$DB_HOST" 2>/dev/null | head -n1 | awk '{print $1}' || true)
+          if command -v getent >/dev/null 2>&1; then
+            IPV4=$(getent ahostsv4 "$HOST" | awk '{print $1; exit}' || true)
           fi
-          
-          # Fallback to dig
-          if [ -z "$IPV4" ]; then
-            echo "getent failed, trying dig..."
-            IPV4=$(dig +short A "$DB_HOST" 2>/dev/null | grep -E '^[0-9]+\.' | head -n1 || true)
+          if [ -z "$IPV4" ] && command -v dig >/dev/null 2>&1; then
+            IPV4=$(dig +short A "$HOST" | head -n1 || true)
           fi
-          
-          # Final fallback to host command
-          if [ -z "$IPV4" ]; then
-            echo "dig failed, trying host..."
-            IPV4=$(host -t A "$DB_HOST" 2>/dev/null | grep "has address" | head -n1 | awk '{print $4}' || true)
+          if [ -z "$IPV4" ] && command -v host >/dev/null 2>&1; then
+            IPV4=$(host -t A "$HOST" | awk '/has address/ {print $4; exit}' || true)
           fi
-          
           if [ -z "$IPV4" ]; then
-            echo "ERROR: Could not resolve $DB_HOST to IPv4"
+            echo "ERROR: Failed to resolve $HOST to IPv4"
             exit 1
           fi
-          
-          echo "Resolved to IPv4: $IPV4"
+          echo "Resolved IPv4: $IPV4"
           echo "::endgroup::"
-          
+
           # Test connection
           echo "::group::Testing connection"
-          export PGPASSWORD="$DB_PASS"
           export PGSSLMODE=require
-          export PGHOSTADDR="$IPV4"
-          
           echo "Testing connection to database..."
-          if ! psql -h "$DB_HOST" -U "$DB_USER" -d "$DB_NAME" -p "$DB_PORT" \
-               -c "SELECT version();" > /dev/null 2>&1; then
+          if ! psql "$SUPABASE_DB_URL" -c "SELECT version();" > /dev/null 2>&1; then
             echo "ERROR: Connection test failed"
             exit 1
           fi
           echo "Connection successful"
           echo "::endgroup::"
-          
+
           # Create directory if needed
           mkdir -p docs/architecture/DBschema
-          
+
           # Dump schema
           echo "::group::Dumping schema"
-          echo "Dumping public schema (structure only)..."
-          
-          pg_dump -h "$DB_HOST" \
-                  -U "$DB_USER" \
-                  -d "$DB_NAME" \
-                  -p "$DB_PORT" \
+          pg_dump "$SUPABASE_DB_URL" \
                   --schema=public \
                   --schema-only \
                   --no-owner \
@@ -114,18 +84,15 @@ jobs:
                   --no-tablespaces \
                   --no-security-labels \
                   --no-comments \
-                  --no-publications \
-                  --no-subscriptions \
                   -f docs/architecture/DBschema/schema.sql
-          
           echo "Schema dumped successfully"
           echo "::endgroup::"
-      
+
       - name: Commit changes if any
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          
+
           if git diff --quiet docs/architecture/DBschema/schema.sql 2>/dev/null; then
             echo "No schema changes detected"
           else
@@ -134,4 +101,3 @@ jobs:
             git push
             echo "Schema changes committed"
           fi
-```
