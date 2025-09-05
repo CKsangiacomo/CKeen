@@ -1,79 +1,40 @@
-name: Supabase Schema Sync
+name: Document Schema
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '5 2 * * *'   # daily at 02:05 UTC
+    - cron: '0 2 * * *'   # Daily at 02:00 UTC
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  dump:
+  document:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install PostgreSQL client
+      - name: Install tbls (schema doc generator)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client
+          curl -Ls https://github.com/k1LoW/tbls/releases/download/v1.70.0/tbls_v1.70.0_linux_amd64.tar.gz \
+          | tar xz
+          sudo mv tbls /usr/local/bin/
 
-      - name: Dump public schema (pg_dump over SSL, force IPv4)
+      - name: Generate docs to docs/schema
         env:
-          URL: ${{ secrets.SUPABASE_DB_URL }}
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
           set -euo pipefail
-          mkdir -p docs/architecture/DBschema
+          mkdir -p docs/schema
+          # tbls will connect read-only and output Markdown files under docs/schema
+          tbls doc "$DATABASE_URL" docs/schema --force
 
-          # Tools for DNS
-          sudo apt-get update -y
-          sudo apt-get install -y dnsutils >/dev/null
-
-          # Extract host from connection string (no secrets echoed)
-          HOST=$(printf '%s' "$URL" | sed -E 's#^postgres(ql)?://[^@]+@([^:/?]+).*#\2#')
-          if [ -z "${HOST:-}" ]; then
-            echo "Could not parse host from SUPABASE_DB_URL"; exit 1
-          fi
-          echo "DB host: $HOST"
-
-          # Resolve IPv4 (A record)
-          IPV4=$(dig +short A "$HOST" | head -n1)
-          if [ -z "${IPV4:-}" ]; then
-            echo "Failed to resolve $HOST to IPv4"; exit 1
-          fi
-          echo "Resolved IPv4: $IPV4"
-
-          # Add hostaddr=<IPv4> to the URL so libpq dials IPv4 even if DNS returns IPv6
-          SEP='?'
-          case "$URL" in *\?*) SEP='&';; esac
-          URL4="${URL}${SEP}sslmode=require&hostaddr=${IPV4}"
-
-          echo "Probing DB connectivity (IPv4)…"
-          PGPASSWORD=$(printf '%s' "$URL" | sed -E 's#^postgres(ql)?://([^:]+):([^@]+)@.*#\3#') \
-          psql "$URL4" -Atqc "select 1" >/dev/null
-
-          echo "Dumping schema…"
-          pg_dump "$URL4" \
-            --schema=public \
-            --schema-only \
-            --no-owner \
-            --no-privileges \
-            --if-exists \
-            > docs/architecture/DBschema/schema.sql
-
-          echo "Schema dump complete."
-
-      - name: Commit if schema changed
+      - name: Commit changes (if any)
         run: |
-          set -e
-          if ! git diff --quiet -- docs/architecture/DBschema/schema.sql; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add docs/architecture/DBschema/schema.sql
-            git commit -m "chore(schema): update schema [skip ci]"
-            git push
-          else
-            echo "No schema changes"
-          fi
+          git config user.name "GitHub Actions"
+          git config user.email "action@github.com"
+          git add docs/schema/
+          git diff --staged --quiet || git commit -m "docs: update schema [skip ci]"
+          git push
