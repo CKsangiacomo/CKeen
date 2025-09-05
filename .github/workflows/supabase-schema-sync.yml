@@ -14,8 +14,7 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
-
-            - name: Install Supabase CLI
+      - name: Install Supabase CLI
         run: |
           set -euo pipefail
           rm -f /tmp/supabase /tmp/supabase.tgz || true
