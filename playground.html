@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="dieter/components/form.css">
     <link rel="stylesheet" href="dieter/components/choice.css">
     <link rel="stylesheet" href="dieter/components/textarea.css">
+    <link rel="stylesheet" href="dieter/components/form-validation.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -291,6 +292,58 @@
             <select id="sel4" class="diet-select diet-select--sm"><option>Small</option></select>
             <select class="diet-select"><option>Medium</option></select>
             <select class="diet-select diet-select--lg"><option>Large</option></select>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Form Validation Patterns</h2>
+        <div class="stack">
+
+          <!-- Validation Summary (Error) -->
+          <div class="diet-validate-summary diet-validate-summary--error" role="alert" aria-live="assertive">
+            <span class="diet-validate-summary__icon" aria-hidden="true"></span>
+            <div>
+              <strong>There are problems with your submission.</strong>
+              <div>Please fix the highlighted fields below. <a href="#v-email">Jump to email</a></div>
+            </div>
+          </div>
+
+          <!-- Email (error) -->
+          <div class="diet-input-field" id="v-email" data-state="error">
+            <label class="diet-label" for="email1">Email</label>
+            <input id="email1" class="diet-input" type="email" aria-invalid="true" aria-describedby="email1-err" placeholder="you@company.com">
+            <p class="diet-inline-msg diet-inline-msg--error" id="email1-err">Enter a valid email address.</p>
+          </div>
+
+          <!-- Bio (warning) -->
+          <div class="diet-textarea-field" data-state="warning">
+            <label class="diet-label" for="bio1">Bio</label>
+            <textarea id="bio1" class="diet-textarea" aria-describedby="bio1-warn" placeholder="Max 200 chars"></textarea>
+            <p class="diet-inline-msg diet-inline-msg--warning" id="bio1-warn">You’re nearing the 200 character limit.</p>
+          </div>
+
+          <!-- Country (success) -->
+          <div class="diet-select-field" data-state="success">
+            <label class="diet-label" for="country1">Country</label>
+            <select id="country1" class="diet-select" aria-describedby="country1-ok">
+              <option>United States</option>
+              <option>Canada</option>
+              <option>Italy</option>
+            </select>
+            <p class="diet-inline-msg diet-inline-msg--success" id="country1-ok">Looks good!</p>
+          </div>
+
+          <!-- Success summary example -->
+          <div class="diet-validate-summary diet-validate-summary--success" role="status" aria-live="polite">
+            <span class="diet-validate-summary__icon" aria-hidden="true"></span>
+            <div>
+              <strong>All checks passed.</strong>
+              <div>Your form is ready to submit.</div>
+            </div>
           </div>
 
         </div>
