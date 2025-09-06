@@ -1,0 +1,76 @@
+/* Dieter Choice Controls v0 — checkbox & radio (tokens-only, native) */
+.diet-choice-field { display:grid; gap: var(--space-1); }
+.diet-choice-row  { display:flex; align-items:center; gap: var(--space-2); min-height: 2.75rem; } /* ≥44px touch */
+
+:root {
+  /* Fallbacks in case tokens missing */
+  --_choice-accent: var(--color-primary, #3b82f6);
+  --_choice-bg:     var(--color-surface, #fff);
+  --_choice-fg:     var(--color-text-primary, #111);
+  --_choice-bd:     var(--color-border, #d0d5dd);
+}
+
+/* Normalize native inputs */
+.diet-checkbox,
+.diet-radio {
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  min-inline-size: 1.125rem;
+  min-block-size: 1.125rem;
+  accent-color: var(--_choice-accent);
+  background: var(--_choice-bg);
+  color: var(--_choice-fg);
+  border: 1px solid var(--_choice-bd);
+  border-radius: 0.25rem; /* radio will override */
+  outline: none;
+  margin: 0; /* rely on layout gaps */
+}
+
+/* Radio shape */
+.diet-radio { border-radius: 999px; }
+
+/* Sizes */
+.diet-choice--sm { inline-size: 1rem;   block-size: 1rem; }
+.diet-choice--lg { inline-size: 1.25rem; block-size: 1.25rem; }
+
+/* Hover/Active feedback via state layers on the row */
+.diet-choice-row:hover  { background: color-mix(in oklab, transparent, var(--state-hover, rgba(0,0,0,.05)) 8%); border-radius: var(--radius-2, 0.375rem); }
+.diet-choice-row:active { background: color-mix(in oklab, transparent, var(--state-press, rgba(0,0,0,.1)) 12%); }
+
+/* Focus ring (applies when focusing the input) */
+.diet-checkbox:focus-visible,
+.diet-radio:focus-visible {
+  box-shadow:
+    0 0 0 var(--focus-ring-offset, 2px) var(--color-bg, #fff),
+    0 0 0 calc(var(--focus-ring-width, 2px) + var(--focus-ring-offset, 2px)) var(--focus-ring-color, var(--color-primary));
+  border-color: var(--focus-ring-color, var(--color-primary));
+  border-radius: 0.375rem;
+}
+.diet-radio:focus-visible { border-radius: 999px; }
+
+/* Disabled */
+.diet-checkbox:disabled,
+.diet-radio:disabled { opacity: .55; cursor: not-allowed; }
+
+/* Label text */
+.diet-choice-label { color: var(--color-text-primary); line-height: var(--lh-body); }
+.diet-choice-hint  { color: var(--color-text-tertiary, color-mix(in oklab, var(--color-text-primary), transparent 40%)); font-size: 0.875rem; }
+.diet-choice-error { color: var(--color-danger, #d93025); font-size: 0.875rem; }
+
+/* Error state */
+.diet-choice-field[data-state="error"] .diet-checkbox,
+.diet-choice-field[data-state="error"] .diet-radio,
+.diet-checkbox[aria-invalid="true"],
+.diet-radio[aria-invalid="true"] {
+  border-color: var(--color-danger, #d93025);
+  background: color-mix(in oklab, var(--_choice-bg), var(--color-danger, #d93025) 6%);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .diet-choice-row { transition: none; }
+}
+
+/* High-contrast inherits color/border from tokens */
+
+
