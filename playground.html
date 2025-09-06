@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Dieter Playground</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+
+    <!-- Inter from Google Fonts (approved, deterministic source) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Dieter tokens -->
+    <link rel="stylesheet" href="dieter/tokens/tokens.css">
+
+    <style>
+      body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
+      main { padding: var(--space-6); max-width: 60rem; margin: 0 auto; }
+      h1 { margin: 0 0 var(--space-4); }
+      p { color: var(--color-text-muted); }
+      .row { display: flex; gap: var(--space-4); align-items: center; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Hello Dieter</h1>
+      <p>This page uses Inter + Dieter tokens. Toggle OS dark mode; set <code>data-theme="hc"</code> on &lt;html&gt; to test high-contrast.</p>
+      <div class="row">
+        <button class="diet-btn">Primary Button</button>
+        <a class="diet-link" href="#">Link Example</a>
+      </div>
+      <div class="diet-surface" style="margin-top: var(--space-6);">
+        Surface area demo with spacing and border tokens.
+      </div>
+    </main>
+  </body>
+  </html>
+
+
