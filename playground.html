@@ -31,6 +31,8 @@
     <link rel="stylesheet" href="dieter/components/breadcrumb.css">
     <link rel="stylesheet" href="dieter/components/modal.css">
     <link rel="stylesheet" href="dieter/components/toast.css">
+    <link rel="stylesheet" href="dieter/components/tabs.css">
+    <link rel="stylesheet" href="dieter/components/accordion.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -64,6 +66,57 @@
         <div class="row">
           <button class="diet-btn">Primary Button</button>
           <a class="diet-link" href="#">Link Example</a>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Navigation — Tabs & Accordion</h2>
+        <div class="stack">
+
+          <!-- Tabs (CSS-only via :target) -->
+          <nav class="diet-tabs" aria-label="Sample tabs">
+            <div class="diet-tabs__list" role="tablist">
+              <a class="diet-tab" role="tab" href="#tab-overview" aria-controls="tab-overview" aria-current="page">Overview</a>
+              <a class="diet-tab" role="tab" href="#tab-details"  aria-controls="tab-details">Details</a>
+              <a class="diet-tab" role="tab" href="#tab-usage"    aria-controls="tab-usage">Usage</a>
+            </div>
+            <div class="diet-tabs__panels">
+              <section id="tab-overview" class="diet-tabpanel is-default" role="tabpanel" tabindex="-1" aria-labelledby="tab-overview">
+                <p>Overview content. Uses tokens-only chrome and is visible by default (no hash).</p>
+              </section>
+              <section id="tab-details" class="diet-tabpanel" role="tabpanel" tabindex="-1" aria-labelledby="tab-details">
+                <p>Details content. Shows when the URL hash targets <code>#tab-details</code>.</p>
+              </section>
+              <section id="tab-usage" class="diet-tabpanel" role="tabpanel" tabindex="-1" aria-labelledby="tab-usage">
+                <p>Usage content. Shows when the URL hash targets <code>#tab-usage</code>.</p>
+              </section>
+            </div>
+          </nav>
+
+          <!-- Accordion (native details/summary) -->
+          <div class="diet-accordion" aria-label="Sample accordion">
+            <details>
+              <summary><span class="diet-accordion__chev" aria-hidden="true"></span><strong>Account</strong></summary>
+              <div class="diet-accordion__panel">
+                <p>Manage profile, security, and preferences with accessible, native controls.</p>
+              </div>
+            </details>
+            <details>
+              <summary><span class="diet-accordion__chev" aria-hidden="true"></span><strong>Billing</strong></summary>
+              <div class="diet-accordion__panel">
+                <p>Payment methods, invoices, and usage breakdown live here.</p>
+              </div>
+            </details>
+            <details>
+              <summary><span class="diet-accordion__chev" aria-hidden="true"></span><strong>Notifications</strong></summary>
+              <div class="diet-accordion__panel">
+                <p>Email and push notifications, digest frequency, and message filters.</p>
+              </div>
+            </details>
+          </div>
+
         </div>
       </section>
 
