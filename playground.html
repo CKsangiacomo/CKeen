@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="dieter/tokens/tokens.css">
     <link rel="stylesheet" href="dieter/components/button.css">
     <link rel="stylesheet" href="dieter/components/input.css">
+    <link rel="stylesheet" href="dieter/components/select.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -157,6 +158,49 @@
             <input class="diet-input" placeholder="Medium">
             <input class="diet-input diet-input--lg" placeholder="Large">
           </div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Selects (native)</h2>
+        <div class="stack">
+
+          <div class="diet-select-field">
+            <label class="diet-label" for="sel1">Country</label>
+            <select id="sel1" class="diet-select" aria-describedby="sel1-help">
+              <option value="" disabled selected class="diet-select-placeholder">Select a country</option>
+              <option>United States</option>
+              <option>Canada</option>
+              <option>United Kingdom</option>
+            </select>
+            <p class="diet-select-help" id="sel1-help">Used for localization and taxes.</p>
+          </div>
+
+          <div class="diet-select-field" data-state="error">
+            <label class="diet-label" for="sel2">Plan</label>
+            <select id="sel2" class="diet-select" aria-invalid="true" aria-describedby="sel2-err">
+              <option value="" disabled selected class="diet-select-placeholder">Choose a plan</option>
+              <option>Free</option><option>Pro</option><option>Enterprise</option>
+            </select>
+            <p class="diet-select-error" id="sel2-err">Please pick a plan.</p>
+          </div>
+
+          <div class="diet-select-field">
+            <label class="diet-label" for="sel3">Read-only (disabled)</label>
+            <select id="sel3" class="diet-select" disabled>
+              <option>Unavailable</option>
+            </select>
+          </div>
+
+          <div class="diet-select-field">
+            <label class="diet-label" for="sel4">Sizes</label>
+            <select id="sel4" class="diet-select diet-select--sm"><option>Small</option></select>
+            <select class="diet-select"><option>Medium</option></select>
+            <select class="diet-select diet-select--lg"><option>Large</option></select>
+          </div>
+
         </div>
       </section>
     </main>
