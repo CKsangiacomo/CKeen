@@ -5,7 +5,7 @@
     <title>Dieter Playground</title>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
 
-    <!-- Inter from Google Fonts (approved, deterministic source) -->
+    <!-- Inter from Google Fonts (approved source) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,57 +15,71 @@
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
-      main { padding: var(--space-6); max-width: 60rem; margin: 0 auto; }
+      main { padding: var(--space-6); max-width: 72rem; margin: 0 auto; }
       h1 { margin: 0 0 var(--space-4); }
       p { color: var(--color-text-muted); }
-      .row { display: flex; gap: var(--space-4); align-items: center; }
+      .row { display: flex; gap: var(--space-4); align-items: center; flex-wrap: wrap; }
+      .grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); }
+      .k { width: 12rem; display:inline-block; color: var(--color-text-muted); }
+      .card { border-radius: var(--radius-4); padding: var(--space-4); }
+      .divider { height:1px; background: var(--color-border); margin: var(--space-6) 0; }
+      .badge { display:inline-block; border-radius: 999px; padding: 0.25rem 0.6rem; font: 600 var(--fs-12)/1 var(--font-ui); }
     </style>
   </head>
   <body>
     <main>
-      <div class="text-title-fluid" style="margin-bottom: var(--space-4);">Dieter Typography Tokens</div>
-      <p class="muted">Inter via Google Fonts. OS dark mode respected; add <code>data-theme="hc"</code> on &lt;html&gt; for high contrast.</p>
-
-      <div class="divider"></div>
-
-      <section class="grid">
-        <div><span class="k">.text-10</span><span class="text-10">Label 10px</span></div>
-        <div><span class="k">.text-11</span><span class="text-11">Label 11px</span></div>
-        <div><span class="k">.text-12</span><span class="text-12">Caption 12px</span></div>
-        <div><span class="k">.text-14</span><span class="text-14">Small 14px</span></div>
-        <div><span class="k">.text-15</span><span class="text-15">UI 15px (default UI)</span></div>
-        <div><span class="k">.text-16</span><span class="text-16">Body 16px (default body)</span></div>
-        <div><span class="k">.text-18</span><span class="text-18">Title 18px</span></div>
-        <div><span class="k">.text-20</span><span class="text-20">Title 20px</span></div>
-        <div><span class="k">.text-24</span><span class="text-24">Display 24px</span></div>
-        <div><span class="k">.text-32</span><span class="text-32">Display 32px</span></div>
-      </section>
-
-      <div class="divider"></div>
-
-      <div class="row">
-        <button class="diet-btn">Primary Button</button>
-        <a class="diet-link" href="#">Link Example</a>
-        <div class="diet-surface">Surface demo with spacing + border tokens.</div>
-      </div>
+      <div class="text-title-fluid m-4">Dieter Tokens Playground</div>
+      <p>Toggle OS dark mode; set <code>data-theme="hc"</code> on &lt;html&gt; to test high-contrast.</p>
 
       <div class="divider"></div>
 
       <section>
-        <div class="text-20" style="margin-bottom: var(--space-4);">Spacing Utilities</div>
-        <div class="row my-4">
-          <div class="diet-surface p-4">.p-4 padding</div>
-          <div class="diet-surface px-6">.px-6 horizontal padding</div>
-          <div class="diet-surface py-2">.py-2 vertical padding</div>
+        <h2 class="text-18 m-2">Buttons & Links</h2>
+        <div class="row">
+          <button class="diet-btn">Primary Button</button>
+          <a class="diet-link" href="#">Link Example</a>
         </div>
-        <div class="row my-6">
-          <div class="diet-surface m-2">.m-2 margin</div>
-          <div class="diet-surface mx-4">.mx-4 horizontal margin</div>
-          <div class="diet-surface my-6">.my-6 vertical margin</div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2 class="text-18 m-2">Color Roles</h2>
+        <div class="row">
+          <span class="badge bg-primary">Primary</span>
+          <span class="badge bg-success">Success</span>
+          <span class="badge bg-warn">Warn</span>
+          <span class="badge bg-danger">Danger</span>
+          <span class="badge bg-surface border-default" style="color:var(--color-text);">Surface</span>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section class="grid">
+        <div class="card bg-surface border-default state-surface">
+          <div class="text-16"><strong>Surface Card</strong></div>
+          <p class="muted">Hover/active overlays demonstrate state layers on surface.</p>
+          <button class="diet-btn">Action</button>
+        </div>
+
+        <div class="card bg-primary state-primary">
+          <div class="text-16">Primary Area</div>
+          <p class="text-14" style="opacity:.9">Hover/active overlays demonstrate state layers on primary.</p>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2 class="text-18 m-2">Spacing Utilities (quick check)</h2>
+        <div class="row">
+          <div class="card bg-surface border-default p-4 m-2">.p-4 .m-2</div>
+          <div class="card bg-surface border-default px-6 py-2 mx-4 my-6">.px-6 .py-2 .mx-4 .my-6</div>
         </div>
       </section>
     </main>
   </body>
-  </html>
+</html>
 
 
