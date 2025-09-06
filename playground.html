@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="dieter/components/choice.css">
     <link rel="stylesheet" href="dieter/components/textarea.css">
     <link rel="stylesheet" href="dieter/components/form-validation.css">
+    <link rel="stylesheet" href="dieter/components/alert.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -292,6 +293,47 @@
             <select id="sel4" class="diet-select diet-select--sm"><option>Small</option></select>
             <select class="diet-select"><option>Medium</option></select>
             <select class="diet-select diet-select--lg"><option>Large</option></select>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Alert</h2>
+        <div class="stack">
+
+          <div class="diet-alert diet-alert--info" role="status" aria-live="polite">
+            <span class="diet-alert__icon" aria-hidden="true"></span>
+            <div>
+              <p class="diet-alert__title">Heads up</p>
+              <p class="diet-alert__body">This is an informational message. <a href="#">Learn more</a></p>
+            </div>
+          </div>
+
+          <div class="diet-alert diet-alert--success" role="status" aria-live="polite">
+            <span class="diet-alert__icon" aria-hidden="true"></span>
+            <div>
+              <p class="diet-alert__title">Success</p>
+              <p class="diet-alert__body">Your settings were saved.</p>
+            </div>
+          </div>
+
+          <div class="diet-alert diet-alert--warning" role="status" aria-live="polite">
+            <span class="diet-alert__icon" aria-hidden="true"></span>
+            <div>
+              <p class="diet-alert__title">Warning</p>
+              <p class="diet-alert__body">You’re nearing your plan limits.</p>
+            </div>
+          </div>
+
+          <div class="diet-alert diet-alert--error" role="alert" aria-live="assertive">
+            <span class="diet-alert__icon" aria-hidden="true"></span>
+            <div>
+              <p class="diet-alert__title">Error</p>
+              <p class="diet-alert__body">Something went wrong. <button type="button">Retry</button></p>
+            </div>
           </div>
 
         </div>
