@@ -33,6 +33,8 @@
     <link rel="stylesheet" href="dieter/components/toast.css">
     <link rel="stylesheet" href="dieter/components/tabs.css">
     <link rel="stylesheet" href="dieter/components/accordion.css">
+    <link rel="stylesheet" href="dieter/components/tooltip.css">
+    <link rel="stylesheet" href="dieter/components/popover.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -66,6 +68,40 @@
         <div class="row">
           <button class="diet-btn">Primary Button</button>
           <a class="diet-link" href="#">Link Example</a>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Feedback — Tooltip & Popover</h2>
+        <div class="stack">
+
+          <!-- Tooltip demo -->
+          <div>
+            <p>Hover or focus the info button to see a tooltip:</p>
+            <div class="diet-tooltip">
+              <button class="diet-tooltip-trigger" aria-describedby="tt-1">Info</button>
+              <div id="tt-1" role="tooltip" class="diet-tooltip-bubble">
+                Tooltips provide short, helpful hints. They appear on hover and keyboard focus.
+              </div>
+            </div>
+          </div>
+
+          <!-- Popover demo (details/summary) -->
+          <div>
+            <details class="diet-popover">
+              <summary aria-haspopup="menu" aria-expanded="false">Quick actions</summary>
+              <div class="diet-popover__panel" role="menu" aria-label="Quick actions">
+                <ul class="diet-popover__list">
+                  <li class="diet-popover__item"><a role="menuitem" href="#">Rename</a></li>
+                  <li class="diet-popover__item"><a role="menuitem" href="#">Duplicate</a></li>
+                  <li class="diet-popover__item"><a role="menuitem" href="#">Archive</a></li>
+                </ul>
+              </div>
+            </details>
+          </div>
+
         </div>
       </section>
 
