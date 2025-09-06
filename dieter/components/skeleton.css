@@ -1,0 +1,35 @@
+/* Dieter Skeleton v0 — tokens-only */
+@keyframes diet-skeleton-shimmer {
+  0%  { background-position: 200% 0; }
+  100%{ background-position: -200% 0; }
+}
+
+.diet-skeleton {
+  --_base: var(--color-surface-muted, color-mix(in oklab, var(--color-surface), var(--color-role-muted, #9aa0a6) 16%));
+  --_hi: var(--color-surface, #fff);
+  display: inline-block;
+  background: linear-gradient(90deg,
+    color-mix(in oklab, var(--_base), var(--_hi) 0%),
+    color-mix(in oklab, var(--_base), var(--_hi) 12%),
+    color-mix(in oklab, var(--_base), var(--_hi) 0%));
+  background-size: 200% 100%;
+  animation: diet-skeleton-shimmer 1.2s linear infinite;
+  border-radius: var(--radius-2, 0.375rem);
+  color: transparent; /* hide accidental text */
+}
+
+/* Shapes */
+.diet-skeleton--text { inline-size: 100%; block-size: 1em; line-height: 1; }
+.diet-skeleton--rect { inline-size: 100%; block-size: var(--space-8); }
+.diet-skeleton--avatar { inline-size: 3rem; block-size: 3rem; border-radius: 50%; }
+
+/* Density sizes */
+.diet-skeleton--sm { block-size: 0.75em; }
+.diet-skeleton--lg { block-size: 1.25em; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .diet-skeleton { animation: none; background-position: 0 0; }
+}
+
+

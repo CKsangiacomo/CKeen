@@ -20,6 +20,8 @@
     <link rel="stylesheet" href="dieter/components/textarea.css">
     <link rel="stylesheet" href="dieter/components/form-validation.css">
     <link rel="stylesheet" href="dieter/components/alert.css">
+    <link rel="stylesheet" href="dieter/components/skeleton.css">
+    <link rel="stylesheet" href="dieter/components/progress.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -333,6 +335,59 @@
             <div>
               <p class="diet-alert__title">Error</p>
               <p class="diet-alert__body">Something went wrong. <button type="button">Retry</button></p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Loading Primitives</h2>
+        <div class="stack">
+
+          <!-- Skeleton -->
+          <div>
+            <h3>Skeleton</h3>
+            <div class="stack" style="gap: var(--space-2); max-inline-size: 40rem;">
+              <span class="diet-skeleton diet-skeleton--text"></span>
+              <span class="diet-skeleton diet-skeleton--text diet-skeleton--sm" style="inline-size: 80%;"></span>
+              <span class="diet-skeleton diet-skeleton--text diet-skeleton--lg" style="inline-size: 60%;"></span>
+              <div style="display:flex; align-items:center; gap: var(--space-3);">
+                <span class="diet-skeleton diet-skeleton--avatar" aria-hidden="true"></span>
+                <div style="flex:1">
+                  <span class="diet-skeleton diet-skeleton--text" style="inline-size: 70%;"></span>
+                  <span class="diet-skeleton diet-skeleton--text diet-skeleton--sm" style="inline-size: 40%; margin-block-start: var(--space-2);"></span>
+                </div>
+              </div>
+              <div class="diet-skeleton diet-skeleton--rect" style="inline-size: 100%;"></div>
+            </div>
+          </div>
+
+          <!-- Progress -->
+          <div>
+            <h3>Progress (determinate)</h3>
+            <div class="stack" style="gap: var(--space-3); max-inline-size: 40rem;">
+              <div class="diet-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="24" aria-label="Uploading">
+                <div class="diet-progress__bar" style="inline-size:24%;"></div>
+                <span class="diet-sr">Uploading — 24%</span>
+              </div>
+
+              <div class="diet-progress diet-progress--success diet-progress--sm" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="68" aria-label="Processing">
+                <div class="diet-progress__bar" style="inline-size:68%;"></div>
+                <span class="diet-sr">Processing — 68%</span>
+              </div>
+
+              <div class="diet-progress diet-progress--warning" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="92" aria-label="Indexing">
+                <div class="diet-progress__bar" style="inline-size:92%;"></div>
+                <span class="diet-sr">Indexing — 92%</span>
+              </div>
+
+              <div class="diet-progress diet-progress--danger diet-progress--lg" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="12" aria-label="Retrying">
+                <div class="diet-progress__bar" style="inline-size:12%;"></div>
+                <span class="diet-sr">Retrying — 12%</span>
+              </div>
             </div>
           </div>
 
