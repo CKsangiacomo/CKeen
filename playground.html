@@ -26,6 +26,9 @@
     <link rel="stylesheet" href="dieter/components/card.css">
     <link rel="stylesheet" href="dieter/components/divider.css">
     <link rel="stylesheet" href="dieter/components/container.css">
+    <link rel="stylesheet" href="dieter/components/table.css">
+    <link rel="stylesheet" href="dieter/components/pagination.css">
+    <link rel="stylesheet" href="dieter/components/breadcrumb.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -60,6 +63,78 @@
           <button class="diet-btn">Primary Button</button>
           <a class="diet-link" href="#">Link Example</a>
         </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Layout Pack B — Table, Pagination, Breadcrumb</h2>
+
+        <!-- Breadcrumb -->
+        <nav class="diet-breadcrumb" aria-label="Breadcrumb">
+          <span class="diet-crumb"><a href="#!">Home</a><span class="diet-crumb__sep">/</span></span>
+          <span class="diet-crumb"><a href="#!">Dashboard</a><span class="diet-crumb__sep">/</span></span>
+          <span class="diet-crumb diet-crumb--truncate" aria-current="page">Quarterly Performance Overview</span>
+        </nav>
+
+        <!-- Table (standard) -->
+        <div class="stack">
+          <table class="diet-table diet-table--zebra" role="table">
+            <thead>
+              <tr><th>Project</th><th>Owner</th><th>Status</th><th>Updated</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td data-label="Project"><a href="#!">Alpha</a></td>
+                <td data-label="Owner">Sofia</td>
+                <td data-label="Status"><span class="diet-badge diet-badge--soft diet-badge--success">On Track</span></td>
+                <td data-label="Updated">Today</td>
+              </tr>
+              <tr>
+                <td data-label="Project"><a href="#!">Beta</a></td>
+                <td data-label="Owner">Jon</td>
+                <td data-label="Status"><span class="diet-badge diet-badge--soft diet-badge--warning">At Risk</span></td>
+                <td data-label="Updated">Yesterday</td>
+              </tr>
+              <tr>
+                <td data-label="Project"><a href="#!">Gamma</a></td>
+                <td data-label="Owner">Priya</td>
+                <td data-label="Status"><span class="diet-badge diet-badge--soft diet-badge--danger">Blocked</span></td>
+                <td data-label="Updated">2 days ago</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Table compact -->
+          <table class="diet-table diet-table--compact" role="table" aria-label="Compact table example">
+            <thead><tr><th>Key</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td data-label="Key">Build</td><td data-label="Value">#1428</td></tr>
+              <tr><td data-label="Key">Branch</td><td data-label="Value">main</td></tr>
+              <tr><td data-label="Key">Commit</td><td data-label="Value"><a href="#!">b9b43ef</a></td></tr>
+            </tbody>
+          </table>
+
+          <!-- Stacked responsive preview (opt-in) -->
+          <div data-table="stacked">
+            <table class="diet-table" role="table" aria-label="Stacked table example">
+              <thead><tr><th>Metric</th><th>Today</th><th>7d</th></tr></thead>
+              <tbody>
+                <tr><td data-label="Metric">Signups</td><td data-label="Today">128</td><td data-label="7d">923</td></tr>
+                <tr><td data-label="Metric">DAU</td><td data-label="Today">2,341</td><td data-label="7d">15,802</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav class="diet-pagination" aria-label="Pagination">
+          <a class="diet-page" href="#!" aria-disabled="true" aria-label="Previous">‹</a>
+          <a class="diet-page" href="!#">1</a>
+          <a class="diet-page" href="#!" aria-current="page">2</a>
+          <a class="diet-page" href="#!">3</a>
+          <a class="diet-page" href="#!" aria-label="Next">›</a>
+        </nav>
       </section>
 
       <div class="divider"></div>
