@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="dieter/components/alert.css">
     <link rel="stylesheet" href="dieter/components/skeleton.css">
     <link rel="stylesheet" href="dieter/components/progress.css">
+    <link rel="stylesheet" href="dieter/components/badge.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -388,6 +389,83 @@
                 <div class="diet-progress__bar" style="inline-size:12%;"></div>
                 <span class="diet-sr">Retrying — 12%</span>
               </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Badge & Tag</h2>
+        <div class="stack">
+
+          <!-- Badges: solid -->
+          <div>
+            <h3 class="text-14">Badges — solid</h3>
+            <div class="diet-badges">
+              <span class="diet-badge diet-badge--md diet-badge--neutral">Neutral</span>
+              <span class="diet-badge diet-badge--md diet-badge--primary">Primary</span>
+              <span class="diet-badge diet-badge--md diet-badge--success">Success</span>
+              <span class="diet-badge diet-badge--md diet-badge--warning">Warning</span>
+              <span class="diet-badge diet-badge--md diet-badge--danger">Danger</span>
+            </div>
+          </div>
+
+          <!-- Badges: soft -->
+          <div>
+            <h3 class="text-14">Badges — soft</h3>
+            <div class="diet-badges">
+              <span class="diet-badge diet-badge--md diet-badge--soft diet-badge--primary">Primary</span>
+              <span class="diet-badge diet-badge--md diet-badge--soft diet-badge--success">Success</span>
+              <span class="diet-badge diet-badge--md diet-badge--soft diet-badge--warning">Warning</span>
+              <span class="diet-badge diet-badge--md diet-badge--soft diet-badge--danger">Danger</span>
+            </div>
+          </div>
+
+          <!-- Tags: outline + dismiss affordance (no JS) -->
+          <div>
+            <h3 class="text-14">Tags — outline</h3>
+            <div class="diet-badges">
+              <span class="diet-tag diet-tag--md diet-tag--neutral">Neutral</span>
+              <span class="diet-tag diet-tag--md diet-tag--primary">Primary</span>
+              <span class="diet-tag diet-tag--md diet-tag--success">Success</span>
+              <span class="diet-tag diet-tag--md diet-tag--warning">Warning</span>
+              <span class="diet-tag diet-tag--md diet-tag--danger">Danger</span>
+            </div>
+          </div>
+
+          <!-- Tags with dismiss button (keyboard focusable) -->
+          <div>
+            <h3 class="text-14">Tags — dismiss affordance</h3>
+            <div class="diet-badges">
+              <span class="diet-tag diet-tag--md diet-tag--primary" role="group" aria-label="Tag: Design">
+                Design
+                <button type="button" class="diet-tag__dismiss" aria-label="Remove tag Design">×</button>
+              </span>
+              <span class="diet-tag diet-tag--md diet-tag--success" role="group" aria-label="Tag: Ready">
+                Ready
+                <button type="button" class="diet-tag__dismiss" aria-label="Remove tag Ready">×</button>
+              </span>
+              <span class="diet-tag diet-tag--md diet-tag--warning" role="group" aria-label="Tag: Review">
+                Review
+                <button type="button" class="diet-tag__dismiss" aria-label="Remove tag Review">×</button>
+              </span>
+            </div>
+            <p class="text-12">Note: dismiss is markup-only for focus/accessibility; no JS behavior in v0.</p>
+          </div>
+
+          <!-- Size matrix -->
+          <div>
+            <h3 class="text-14">Sizes</h3>
+            <div class="diet-badges">
+              <span class="diet-badge diet-badge--sm diet-badge--primary">sm</span>
+              <span class="diet-badge diet-badge--md diet-badge--primary">md</span>
+              <span class="diet-badge diet-badge--lg diet-badge--primary">lg</span>
+              <span class="diet-tag diet-tag--sm diet-tag--neutral">sm</span>
+              <span class="diet-tag diet-tag--md diet-tag--neutral">md</span>
+              <span class="diet-tag diet-tag--lg diet-tag--neutral">lg</span>
             </div>
           </div>
 
