@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="dieter/components/button.css">
     <link rel="stylesheet" href="dieter/components/input.css">
     <link rel="stylesheet" href="dieter/components/select.css">
+    <link rel="stylesheet" href="dieter/components/form.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -48,6 +49,42 @@
         <div class="row">
           <button class="diet-btn">Primary Button</button>
           <a class="diet-link" href="#">Link Example</a>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Form Group (layout + messages)</h2>
+
+        <div class="diet-form-stack">
+
+          <!-- Vertical field with help -->
+          <div class="diet-field">
+            <label class="diet-label diet-label--required" for="fg-email">Email</label>
+            <input id="fg-email" class="diet-input" type="email" placeholder="you@company.com" aria-describedby="fg-email-hint">
+            <p class="diet-hint" id="fg-email-hint">We’ll send receipts here.</p>
+          </div>
+
+          <!-- Horizontal field with error -->
+          <div class="diet-field diet-field--row">
+            <label class="diet-label" for="fg-plan">Plan</label>
+            <select id="fg-plan" class="diet-select" aria-invalid="true" aria-describedby="fg-plan-err">
+              <option>Free</option><option>Pro</option><option>Enterprise</option>
+            </select>
+            <p class="diet-error" id="fg-plan-err">Please choose a valid plan.</p>
+          </div>
+
+          <!-- Compact group with inline actions -->
+          <div class="diet-field diet-field--compact">
+            <label class="diet-label" for="fg-code">Invite code</label>
+            <div class="diet-inline">
+              <input id="fg-code" class="diet-input diet-input--sm" type="text" placeholder="ABC-123">
+              <button class="diet-btn diet-btn--sm">Apply</button>
+            </div>
+            <p class="diet-hint">Optional. Improves onboarding.</p>
+          </div>
+
         </div>
       </section>
 
