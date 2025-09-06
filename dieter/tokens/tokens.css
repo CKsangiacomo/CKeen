@@ -1,4 +1,3 @@
-/* no header comments per spec */
 :root {
   /* typography (Inter first) */
   --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
@@ -50,28 +49,37 @@
   --role-primary-bg: var(--color-accent);
   --role-primary-text: #ffffff;
 
-  --role-success-bg: #34c759;   /* Apple green */
+  --role-success-bg: #34c759;
   --role-success-text: #0b0b0f;
 
-  --role-warn-bg: #ff9f0a;      /* Apple orange */
+  --role-warn-bg: #ff9f0a;
   --role-warn-text: #0b0b0f;
 
-  --role-danger-bg: #ff3b30;    /* Apple red */
+  --role-danger-bg: #ff3b30;
   --role-danger-text: #ffffff;
 
   --role-surface-bg: var(--color-surface);
   --role-surface-text: var(--color-text);
   --role-border: var(--color-border);
 
-  /* state layers (opacity overlays, Material-inspired) */
-  --state-hover-alpha-on-surface: 0.06;  /* black on light surface */
+  /* state layers (opacity overlays) */
+  --state-hover-alpha-on-surface: 0.06;
   --state-active-alpha-on-surface: 0.10;
-  --state-hover-alpha-on-primary: 0.12;  /* white on primary */
+  --state-hover-alpha-on-primary: 0.12;
   --state-active-alpha-on-primary: 0.18;
 
-  /* accessibility */
-  --focus-ring: 2px solid var(--color-accent);
-  --focus-offset: 2px;
+  /* accessibility tokens */
+  --focus-ring-width: 2px;
+  --focus-ring-color: var(--color-accent);
+  --focus-ring-offset: 2px;
+  --min-touch-target: 2.75rem;        /* 44px */
+  --kbd-bg: #111;
+  --kbd-text: #fff;
+
+  /* high contrast helpers */
+  --hc-focus-ring-color: #000;
+  --hc-border: #000;
+  --hc-link: #0042cc;
 
   /* radius */
   --radius-4: 0.5rem;
@@ -85,11 +93,13 @@
     --color-text-muted: rgba(245,246,248,0.72);
     --color-border: rgba(250,250,255,0.18);
 
-    /* state layers in dark: invert overlay bases */
-    --state-hover-alpha-on-surface: 0.08;   /* white veil on dark surface */
+    --state-hover-alpha-on-surface: 0.08;
     --state-active-alpha-on-surface: 0.12;
-    --state-hover-alpha-on-primary: 0.10;   /* also white but slightly lower for dark primaries */
+    --state-hover-alpha-on-primary: 0.10;
     --state-active-alpha-on-primary: 0.16;
+
+    --kbd-bg: #eee;
+    --kbd-text: #111;
   }
 }
 
@@ -114,6 +124,9 @@
   --state-active-alpha-on-surface: 0.16;
   --state-hover-alpha-on-primary: 0.14;
   --state-active-alpha-on-primary: 0.22;
+
+  --focus-ring-color: var(--hc-focus-ring-color);
+  --role-border: var(--hc-border);
 }
 
 /* Typography utilities */
@@ -147,10 +160,9 @@
 .bg-danger { background: var(--role-danger-bg); color: var(--role-danger-text); }
 .border-default { border: 1px solid var(--role-border); }
 
-/* State layer helpers (applies an overlay on hover/active) */
+/* State layer helpers */
 .state-surface:hover { background: linear-gradient(0deg, rgba(0,0,0,var(--state-hover-alpha-on-surface)), rgba(0,0,0,var(--state-hover-alpha-on-surface))), var(--role-surface-bg); }
 .state-surface:active { background: linear-gradient(0deg, rgba(0,0,0,var(--state-active-alpha-on-surface)), rgba(0,0,0,var(--state-active-alpha-on-surface))), var(--role-surface-bg); }
-
 .state-primary:hover { background: linear-gradient(0deg, rgba(255,255,255,var(--state-hover-alpha-on-primary)), rgba(255,255,255,var(--state-hover-alpha-on-primary))), var(--role-primary-bg); }
 .state-primary:active { background: linear-gradient(0deg, rgba(255,255,255,var(--state-active-alpha-on-primary)), rgba(255,255,255,var(--state-active-alpha-on-primary))), var(--role-primary-bg); }
 
@@ -163,11 +175,31 @@
   border: 0;
   border-radius: var(--radius-4);
   padding: 0.625rem 1rem;
+  min-height: var(--min-touch-target);
   cursor: pointer;
 }
-.diet-btn:focus-visible { outline: var(--focus-ring); outline-offset: var(--focus-offset); }
+.diet-btn:focus-visible { outline: var(--focus-ring-width) solid var(--focus-ring-color); outline-offset: var(--focus-ring-offset); }
 .diet-btn:hover { background: linear-gradient(0deg, rgba(255,255,255,var(--state-hover-alpha-on-primary)), rgba(255,255,255,var(--state-hover-alpha-on-primary))), var(--color-accent); }
 .diet-btn:active { background: linear-gradient(0deg, rgba(255,255,255,var(--state-active-alpha-on-primary)), rgba(255,255,255,var(--state-active-alpha-on-primary))), var(--color-accent); }
 
 .diet-link { color: var(--color-accent); text-decoration: none; }
 .diet-link:hover { text-decoration: underline; }
+.diet-link:focus-visible { outline: var(--focus-ring-width) solid var(--focus-ring-color); outline-offset: var(--focus-ring-offset); }
+
+.kbd {
+  display:inline-block; padding: 0.1rem 0.35rem; border-radius: 0.35rem;
+  background: var(--kbd-bg); color: var(--kbd-text);
+  font: 600 var(--fs-12)/1 var(--font-ui);
+}
+
+/* Visually hidden (screen-reader only) */
+.sr-only {
+  position:absolute !important; width:1px !important; height:1px !important;
+  padding:0 !important; margin:-1px !important; overflow:hidden !important;
+  clip:rect(0,0,0,0) !important; white-space:nowrap !important; border:0 !important;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
+}

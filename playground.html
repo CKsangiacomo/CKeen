@@ -24,17 +24,24 @@
       .card { border-radius: var(--radius-4); padding: var(--space-4); }
       .divider { height:1px; background: var(--color-border); margin: var(--space-6) 0; }
       .badge { display:inline-block; border-radius: 999px; padding: 0.25rem 0.6rem; font: 600 var(--fs-12)/1 var(--font-ui); }
+
+      /* skip link */
+      .skip-link {
+        position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;
+      }
+      .skip-link:focus { position:static; width:auto; height:auto; padding: var(--space-2); background: var(--role-primary-bg); color: var(--role-primary-text); border-radius: var(--radius-4); }
     </style>
   </head>
   <body>
-    <main>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <main id="main">
       <div class="text-title-fluid m-4">Dieter Tokens Playground</div>
-      <p>Toggle OS dark mode; set <code>data-theme="hc"</code> on &lt;html&gt; to test high-contrast.</p>
+      <p>Toggle OS dark mode; set <code>data-theme="hc"</code> on &lt;html&gt; to test high-contrast. Press <span class="kbd">Tab</span> to see focus rings.</p>
 
       <div class="divider"></div>
 
       <section>
-        <h2 class="text-18 m-2">Buttons & Links</h2>
+        <h2 class="text-18 m-2">Buttons & Links (with focus ring)</h2>
         <div class="row">
           <button class="diet-btn">Primary Button</button>
           <a class="diet-link" href="#">Link Example</a>
@@ -59,13 +66,24 @@
       <section class="grid">
         <div class="card bg-surface border-default state-surface">
           <div class="text-16"><strong>Surface Card</strong></div>
-          <p class="muted">Hover/active overlays demonstrate state layers on surface.</p>
+          <p class="muted">Hover/active overlays demonstrate state layers on surface. Focus any control to see focus ring.</p>
           <button class="diet-btn">Action</button>
         </div>
 
         <div class="card bg-primary state-primary">
           <div class="text-16">Primary Area</div>
           <p class="text-14" style="opacity:.9">Hover/active overlays demonstrate state layers on primary.</p>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2 class="text-18 m-2">Touch Target & Labels</h2>
+        <div class="row">
+          <button class="diet-btn">Min 44px Height</button>
+          <label class="text-12" for="demo-input">Label (12px allowed)</label>
+          <input id="demo-input" class="p-2 border-default" style="border-radius: var(--radius-4);" placeholder="Focus me with Tab"/>
         </div>
       </section>
 
