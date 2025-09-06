@@ -1,0 +1,68 @@
+/* Dieter Card v0 — tokens-only */
+:root{
+  --_radius-3: var(--radius-3, 0.5rem);
+  --_pad-y: var(--space-4, 1rem);
+  --_pad-x: var(--space-5, 1.25rem);
+  --_gap: var(--space-3, 0.75rem);
+  --_shadow-sm: var(--shadow-sm, 0 1px 2px rgb(0 0 0 / .08));
+  --_shadow-md: var(--shadow-md, 0 2px 8px rgb(0 0 0 / .12));
+}
+
+/* Base card */
+.diet-card{
+  --_bg: var(--color-surface, #fff);
+  --_fg: var(--color-text-primary, #111);
+  --_bd: var(--color-border, #e5e7eb);
+
+  display: grid;
+  gap: var(--_gap);
+  background: var(--_bg);
+  color: var(--_fg);
+  border: 1px solid var(--_bd);
+  border-radius: var(--_radius-3);
+  padding: var(--_pad-y) var(--_pad-x);
+}
+
+/* Density variants */
+.diet-card--compact{
+  --_pad-y: var(--space-3, .75rem);
+  --_pad-x: var(--space-4, 1rem);
+  --_gap: var(--space-2, .5rem);
+}
+
+/* Elevated variant */
+.diet-card--elevated{
+  box-shadow: var(--_shadow-sm);
+  border-color: color-mix(in oklab, var(--_bd), transparent 40%);
+}
+.diet-card--elevated:hover{
+  box-shadow: var(--_shadow-md);
+  background: color-mix(in oklab, var(--_bg), var(--state-hover, rgb(0 0 0 / .06)) 6%);
+}
+
+/* Sections */
+.diet-card__header{ display:flex; align-items:center; gap: var(--space-3, .75rem); }
+.diet-card__title{ font: inherit; font-weight: 600; line-height: var(--lh-title, 1.25); }
+.diet-card__subtitle{ color: var(--color-text-secondary, #4b5563); font-size: .875rem; }
+.diet-card__body{ display: grid; gap: var(--space-3, .75rem); }
+.diet-card__footer{ display:flex; gap: var(--space-3, .75rem); justify-content:flex-end; }
+
+/* Focus visibility for actionable cards */
+.diet-card[tabindex]:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 var(--focus-ring-offset, 2px) var(--color-bg, #fff),
+    0 0 0 calc(var(--focus-ring-width, 2px) + var(--focus-ring-offset, 2px)) var(--focus-ring-color, var(--color-primary));
+}
+
+/* High contrast theme tweaks */
+html[data-theme="hc"] .diet-card--elevated{
+  box-shadow: none;
+  border-width: 2px;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .diet-card--elevated{ transition: none; }
+}
+
+

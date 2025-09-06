@@ -23,6 +23,9 @@
     <link rel="stylesheet" href="dieter/components/skeleton.css">
     <link rel="stylesheet" href="dieter/components/progress.css">
     <link rel="stylesheet" href="dieter/components/badge.css">
+    <link rel="stylesheet" href="dieter/components/card.css">
+    <link rel="stylesheet" href="dieter/components/divider.css">
+    <link rel="stylesheet" href="dieter/components/container.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -56,6 +59,72 @@
         <div class="row">
           <button class="diet-btn">Primary Button</button>
           <a class="diet-link" href="#">Link Example</a>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Layout Pack A — Card, Divider, Container</h2>
+
+        <div class="diet-container diet-stack">
+          <!-- Standard card -->
+          <article class="diet-card">
+            <header class="diet-card__header">
+              <div>
+                <div class="diet-card__title">Standard Card</div>
+                <div class="diet-card__subtitle">Header, body, footer with tokens-only styles</div>
+              </div>
+            </header>
+            <div class="diet-card__body">
+              <p class="text-16">Cards use surface, border, and text role tokens. Density can switch to compact. Elevated adds subtle shadow.</p>
+              <hr class="diet-divider diet-divider--inset">
+              <p class="text-14">This divider demonstrates the inset variant aligned to the card padding.</p>
+            </div>
+            <footer class="diet-card__footer">
+              <button class="diet-btn diet-btn--secondary">Cancel</button>
+              <button class="diet-btn">Primary</button>
+            </footer>
+          </article>
+
+          <!-- Compact + elevated -->
+          <article class="diet-card diet-card--compact diet-card--elevated">
+            <header class="diet-card__header">
+              <div>
+                <div class="diet-card__title">Compact Elevated</div>
+                <div class="diet-card__subtitle">Reduced padding, hover elevation</div>
+              </div>
+            </header>
+            <div class="diet-card__body">
+              <p class="text-14">Great for dense dashboards and side panels.</p>
+            </div>
+            <footer class="diet-card__footer">
+              <button class="diet-btn diet-btn--ghost">Details</button>
+              <button class="diet-btn">Action</button>
+            </footer>
+          </article>
+
+          <!-- Focusable card -->
+          <a class="diet-card diet-card--elevated" href="#!" tabindex="0" aria-label="Open project Alpha">
+            <header class="diet-card__header">
+              <div>
+                <div class="diet-card__title">Focusable Card Link</div>
+                <div class="diet-card__subtitle">Tab to see focus ring via tokens</div>
+              </div>
+            </header>
+            <div class="diet-card__body">
+              <p class="text-14">Cards can be links; focus-visible ring uses Dieter focus tokens.</p>
+            </div>
+          </a>
+
+          <!-- Container wide example -->
+          <div class="diet-container diet-container--wide">
+            <div class="diet-card">
+              <div class="diet-card__body">
+                <p class="text-14">This card sits in a wide container (max-width tokens). Resize the viewport to verify.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
