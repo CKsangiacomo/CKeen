@@ -13,6 +13,7 @@
     <!-- Dieter tokens -->
     <link rel="stylesheet" href="dieter/tokens/tokens.css">
     <link rel="stylesheet" href="dieter/components/button.css">
+    <link rel="stylesheet" href="dieter/components/input.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -119,6 +120,43 @@
           <button class="diet-btn" disabled>Disabled</button>
           <button class="diet-btn diet-btn--primary" data-state="loading" aria-busy="true">Loading</button>
           <a class="diet-btn diet-btn--ghost" href="#" role="button">Link style</a>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Text Inputs</h2>
+
+        <div class="stack">
+          <div class="diet-field">
+            <label class="diet-label" for="ex1">Your name</label>
+            <input id="ex1" class="diet-input" type="text" placeholder="Jane Doe">
+            <p class="diet-help" id="ex1-help">We use this to personalize your experience.</p>
+          </div>
+
+          <div class="diet-field" data-state="error">
+            <label class="diet-label" for="ex2">Email <span class="diet-required"></span></label>
+            <input id="ex2" class="diet-input" type="email" placeholder="you@example.com" aria-invalid="true" aria-describedby="ex2-err">
+            <p class="diet-error" id="ex2-err">Please enter a valid email address.</p>
+          </div>
+
+          <div class="diet-field">
+            <label class="diet-label" for="ex3">Read-only</label>
+            <input id="ex3" class="diet-input" type="text" value="Fixed value" readonly>
+          </div>
+
+          <div class="diet-field">
+            <label class="diet-label" for="ex4">Disabled</label>
+            <input id="ex4" class="diet-input" type="text" placeholder="Cannot edit" disabled>
+          </div>
+
+          <div class="diet-field">
+            <label class="diet-label" for="ex5">Sizes</label>
+            <input id="ex5" class="diet-input diet-input--sm" placeholder="Small">
+            <input class="diet-input" placeholder="Medium">
+            <input class="diet-input diet-input--lg" placeholder="Large">
+          </div>
         </div>
       </section>
     </main>

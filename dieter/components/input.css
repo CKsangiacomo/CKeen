@@ -1,0 +1,66 @@
+/* Dieter Text Input v0 — tokens-only */
+.diet-field { display: grid; gap: var(--space-2); }
+.diet-label {
+  color: var(--color-text-secondary, var(--color-text-primary));
+  font-weight: 500;
+}
+.diet-label .diet-required::after { content: " *"; color: var(--color-danger, #d93025); }
+
+.diet-input {
+  --_bg: var(--color-surface);
+  --_fg: var(--color-text-primary);
+  --_ph: var(--color-text-tertiary, color-mix(in oklab, var(--_fg), transparent 40%));
+  --_bd: var(--color-border);
+  --_radius: var(--radius-3, 0.5rem);
+
+  display: block;
+  inline-size: 100%;
+  min-height: 2.75rem;                /* ≥44px */
+  padding-inline: var(--space-4);
+  padding-block: calc(var(--space-2) + 0.125rem);
+  background: var(--_bg);
+  color: var(--_fg);
+  border: 1px solid var(--_bd);
+  border-radius: var(--_radius);
+  outline: none;
+  transition: border-color 150ms, background-color 150ms, color 150ms, box-shadow 150ms;
+  font: inherit;
+}
+.diet-input::placeholder { color: var(--_ph); }
+
+/* Hover/Active */
+.diet-input:hover { background: color-mix(in oklab, var(--_bg), var(--state-hover) 8%); }
+.diet-input:active { background: color-mix(in oklab, var(--_bg), var(--state-press) 12%); }
+
+/* Focus ring */
+.diet-input:focus-visible {
+  box-shadow:
+    0 0 0 var(--focus-ring-offset, 2px) var(--color-bg, #fff),
+    0 0 0 calc(var(--focus-ring-width, 2px) + var(--focus-ring-offset, 2px)) var(--focus-ring-color, var(--color-primary));
+  border-color: var(--focus-ring-color, var(--color-primary));
+}
+
+/* Sizes */
+.diet-input--sm { min-height: 2.5rem; padding-inline: var(--space-3); }
+.diet-input--lg { min-height: 3rem;   padding-inline: var(--space-5); }
+
+/* Disabled/ReadOnly */
+.diet-input:disabled,
+.diet-input[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
+.diet-input[readonly] { background: color-mix(in oklab, var(--_bg), var(--state-hover) 4%); }
+
+/* Error state */
+.diet-field[data-state="error"] .diet-input,
+.diet-input[aria-invalid="true"] {
+  border-color: var(--color-danger, #d93025);
+  background: color-mix(in oklab, var(--_bg), var(--color-danger, #d93025) 6%);
+}
+.diet-help { color: var(--color-text-tertiary, color-mix(in oklab, var(--_fg), transparent 40%)); font-size: 0.875rem; }
+.diet-error { color: var(--color-danger, #d93025); font-size: 0.875rem; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .diet-input { transition: none; }
+}
+
+
