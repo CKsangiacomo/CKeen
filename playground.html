@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="dieter/components/select.css">
     <link rel="stylesheet" href="dieter/components/form.css">
     <link rel="stylesheet" href="dieter/components/choice.css">
+    <link rel="stylesheet" href="dieter/components/textarea.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -290,6 +291,42 @@
             <select id="sel4" class="diet-select diet-select--sm"><option>Small</option></select>
             <select class="diet-select"><option>Medium</option></select>
             <select class="diet-select diet-select--lg"><option>Large</option></select>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Textarea (native)</h2>
+        <div class="stack">
+
+          <!-- Basic with help -->
+          <div class="diet-textarea-field">
+            <label class="diet-label" for="ta1">About you</label>
+            <textarea id="ta1" class="diet-textarea" placeholder="Tell us something..." aria-describedby="ta1-hint"></textarea>
+            <p class="diet-textarea-hint" id="ta1-hint">Max 500 characters.</p>
+          </div>
+
+          <!-- Error -->
+          <div class="diet-textarea-field" data-state="error">
+            <label class="diet-label" for="ta2">Feedback</label>
+            <textarea id="ta2" class="diet-textarea" aria-invalid="true" aria-describedby="ta2-err">This is too short</textarea>
+            <p class="diet-textarea-error" id="ta2-err">Please provide more details.</p>
+          </div>
+
+          <!-- Disabled & sizes -->
+          <div class="diet-textarea-field">
+            <label class="diet-label" for="ta3">Disabled</label>
+            <textarea id="ta3" class="diet-textarea" disabled>Unavailable</textarea>
+          </div>
+
+          <div class="diet-textarea-field">
+            <label class="diet-label" for="ta4">Sizes</label>
+            <textarea id="ta4" class="diet-textarea diet-textarea--sm" placeholder="Small"></textarea>
+            <textarea class="diet-textarea" placeholder="Medium"></textarea>
+            <textarea class="diet-textarea diet-textarea--lg" placeholder="Large"></textarea>
           </div>
 
         </div>
