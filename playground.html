@@ -12,6 +12,7 @@
 
     <!-- Dieter tokens -->
     <link rel="stylesheet" href="dieter/tokens/tokens.css">
+    <link rel="stylesheet" href="dieter/components/button.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -94,6 +95,30 @@
         <div class="row">
           <div class="card bg-surface border-default p-4 m-2">.p-4 .m-2</div>
           <div class="card bg-surface border-default px-6 py-2 mx-4 my-6">.px-6 .py-2 .mx-4 .my-6</div>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Buttons</h2>
+        <div class="stack">
+          <button class="diet-btn">Default</button>
+          <button class="diet-btn diet-btn--primary">Primary</button>
+          <button class="diet-btn diet-btn--ghost">Ghost</button>
+          <button class="diet-btn diet-btn--danger">Danger</button>
+        </div>
+
+        <div class="stack" style="margin-top: var(--space-4);">
+          <button class="diet-btn diet-btn--primary diet-btn--sm">Small</button>
+          <button class="diet-btn diet-btn--primary">Medium</button>
+          <button class="diet-btn diet-btn--primary diet-btn--lg">Large</button>
+        </div>
+
+        <div class="stack" style="margin-top: var(--space-4);">
+          <button class="diet-btn" disabled>Disabled</button>
+          <button class="diet-btn diet-btn--primary" data-state="loading" aria-busy="true">Loading</button>
+          <a class="diet-btn diet-btn--ghost" href="#" role="button">Link style</a>
         </div>
       </section>
     </main>
