@@ -386,6 +386,84 @@
       </section>
     </main>
   </body>
+  
+  <!-- Dieter Playground Controls: theme + type scale -->
+  <style>
+    .play-controls {
+      position: fixed; inset: 1rem 1rem auto auto;
+      display: grid; gap: .5rem; padding: .75rem;
+      background: var(--color-role-surface);
+      border: 1px solid var(--color-role-border);
+      border-radius: .5rem;
+      box-shadow: var(--shadow-md, 0 2px 8px rgb(0 0 0 / .1));
+      z-index: 9999;
+    }
+    .play-controls .row { display:flex; gap:.5rem; align-items:center; }
+    .play-controls .title { font-weight:600; }
+    .play-controls button {
+      font: inherit; cursor: pointer; min-height: 2.75rem;
+      padding: 0 .75rem; border-radius: .375rem;
+      border: 1px solid var(--color-role-border);
+      background: var(--color-role-surface);
+      color: var(--color-role-text-primary);
+    }
+    .play-controls button[aria-pressed="true"]{
+      background: var(--color-role-primary-bg);
+      color: var(--color-role-on-primary, #fff);
+      border-color: var(--color-role-primary-border, transparent);
+    }
+    .play-controls input[type="range"]{ width: 8rem; }
+  </style>
+
+  <div class="play-controls" role="group" aria-label="Playground controls">
+    <div class="row"><span class="title">Theme</span>
+      <button class="js-theme" data-theme="light"  aria-pressed="false">Light</button>
+      <button class="js-theme" data-theme="dark"   aria-pressed="false">Dark</button>
+      <button class="js-theme" data-theme="hc"     aria-pressed="false">High Contrast</button>
+      <button id="js-theme-reset" aria-pressed="false" title="Reset theme">Reset</button>
+    </div>
+    <div class="row"><span class="title">Type</span>
+      <label for="js-type">base rem</label>
+      <input id="js-type" type="range" min="14" max="20" step="1" value="16" />
+      <span id="js-type-val">16px</span>
+      <button id="js-type-reset" aria-pressed="false" title="Reset type">Reset</button>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    const root = document.documentElement;
+    const pressed = (btn) => {
+      document.querySelectorAll('.js-theme').forEach(b=>b.setAttribute('aria-pressed','false'));
+      if (btn) btn.setAttribute('aria-pressed','true');
+    };
+    const applyTheme = (mode) => {
+      // Light/Dark rely on prefers-color-scheme CSS already present; we toggle data-theme only for hc.
+      if (mode === 'hc') {
+        root.setAttribute('data-theme','hc'); pressed(document.querySelector('[data-theme="hc"].js-theme'));
+      } else {
+        root.removeAttribute('data-theme');
+        if (mode === 'light') pressed(document.querySelector('[data-theme="light"].js-theme'));
+        if (mode === 'dark')  pressed(document.querySelector('[data-theme="dark"].js-theme'));
+      }
+    };
+    document.querySelectorAll('.js-theme').forEach(btn=>{
+      btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+    });
+    document.getElementById('js-theme-reset').addEventListener('click', () => { root.removeAttribute('data-theme'); pressed(null); });
+
+    // Type scale (rem) — adjusts root font-size only, everything uses rem
+    const range = document.getElementById('js-type');
+    const label = document.getElementById('js-type-val');
+    const setRem = (px) => { root.style.fontSize = px + 'px'; label.textContent = px + 'px'; };
+    range.addEventListener('input', () => setRem(range.value));
+    document.getElementById('js-type-reset').addEventListener('click', () => { range.value = 16; setRem(16); });
+
+    // Init
+    setRem(range.value);
+  })();
+  </script>
+  <!-- /Dieter Playground Controls -->
 </html>
 
 
