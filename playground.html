@@ -35,6 +35,15 @@
     <link rel="stylesheet" href="dieter/components/accordion.css">
     <link rel="stylesheet" href="dieter/components/tooltip.css">
     <link rel="stylesheet" href="dieter/components/popover.css">
+    <link rel="stylesheet" href="dieter/components/drawer.css">
+    <link rel="stylesheet" href="dieter/components/banner.css">
+    <link rel="stylesheet" href="dieter/components/navbar.css">
+    <link rel="stylesheet" href="dieter/components/sidebar.css">
+    <link rel="stylesheet" href="dieter/components/stepper.css">
+    <link rel="stylesheet" href="dieter/components/status.css">
+    <link rel="stylesheet" href="dieter/components/empty-state.css">
+    <link rel="stylesheet" href="dieter/components/chip.css">
+    <link rel="stylesheet" href="dieter/components/avatar.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -69,6 +78,136 @@
           <button class="diet-btn">Primary Button</button>
           <a class="diet-link" href="#">Link Example</a>
         </div>
+      </section>
+
+      <!-- Navbar -->
+      <section>
+        <h2>Navbar</h2>
+        <nav class="diet-navbar" aria-label="Top">
+          <div class="diet-navbar__brand">Clickeen</div>
+          <div class="diet-navbar__links">
+            <a class="diet-navbar__link" href="#" aria-current="page">Home</a>
+            <a class="diet-navbar__link" href="#">Docs</a>
+            <a class="diet-navbar__link" href="#">Pricing</a>
+            <a class="diet-navbar__link" href="#">About</a>
+          </div>
+        </nav>
+      </section>
+
+      <!-- Sidebar -->
+      <section>
+        <h2>Sidebar</h2>
+        <aside class="diet-sidebar" aria-label="Sections">
+          <div class="diet-sidebar__section">
+            <div class="diet-sidebar__label">General</div>
+            <a class="diet-sidebar__link" href="#" aria-current="page">Overview</a>
+            <a class="diet-sidebar__link" href="#">Activity</a>
+          </div>
+          <div class="diet-sidebar__section">
+            <div class="diet-sidebar__label">Settings</div>
+            <a class="diet-sidebar__link" href="#">Profile</a>
+            <a class="diet-sidebar__link" href="#">Billing</a>
+          </div>
+        </aside>
+      </section>
+
+      <!-- Stepper -->
+      <section>
+        <h2>Stepper</h2>
+        <ol class="diet-stepper" role="list">
+          <li class="diet-step" aria-current="step"><span class="diet-step__circle">1</span> Account</li>
+          <li class="diet-step"><span class="diet-step__circle">2</span> Profile</li>
+          <li class="diet-step"><span class="diet-step__circle">3</span> Confirm</li>
+        </ol>
+      </section>
+
+      <!-- Status Indicator -->
+      <section>
+        <h2>Status Indicator</h2>
+        <p>
+          <span class="diet-status diet-status--success" role="status"><span class="diet-status__dot" aria-hidden="true"></span> Live</span>
+          &nbsp;&nbsp;
+          <span class="diet-status diet-status--warning" role="status"><span class="diet-status__dot" aria-hidden="true"></span> Degraded</span>
+          &nbsp;&nbsp;
+          <span class="diet-status diet-status--error" role="status"><span class="diet-status__dot" aria-hidden="true"></span> Down</span>
+        </p>
+      </section>
+
+      <!-- Empty State -->
+      <section>
+        <h2>Empty State</h2>
+        <div class="diet-empty" role="region" aria-label="Empty">
+          <div class="diet-empty__icon" aria-hidden="true"></div>
+          <div class="diet-empty__title">No items yet</div>
+          <p>Add your first item to get started.</p>
+          <button class="diet-empty__cta">Add Item</button>
+        </div>
+      </section>
+
+      <!-- Chip -->
+      <section>
+        <h2>Chip</h2>
+        <p>
+          <span class="diet-chip">Default</span>
+          &nbsp;
+          <span class="diet-chip diet-chip--primary">Primary <button class="diet-chip__dismiss" aria-label="Remove chip"></button></span>
+        </p>
+      </section>
+
+      <!-- Avatar -->
+      <section>
+        <h2>Avatar</h2>
+        <div style="display:flex; align-items:center; gap: var(--space-3);">
+          <span class="diet-avatar">CK</span>
+          <span class="diet-avatar diet-avatar--lg"><img src="https://picsum.photos/80" alt="User avatar"></span>
+        </div>
+      </section>
+
+      <!-- Banner -->
+      <section>
+        <h2>Banner</h2>
+        <div class="diet-banner diet-banner--info" role="status" aria-live="polite">
+          <span class="diet-banner__icon" aria-hidden="true"></span>
+          <div>
+            <div class="diet-banner__title">Heads up</div>
+            <div>We’ve updated our terms.</div>
+          </div>
+          <div class="diet-banner__actions">
+            <button class="diet-banner__btn">Review</button>
+            <button class="diet-banner__btn">Dismiss</button>
+          </div>
+        </div>
+        <div class="diet-banner diet-banner--error" role="alert" aria-live="assertive" style="margin-top: var(--space-3);">
+          <span class="diet-banner__icon" aria-hidden="true"></span>
+          <div>
+            <div class="diet-banner__title">Submission failed</div>
+            <div>Retry your request.</div>
+          </div>
+          <div class="diet-banner__actions">
+            <button class="diet-banner__btn">Retry</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Drawer -->
+      <section id="drawer">
+        <h2>Drawer</h2>
+        <p><a class="diet-btn" href="#drawer">Open Drawer</a></p>
+        <!-- Target peers (must be siblings of #drawer anchor target) -->
+        <div class="diet-drawer-overlay" aria-hidden="true"></div>
+        <aside class="diet-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+          <header class="diet-drawer__header">
+            <div class="diet-drawer__title" id="drawer-title">Filters</div>
+            <a class="diet-drawer__close" href="#">Close</a>
+          </header>
+          <div>
+            <p class="text-14">Drawer content uses tokens and scrolls if long.</p>
+          </div>
+          <footer style="display:flex; gap: var(--space-2); justify-content:flex-end;">
+            <a class="diet-banner__btn" href="#">Cancel</a>
+            <a class="diet-banner__btn" href="#">Apply</a>
+          </footer>
+        </aside>
       </section>
 
       <div class="divider"></div>
