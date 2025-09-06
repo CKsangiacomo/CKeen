@@ -29,6 +29,8 @@
     <link rel="stylesheet" href="dieter/components/table.css">
     <link rel="stylesheet" href="dieter/components/pagination.css">
     <link rel="stylesheet" href="dieter/components/breadcrumb.css">
+    <link rel="stylesheet" href="dieter/components/modal.css">
+    <link rel="stylesheet" href="dieter/components/toast.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -62,6 +64,40 @@
         <div class="row">
           <button class="diet-btn">Primary Button</button>
           <a class="diet-link" href="#">Link Example</a>
+        </div>
+      </section>
+
+      <div class="divider"></div>
+
+      <section>
+        <h2>Overlays</h2>
+        <div class="stack">
+          <!-- Modal -->
+          <div class="diet-modal-fallback">
+            <dialog class="diet-modal" open>
+              <div class="diet-modal__header">
+                <h3 class="diet-modal__title">Example Modal</h3>
+                <button class="diet-modal__close">Close</button>
+              </div>
+              <div class="diet-modal__body">
+                <p>This is a modal body. Tokens-only styling. Resize window to test centering.</p>
+              </div>
+              <div class="diet-modal__footer">
+                <button class="diet-btn diet-btn--secondary">Cancel</button>
+                <button class="diet-btn">Confirm</button>
+              </div>
+            </dialog>
+          </div>
+          <!-- Toast -->
+          <div class="diet-toast-region" role="region" aria-live="polite">
+            <div class="diet-toast diet-toast--success">
+              <div>
+                <div class="diet-toast__title">Success!</div>
+                <p>Your action completed.</p>
+              </div>
+              <button class="diet-toast__close">×</button>
+            </div>
+          </div>
         </div>
       </section>
 

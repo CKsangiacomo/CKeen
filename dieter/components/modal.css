@@ -1,0 +1,47 @@
+/* Dieter Modal v0 — tokens-only, <dialog>-first with graceful fallback */
+.diet-modal {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-3, 0.5rem);
+  padding: 0;
+  margin: auto;
+  max-inline-size: 42rem;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: 0 8px 32px color-mix(in oklab, var(--color-text-primary), transparent 85%);
+}
+.diet-modal::backdrop {
+  background: color-mix(in oklab, var(--color-text-primary), transparent 75%);
+}
+.diet-modal__header, .diet-modal__body, .diet-modal__footer { padding: var(--space-4); }
+.diet-modal__header { display:flex; align-items:center; justify-content:space-between; gap: var(--space-3); border-bottom: 1px solid var(--color-border); }
+.diet-modal__title { font-weight: 600; }
+.diet-modal__body { line-height: var(--lh-body, 1.6); }
+.diet-modal__footer { display:flex; gap: var(--space-3); justify-content:flex-end; border-top: 1px solid var(--color-border); }
+.diet-modal__close {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border-radius: var(--radius-2, 0.375rem);
+  padding: var(--space-2) var(--space-3);
+  min-height: 44px;
+  cursor: pointer;
+}
+.diet-modal__close:hover  { background: color-mix(in oklab, var(--color-surface), var(--state-hover) 10%); }
+.diet-modal__close:active { background: color-mix(in oklab, var(--color-surface), var(--state-press) 14%); }
+.diet-modal__close:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 var(--focus-ring-offset, 2px) var(--color-bg, #fff),
+    0 0 0 calc(var(--focus-ring-width, 2px) + var(--focus-ring-offset, 2px)) var(--focus-ring-color, var(--color-primary));
+}
+.diet-modal-fallback {
+  position: fixed; inset: 0; display: grid; place-items: center;
+  background: color-mix(in oklab, var(--color-text-primary), transparent 75%);
+  z-index: 1000;
+}
+.diet-modal-fallback .diet-modal { max-inline-size: 42rem; }
+:root[data-theme="hc"] .diet-modal { box-shadow: none; border-width: 2px; }
+:root[data-theme="hc"] .diet-modal::backdrop,
+:root[data-theme="hc"] .diet-modal-fallback { background: color-mix(in oklab, var(--color-text-primary), transparent 65%); }
+
+
