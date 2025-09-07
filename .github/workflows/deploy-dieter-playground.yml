@@ -1,0 +1,107 @@
+name: Deploy Dieter Playground (Vercel)
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    if: github.ref != 'refs/heads/main'
+    name: Preview Deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify required secrets
+        run: |
+          set -euo pipefail
+          missing=0
+          for v in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID_DIETER; do
+            if [ -z "${!v-}" ]; then
+              echo "❌ Missing required secret: $v"
+              missing=1
+            fi
+          done
+          if [ $missing -ne 0 ]; then
+            echo "One or more required secrets are missing. Add them in GitHub → Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID_DIETER: ${{ secrets.VERCEL_PROJECT_ID_DIETER }}
+
+      - name: Setup Node (for Vercel CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Preview Deploy (dieter/playground)
+        working-directory: dieter/playground
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          vercel pull --yes --environment=preview --token "$VERCEL_TOKEN"
+          vercel build --token "$VERCEL_TOKEN"
+          vercel deploy --prebuilt --token "$VERCEL_TOKEN"
+
+  production:
+    if: github.ref == 'refs/heads/main'
+    name: Production Deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify required secrets
+        run: |
+          set -euo pipefail
+          missing=0
+          for v in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID_DIETER; do
+            if [ -z "${!v-}" ]; then
+              echo "❌ Missing required secret: $v"
+              missing=1
+            fi
+          done
+          if [ $missing -ne 0 ]; then
+            echo "One or more required secrets are missing. Add them in GitHub → Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID_DIETER: ${{ secrets.VERCEL_PROJECT_ID_DIETER }}
+
+      - name: Setup Node (for Vercel CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Production Deploy (dieter/playground)
+        working-directory: dieter/playground
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+          vercel build --prod --token "$VERCEL_TOKEN"
+          vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN"
+
+
