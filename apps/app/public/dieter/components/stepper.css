@@ -1,0 +1,19 @@
+/* Dieter Stepper v0 — ordered steps */
+.diet-stepper { display:flex; gap: var(--space-4); list-style:none; padding:0; margin:0; }
+.diet-step {
+  display:flex; align-items:center; gap: var(--space-2);
+  color: var(--color-text-secondary);
+}
+.diet-step__circle {
+  inline-size: 1.75rem; block-size: 1.75rem; border-radius: 50%;
+  display:grid; place-items:center;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: .875rem;
+}
+.diet-step[aria-current="step"] { color: var(--color-text-primary); }
+.diet-step[aria-current="step"] .diet-step__circle {
+  border-color: var(--color-primary); background: color-mix(in oklab, var(--color-surface), var(--color-primary) 12%);
+}
+
+
