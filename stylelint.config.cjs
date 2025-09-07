@@ -40,7 +40,24 @@ module.exports = {
           "^(?!diet-).*$",
           { "message": "Studio CSS must not target .diet-* classes" }
         ],
-        "declaration-property-value-disallowed-list": { "/.*/": [/var\(--role-.*\)/] }
+        // Forbid use of Dieter role vars in the shell
+        "declaration-property-value-disallowed-list": [
+          { "/.*/": [/var\(--role-.*\)/] },
+          { "message": "Studio CSS must not reference --role-* variables" }
+        ],
+        // Disable Dieter authoring rules for the shell only
+        "unit-disallowed-list": null,
+        "scale-unlimited/declaration-strict-value": null,
+        "declaration-block-single-line-max-declarations": null,
+        "font-family-name-quotes": null,
+        "color-function-notation": null,
+        "alpha-value-notation": null,
+        "media-feature-range-notation": null,
+        "at-rule-empty-line-before": null,
+        "property-disallowed-list": null,
+        "color-named": null,
+        "color-no-hex": null,
+        "value-keyword-case": null
       }
     }
   ]
