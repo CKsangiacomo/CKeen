@@ -1,0 +1,62 @@
+/* Dieter Switch v0 — tokens-only, native checkbox + role="switch" */
+.diet-switch {
+  display: inline-grid;
+  grid-auto-flow: column;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 44px; /* touch */
+}
+.diet-switch input[type="checkbox"] {
+  appearance: none;
+  inline-size: 2.5rem;  /* 40px */
+  block-size: 1.5rem;   /* 24px */
+  margin: 0;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  position: relative;
+  outline: none;
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.diet-switch input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-start: 2px;
+  inline-size: 1.2rem;
+  block-size: 1.2rem;
+  border-radius: 50%;
+  background: var(--color-bg, #fff);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
+  transition: transform .15s;
+}
+.diet-switch input[type="checkbox"]:checked {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.diet-switch input[type="checkbox"]:checked::after {
+  transform: translateX(1rem);
+}
+.diet-switch input[type="checkbox"]:hover {
+  background: color-mix(in oklab, var(--color-surface), var(--state-hover) 8%);
+}
+.diet-switch input[type="checkbox"]:active::after { transform: translateX(0) scale(0.96); }
+.diet-switch input[type="checkbox"]:focus-visible {
+  box-shadow:
+    0 0 0 var(--focus-ring-offset, 2px) var(--color-bg, #fff),
+    0 0 0 calc(var(--focus-ring-width, 2px) + var(--focus-ring-offset, 2px)) var(--focus-ring-color, var(--color-primary));
+  border-color: var(--focus-ring-color, var(--color-primary));
+}
+.diet-switch input[type="checkbox"]:disabled {
+  opacity: .55; cursor: not-allowed;
+}
+.diet-switch__label {
+  color: var(--color-text-primary);
+  user-select: none;
+}
+
+/* High-contrast tweaks */
+:root[data-theme="hc"] .diet-switch input[type="checkbox"]::after { box-shadow: none; }
+
+

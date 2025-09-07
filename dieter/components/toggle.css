@@ -1,0 +1,35 @@
+/* Dieter Toggle v0 — tokens-only, aria-pressed pattern */
+.diet-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 2.75rem;
+  min-block-size: 2.75rem; /* >= 44px */
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-3, 0.5rem);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  font: inherit;
+}
+.diet-toggle:hover { background: color-mix(in oklab, var(--color-surface), var(--state-hover) 8%); }
+.diet-toggle:active { background: color-mix(in oklab, var(--color-surface), var(--state-press) 12%); }
+.diet-toggle:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 var(--focus-ring-offset, 2px) var(--color-bg, #fff),
+    0 0 0 calc(var(--focus-ring-width, 2px) + var(--focus-ring-offset, 2px)) var(--focus-ring-color, var(--color-primary));
+  border-color: var(--focus-ring-color, var(--color-primary));
+}
+.diet-toggle[aria-pressed="true"] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary, #fff);
+}
+.diet-toggle:disabled { opacity:.55; cursor:not-allowed; }
+
+.diet-toggle--sm  { min-block-size: 2.5rem;  padding: 0 var(--space-2); }
+.diet-toggle--lg  { min-block-size: 3rem;    padding: 0 var(--space-4); }
+
+

@@ -44,6 +44,10 @@
     <link rel="stylesheet" href="dieter/components/empty-state.css">
     <link rel="stylesheet" href="dieter/components/chip.css">
     <link rel="stylesheet" href="dieter/components/avatar.css">
+    <link rel="stylesheet" href="dieter/components/switch.css">
+    <link rel="stylesheet" href="dieter/components/toggle.css">
+    <link rel="stylesheet" href="dieter/components/button-group.css">
+    <link rel="stylesheet" href="dieter/components/segmented.css">
 
     <style>
       body { font: var(--fs-body)/var(--lh-body) var(--font-ui); background: var(--color-bg); color: var(--color-text); margin: 0; }
@@ -77,6 +81,60 @@
         <div class="row">
           <button class="diet-btn">Primary Button</button>
           <a class="diet-link" href="#">Link Example</a>
+        </div>
+      </section>
+
+      <section>
+        <h2>Controls Pack: Switch, Toggle, Button Group, Segmented</h2>
+        <div class="stack">
+
+          <!-- Switch -->
+          <div>
+            <h3>Switch</h3>
+            <label class="diet-switch">
+              <input type="checkbox" role="switch" aria-checked="false" aria-label="Airplane mode">
+              <span class="diet-switch__label">Airplane mode</span>
+            </label>
+            &nbsp;&nbsp;
+            <label class="diet-switch">
+              <input type="checkbox" role="switch" aria-checked="true" checked aria-label="Wi-Fi">
+              <span class="diet-switch__label">Wi-Fi</span>
+            </label>
+            &nbsp;&nbsp;
+            <label class="diet-switch">
+              <input type="checkbox" role="switch" disabled aria-label="Bluetooth (disabled)">
+              <span class="diet-switch__label">Bluetooth (disabled)</span>
+            </label>
+          </div>
+
+          <!-- Toggle (aria-pressed) -->
+          <div>
+            <h3>Toggle</h3>
+            <button class="diet-toggle" aria-pressed="false">Bold</button>
+            <button class="diet-toggle" aria-pressed="true">Italic</button>
+            <button class="diet-toggle diet-toggle--lg" aria-pressed="false">Underline</button>
+          </div>
+
+          <!-- Button Group -->
+          <div>
+            <h3>Button Group</h3>
+            <div class="diet-btn-group" role="group" aria-label="Align">
+              <button class="diet-btn" aria-pressed="true">Left</button>
+              <button class="diet-btn" aria-pressed="false">Center</button>
+              <button class="diet-btn" aria-pressed="false">Right</button>
+            </div>
+          </div>
+
+          <!-- Segmented Control -->
+          <div>
+            <h3>Segmented Control</h3>
+            <div class="diet-segmented" role="tablist" aria-label="Time range">
+              <button role="tab" aria-selected="true">7d</button>
+              <button role="tab" aria-selected="false">30d</button>
+              <button role="tab" aria-selected="false">90d</button>
+            </div>
+          </div>
+
         </div>
       </section>
 
