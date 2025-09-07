@@ -12,3 +12,4 @@ Before requesting review, confirm all are satisfied (see [docs/cto-execution-che
 - [ ] File hygiene: only files in scope; no drive-by refactors.  
 - [ ] CI green: Stylelint + font-source checks pass.  
 - [ ] Self-test done: Inter loads from Google Fonts, tokens applied, no console errors.
+
