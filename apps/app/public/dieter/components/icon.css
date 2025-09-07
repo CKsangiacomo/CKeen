@@ -1,0 +1,7 @@
+/* Dieter Icon v0 — tokens-friendly sizing, currentColor inheritance */
+.diet-icon { inline-size: 1.25rem; block-size: 1.25rem; display:inline-block; vertical-align:middle; }
+.diet-icon--sm { inline-size: 1rem; block-size: 1rem; }
+.diet-icon--md { inline-size: 1.25rem; block-size: 1.25rem; }
+.diet-icon--lg { inline-size: 1.5rem; block-size: 1.5rem; }
+
+

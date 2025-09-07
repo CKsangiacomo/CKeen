@@ -1,0 +1,67 @@
+/* Dieter Popover v0 — tokens-only, native details/summary as disclosure */
+.diet-popover { position: relative; display: inline-block; }
+
+.diet-popover summary {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-2, 0.375rem);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+.diet-popover summary::-webkit-details-marker { display: none; }
+.diet-popover summary:hover  { background: color-mix(in oklab, var(--color-surface), var(--state-hover) 8%); }
+.diet-popover summary:active { background: color-mix(in oklab, var(--color-surface), var(--state-press) 12%); }
+.diet-popover summary:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 var(--focus-ring-offset, 2px) var(--color-bg, #fff),
+    0 0 0 calc(var(--focus-ring-width, 2px) + var(--focus-ring-offset, 2px)) var(--focus-ring-color, var(--color-primary));
+}
+
+/* Panel */
+.diet-popover__panel {
+  position: absolute;
+  inset-block-start: calc(100% + var(--space-2));
+  inset-inline-start: 0;
+  min-inline-size: 16rem;
+  max-inline-size: 90vw;
+  padding: var(--space-3);
+  border-radius: var(--radius-3, 0.5rem);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-lg, 0 8px 24px rgb(0 0 0 / .18));
+  z-index: 1100;
+}
+
+/* Open state via [open] */
+.diet-popover[open] .diet-popover__panel { display: block; }
+
+/* Basic menu semantics inside panel (optional) */
+.diet-popover__list { display: grid; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+.diet-popover__item a {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-2, 0.375rem);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+.diet-popover__item a:hover  { background: color-mix(in oklab, var(--color-surface), var(--state-hover) 8%); }
+.diet-popover__item a:active { background: color-mix(in oklab, var(--color-surface), var(--state-press) 12%); }
+.diet-popover__item a:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 var(--focus-ring-offset, 2px) var(--color-bg, #fff),
+    0 0 0 calc(var(--focus-ring-width, 2px) + var(--focus-ring-offset, 2px)) var(--focus-ring-color, var(--color-primary));
+}
+
+/* High contrast tweaks */
+:root[data-theme="hc"] .diet-popover__panel { border-width: 2px; }
+
+
