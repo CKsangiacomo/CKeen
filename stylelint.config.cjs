@@ -32,6 +32,16 @@ module.exports = {
         "scale-unlimited/declaration-strict-value": null,
         "selector-class-pattern": null
       }
+    },
+    {
+      files: ["apps/app/public/studio/**/*.css"],
+      rules: {
+        "selector-class-pattern": [
+          "^(?!diet-).*$",
+          { "message": "Studio CSS must not target .diet-* classes" }
+        ],
+        "declaration-property-value-disallowed-list": { "/.*/": [/var\(--role-.*\)/] }
+      }
     }
   ]
 };
