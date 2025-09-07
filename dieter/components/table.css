@@ -1,0 +1,109 @@
+/* Dieter Table v0 — tokens-only, accessible */
+:root{
+  --_table-bg: var(--color-surface, #fff);
+  --_table-fg: var(--color-text-primary, #111);
+  --_table-bd: var(--color-border, #e5e7eb);
+  --_table-pad-y: var(--space-3, .75rem);
+  --_table-pad-x: var(--space-4, 1rem);
+  --_table-radius: var(--radius-3, .5rem);
+  --_table-gap: var(--space-2, .5rem);
+}
+
+.diet-table{
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--_table-bg);
+  color: var(--_table-fg);
+  border: 1px solid var(--_table-bd);
+  border-radius: var(--_table-radius);
+  overflow: clip;
+}
+
+/* Cells */
+.diet-table th,
+.diet-table td{
+  padding: var(--_table-pad-y) var(--_table-pad-x);
+  border-bottom: 1px solid var(--_table-bd);
+  vertical-align: middle;
+  text-align: left;
+  line-height: var(--lh-body, 1.5);
+  font-size: var(--text-14, .875rem);
+}
+
+.diet-table thead th{
+  background: color-mix(in oklab, var(--_table-bg), var(--state-hover, rgb(0 0 0 / .06)) 6%);
+  font-weight: 600;
+  color: var(--color-text-secondary, #374151);
+}
+
+.diet-table tr:last-child td{ border-bottom: 0; }
+
+/* Zebra */
+.diet-table--zebra tbody tr:nth-child(odd) td{
+  background: color-mix(in oklab, var(--_table-bg), var(--state-hover, rgb(0 0 0 / .06)) 4%);
+}
+
+/* Compact density */
+.diet-table--compact{
+  --_table-pad-y: var(--space-2, .5rem);
+  --_table-pad-x: var(--space-3, .75rem);
+}
+
+/* Row hover */
+.diet-table tbody tr:hover td{
+  background: color-mix(in oklab, var(--_table-bg), var(--state-hover, rgb(0 0 0 / .06)) 8%);
+}
+
+/* Focusable row/link focus ring */
+.diet-table a:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 var(--focus-ring-offset, 2px) var(--color-bg, #fff),
+    0 0 0 calc(var(--focus-ring-width, 2px) + var(--focus-ring-offset, 2px)) var(--focus-ring-color, var(--color-primary));
+  border-radius: var(--radius-2, .375rem);
+}
+
+/* Responsive stacked (opt-in via data-table="stacked") */
+[data-table="stacked"] .diet-table,
+[data-table="stacked"] .diet-table thead,
+[data-table="stacked"] .diet-table tbody,
+[data-table="stacked"] .diet-table tr,
+[data-table="stacked"] .diet-table th,
+[data-table="stacked"] .diet-table td{
+  display: block;
+}
+
+[data-table="stacked"] .diet-table thead{ display: none; }
+
+[data-table="stacked"] .diet-table tr{
+  border-bottom: 1px solid var(--_table-bd);
+  padding-block: var(--_table-pad-y);
+}
+
+[data-table="stacked"] .diet-table td{
+  border: 0;
+  padding: var(--space-2) var(--_table-pad-x);
+}
+
+[data-table="stacked"] .diet-table td::before{
+  content: attr(data-label);
+  display: block;
+  font-weight: 600;
+  color: var(--color-text-secondary, #4b5563);
+  margin-bottom: var(--space-1, .25rem);
+  font-size: .8125rem;
+}
+
+/* HC tweaks */
+html[data-theme="hc"] .diet-table{ border-width: 2px; }
+html[data-theme="hc"] .diet-table td,
+html[data-theme="hc"] .diet-table th{ border-bottom-width: 2px; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .diet-table tbody tr:hover td{ transition: none; }
+}
+
+
+

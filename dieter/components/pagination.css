@@ -1,0 +1,47 @@
+/* Dieter Pagination — tokens-only */
+.diet-pagination{
+  display: inline-flex;
+  gap: var(--space-2, .5rem);
+  align-items: center;
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: var(--radius-3, .5rem);
+  padding: var(--space-1, .25rem);
+}
+
+.diet-page{
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  min-width: 2.25rem; min-height: 2.25rem; /* ≥ 36px; page items aren’t primary controls */
+  padding-inline: .5rem;
+  border-radius: var(--radius-2, .375rem);
+  color: var(--color-text-primary, #111);
+  text-decoration: none;
+  border: 1px solid transparent;
+}
+
+.diet-page:hover{
+  background: color-mix(in oklab, var(--color-surface), var(--state-hover, rgb(0 0 0 / .06)) 8%);
+}
+
+.diet-page:focus-visible{
+  outline: none;
+  box-shadow:
+    0 0 0 var(--focus-ring-offset, 2px) var(--color-bg, #fff),
+    0 0 0 calc(var(--focus-ring-width, 2px) + var(--focus-ring-offset, 2px)) var(--focus-ring-color, var(--color-primary));
+  border-color: var(--focus-ring-color, var(--color-primary));
+}
+
+.diet-page[aria-current="page"]{
+  background: var(--color-primary, #2563eb);
+  color: var(--color-on-primary, #fff);
+  border-color: var(--color-primary, #2563eb);
+}
+
+.diet-page[aria-disabled="true"]{
+  opacity: .5;
+  pointer-events: none;
+}
+
+
+

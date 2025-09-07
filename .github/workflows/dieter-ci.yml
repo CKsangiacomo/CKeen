@@ -1,0 +1,58 @@
+name: Dieter CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  lint-and-verify:
+    name: Stylelint + Font Source Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Run Stylelint on Dieter CSS
+        run: npx stylelint "dieter/**/*.css"
+
+      - name: Verify Inter is loaded from Google Fonts (not rsms.me) and forbid Roboto/Ubuntu
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! grep -R -n -E 'https://fonts.googleapis.com/css2\?family=Inter' -- 'playground.html' 'dieter' 2>/dev/null; then
+            echo "❌ Missing Google Fonts Inter import (https://fonts.googleapis.com/css2?family=Inter)."
+            exit 1
+          fi
+          if grep -R -n -i -E 'rsms\.me|Roboto|Ubuntu' -- 'dieter' 'playground.html' 2>/dev/null; then
+            echo "❌ Forbidden font source/name detected (rsms.me / Roboto / Ubuntu)."
+            exit 1
+          fi
+          echo "✅ Font-source checks passed."
+
+  typecheck-contracts:
+    name: Typecheck Dieter contracts (tsc --noEmit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install deps
+        run: npm ci
+
+      - name: tsc (noEmit) on Dieter contracts
+        run: npx tsc -p dieter/tsconfig.json --noEmit
