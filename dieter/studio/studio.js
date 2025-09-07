@@ -24,6 +24,7 @@
 
   const cssEditor = $('#studio-css');
   const copyBtn   = $('#studio-copy');
+  const listHost  = $('#studio-list');
 
   function setPressed(btns, current) {
     btns.forEach(b => b.setAttribute('aria-pressed', String(b === current)));
@@ -114,6 +115,37 @@
   // Initialize defaults
   setViewport('desktop');              // default desktop
   if (viewDesktop) setPressed([viewDesktop, viewMobile], viewDesktop);
+
+  // Build dynamic sidebar from iframe components once it loads
+  frame?.addEventListener('load', () => {
+    try {
+      const iframeDoc = frame.contentWindow?.document;
+      if (!iframeDoc || !listHost) return;
+
+      // Collect components
+      const components = Array.from(iframeDoc.querySelectorAll('[data-component]'));
+      listHost.innerHTML = '';
+
+      function setActive(targetBtn) {
+        Array.from(listHost.querySelectorAll('.studio-list__item')).forEach(b => b.classList.remove('is-active'));
+        if (targetBtn) targetBtn.classList.add('is-active');
+      }
+
+      components.forEach((el, idx) => {
+        const name = el.getAttribute('data-component') || `Section ${idx + 1}`;
+        const btn = document.createElement('button');
+        btn.className = 'studio-list__item';
+        btn.type = 'button';
+        btn.textContent = name;
+        btn.addEventListener('click', () => {
+          try { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch {}
+          setActive(btn);
+        });
+        listHost.appendChild(btn);
+        if (idx === 0) setActive(btn);
+      });
+    } catch {}
+  });
 })();
 
 
