@@ -6,6 +6,12 @@
 - Studio loads `/dieter/components.html` from the App deployment.
 - ⚠️ The separate `c-keen-dieter` Vercel project must be deleted in the dashboard; only `c-keen-app`, `c-keen-embed`, and `c-keen-site` remain valid.
 
+### Studio
+- Studio is an empty host shell (chrome, sidebar, iframe, toggles) with no Dieter logic.
+- Default iframe source is `/dieter/components.html` for visualization.
+- Guardrails: CSP allows `frame-src 'self'`; iframe is sandboxed. Stylelint override for `/apps/app/public/studio/**` forbids `.diet-*` and `--role-*`.
+- ⚠️ Do NOT create a separate Vercel project for Studio. It is served by `c-keen-app`.
+
 ## Vercel Projects
 These are the ONLY valid projects. Do not create new ones.
 
