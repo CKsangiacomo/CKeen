@@ -3,6 +3,12 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: [],
   },
+  async redirects() {
+    return [
+      // Ensure /studio loads the static host shell in /public/studio/index.html
+      { source: "/studio", destination: "/studio/index.html", permanent: true },
+    ];
+  },
   headers: async () => [{
     source: "/(.*)",
     headers: [
