@@ -1,62 +1,69 @@
-/* Studio Host Shell — LIGHT default. No Dieter styles here. */
+/* Studio Baseline Shell — Apple-style visuals, Light-first */
 :root {
-  --bg: #ffffff;
-  --bg-elev: #f7f7f8;
-  --text: #202022;
-  --muted: #6b6b70;
-  --border: #e8e8ea;
-  --accent: #2563eb;
-  --panel-left-w: 280px;
-  --panel-right-w: 320px;
-  --topbar-h: 48px;
+  --bg: #f5f5f7;
+  --panel: #ffffff;
+  --text: #1d1d1f;
+  --muted: #6e6e73;
+  --border: #e5e5ea;
+  --shadow: 0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.05);
+  --radius: 12px;
+  --topbar-h: 52px;
+  --left-w: 280px;
+  --right-w: 320px;
 }
-html[data-theme="dark"] { --bg:#0b0b0c; --bg-elev:#121214; --text:#e6e6e8; --muted:#a0a0a6; --border:#242428; }
-html[data-theme="hc"]   { --bg:#000;    --bg-elev:#000;    --text:#fff;     --muted:#d0d0d0; --border:#fff; }
 
 * { box-sizing: border-box; }
 html, body { height: 100%; }
-body { margin:0; color:var(--text); background:var(--bg); font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji"; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+}
 
-/* Top Bar */
-.studio-topbar { height:var(--topbar-h); display:flex; align-items:center; justify-content:space-between; padding:0 12px; border-bottom:1px solid var(--border); background:var(--bg-elev); position:sticky; top:0; z-index:10; }
-.studio-topbar__left { display:flex; gap:10px; align-items:center; }
-.studio-logo { color:var(--text); text-decoration:none; font-weight:600; }
-.studio-title { color:var(--muted); }
-.studio-topbar__right { display:flex; gap:8px; align-items:center; }
-.sep { width:1px; height:18px; background:var(--border); display:inline-block; }
-
-.btn { height:28px; padding:0 10px; border:1px solid var(--border); background:transparent; color:var(--text); border-radius:6px; cursor:pointer; }
-.btn--ghost:hover { background:var(--bg-elev); }
-.btn--primary { background:var(--accent); color:#fff; border-color:transparent; }
-.input { width:100%; padding:8px 10px; border:1px solid var(--border); border-radius:6px; background:#fff; color:#111; }
-.row { display:flex; gap:8px; margin-top:8px; }
-.small { font-size:12px; }
+/* Top bar */
+.studio-topbar {
+  height: var(--topbar-h);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 14px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+.studio-topbar__left { display: flex; align-items: center; gap: 10px; }
+.studio-logo { text-decoration: none; color: var(--text); font-weight: 600; }
+.studio-title { color: var(--muted); }
+.studio-topbar__right { display: flex; align-items: center; gap: 8px; }
+.sep { width: 1px; height: 18px; background: var(--border); }
+.btn { height: 30px; padding: 0 10px; border: 1px solid var(--border); background: #fff; color: var(--text); border-radius: 8px; cursor: pointer; }
+.btn[aria-pressed="true"] { box-shadow: inset 0 0 0 1px var(--border), 0 0 0 2px rgba(0,0,0,.04); }
+.btn--ghost:hover { background: #fafafa; }
 
 /* Grid */
-.studio-grid { display:grid; grid-template-columns:var(--panel-left-w) 1fr var(--panel-right-w); height:calc(100vh - var(--topbar-h)); }
-.panel { border-right:1px solid var(--border); background:var(--bg); min-width:0; }
-.panel--left  { background:var(--bg-elev); }
-.panel--center{ border-right:1px solid var(--border); }
-.panel--right { background:var(--bg-elev); border-right:0; }
-.panel__section { display:flex; flex-direction:column; height:100%; }
-.panel__header { display:flex; align-items:center; justify-content:space-between; padding:10px; border-bottom:1px solid var(--border); }
-.panel__title { margin:0; font-size:12px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
-.panel__actions { display:flex; gap:6px; }
-.panel__body { padding:10px; overflow:auto; height:100%; }
-.muted { color:var(--muted); }
+.studio-grid {
+  display: grid;
+  grid-template-columns: var(--left-w) 1fr var(--right-w);
+  gap: 12px;
+  padding: 12px;
+  height: calc(100vh - var(--topbar-h));
+  min-height: 420px;
+}
 
-/* Preview */
-.preview__chrome { padding:8px 10px; border-bottom:1px solid var(--border); color:var(--muted); }
-.preview__frame-wrap { position:relative; height:calc(100% - 34px); background:var(--bg); }
-.preview__frame { position:absolute; inset:0; width:100%; height:100%; border:0; background:#fff; }
-.preview__frame--mobile { width:390px; height:100%; left:50%; transform:translateX(-50%); box-shadow:0 0 0 1px var(--border), 0 6px 30px rgba(0,0,0,.15); }
-.blank-notice { position:absolute; inset:0; display:grid; place-items:center; text-align:center; padding:24px; color:var(--muted); }
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex; flex-direction: column;
+  min-width: 0; min-height: 0;
+}
+.panel__header { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.panel__icon { font-size: 14px; }
+.panel__title { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.panel__body { padding: 12px; overflow: auto; }
+.placeholder { color: var(--muted); text-align: center; padding: 24px; }
 
-/* Code Editor */
-.codearea { width:100%; height:60vh; resize:vertical; background:#0f0f13; color:#e8e8f0; border:1px solid var(--border); border-radius:8px; font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace; padding:10px; }
-
-/* Responsive */
-@media (max-width:1100px){ .studio-grid{ grid-template-columns:var(--panel-left-w) 1fr; } .panel--right{ grid-column:1 / -1; border-top:1px solid var(--border); } }
-@media (max-width:720px){  .studio-grid{ grid-template-columns:1fr; } .panel--left{ display:none; } }
+@media (max-width: 1100px) { .studio-grid { grid-template-columns: var(--left-w) 1fr; } }
+@media (max-width: 720px)  { .studio-grid { grid-template-columns: 1fr; } .panel--left { display: none; } }
 
 
