@@ -12,6 +12,12 @@
 - Guardrails: CSP allows `frame-src 'self'`; iframe is sandboxed. Stylelint override for `/apps/app/public/studio/**` forbids `.diet-*` and `--role-*`.
 - ⚠️ Do NOT create a separate Vercel project for Studio. It is served by `c-keen-app`.
 
+### Studio Host Shell
+- Route file: `apps/app/studio/index.html` serves `/studio` (HTML only here).
+- Assets: `apps/app/public/studio/studio.css` and `apps/app/public/studio/studio.js`.
+- No HTML should exist under `apps/app/public/studio/`.
+- Visualization must live strictly inside the iframe (defaults to `/dieter/components.html`).
+
 ## Studio (Host Shell Only)
 Studio at `/studio` is an empty host shell. It MUST NOT contain Dieter components, styles, or logic. Visualization loads strictly via an iframe to `/dieter/components.html` with `sandbox="allow-scripts allow-same-origin"`, and CSP restricts to `'self'`. Do not create a separate Vercel project for Studio; it ships with **c-keen-app**.
 
