@@ -4,57 +4,67 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Studio</title>
-    <!-- Host shell styles only (no Dieter CSS here) -->
     <link rel="stylesheet" href="/studio/studio.css" />
   </head>
   <body>
-    <!-- Top Bar (environment chrome) -->
+    <!-- Top Bar -->
     <header class="studio-topbar" role="banner">
       <nav class="studio-topbar__left">
         <a class="studio-logo" href="/">Clickeen</a>
         <span class="studio-title">Studio</span>
       </nav>
       <div class="studio-topbar__right" role="toolbar" aria-label="Studio controls">
-        <button class="btn btn--ghost" data-theme-btn="light">Light</button>
+        <button class="btn btn--ghost" data-theme-btn="light" aria-pressed="true">Light</button>
         <button class="btn btn--ghost" data-theme-btn="dark">Dark</button>
         <button class="btn btn--ghost" data-theme-btn="hc">HC</button>
         <span class="sep" aria-hidden="true"></span>
-        <button class="btn btn--ghost" data-preview-size="desktop">Desktop</button>
+        <button class="btn btn--ghost" data-preview-size="desktop" aria-pressed="true">Desktop</button>
         <button class="btn btn--ghost" data-preview-size="mobile">Mobile</button>
         <span class="sep" aria-hidden="true"></span>
         <a class="btn btn--primary" href="/dashboard">Dashboard</a>
       </div>
     </header>
 
-    <!-- 3 Panels: Left (sidebar), Center (preview iframe), Right (CSS editor) -->
+    <!-- Panels -->
     <main class="studio-grid" role="main">
+      <!-- Left: global tools (NO Dieter specifics) -->
       <aside class="panel panel--left" aria-label="Sidebar">
-        <!-- Left panel is a neutral placeholder owned by Studio (no Dieter markup) -->
         <div class="panel__section">
-          <h2 class="panel__title">Components</h2>
+          <div class="panel__header">
+            <h2 class="panel__title">Preview Source</h2>
+          </div>
           <div class="panel__body">
-            <!-- TODO: global panel behaviors live here (search, tree, etc.) -->
-            <p class="muted">Global navigation, search, and tools will appear here.</p>
+            <label class="muted" for="previewUrl">URL to load in center preview</label>
+            <div class="row">
+              <input id="previewUrl" class="input" type="text" placeholder="/dieter/components.html" />
+              <button id="loadBtn" class="btn">Load</button>
+            </div>
+            <p class="muted small">Tip: you can also open /studio?preview=/dieter/components.html</p>
           </div>
         </div>
       </aside>
 
+      <!-- Center: iframe preview (blank by default) -->
       <section class="panel panel--center" aria-label="Preview">
         <div class="preview__chrome">
           <span class="muted">Preview</span>
         </div>
         <div class="preview__frame-wrap" id="previewWrap">
-          <!-- Dieter visualization lives ONLY inside this iframe -->
           <iframe
             id="previewFrame"
             class="preview__frame"
-            title="Dieter Preview"
-            src="/dieter/components.html"
-            sandbox="allow-scripts allow-same-origin"
+            title="Preview"
+            src="about:blank"
+            sandbox="allow-scripts allow-same-origin allow-forms"
           ></iframe>
+          <div id="blankNotice" class="blank-notice">
+            <div>No preview loaded.</div>
+            <div class="muted">Provide a URL in the left panel or use ?preview=/dieter/components.html</div>
+          </div>
         </div>
       </section>
 
+      <!-- Right: host-only CSS editor -->
       <aside class="panel panel--right" aria-label="CSS Editor">
         <div class="panel__section">
           <div class="panel__header">
