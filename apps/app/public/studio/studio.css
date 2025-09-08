@@ -35,6 +35,12 @@ body{ margin:0; background:var(--bg); color:var(--text); font:14px/1.45 system-u
 .icon-btn{ appearance:none; border:0; background:#fff; color:var(--text); width:28px; height:28px; display:grid; place-items:center; border-radius:6px; cursor:pointer }
 .icon-btn:hover{ background:#f2f2f3 }
 
+/* Icon box utility for consistent inline SVG sizing/alignment */
+.diet-iconbox{ display:inline-grid; place-items:center; vertical-align:middle; inline-size:1.25rem; block-size:1.25rem; color:currentColor }
+.diet-iconbox--16{ inline-size:1rem; block-size:1rem }
+.diet-iconbox--20{ inline-size:1.25rem; block-size:1.25rem }
+.diet-iconbox--24{ inline-size:1.5rem; block-size:1.5rem }
+
 /* Preview */
 .preview{ width:100%; height:100% }
 .preview.is-mobile{ width:390px; margin-inline:auto }
