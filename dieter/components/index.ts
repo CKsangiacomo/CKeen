@@ -7,14 +7,14 @@ export type Theme = 'light' | 'dark' | 'hc';
 
 // Button
 export interface DieterButtonProps {
-  size?: Size;              // default md
+  size?: Size;
   disabled?: boolean;
   type?: 'button' | 'submit' | 'reset';
 }
 
 // Input
 export interface DieterInputProps {
-  size?: Size;              // default md
+  size?: Size;
   disabled?: boolean;
   readOnly?: boolean;
   required?: boolean;
@@ -29,7 +29,7 @@ export interface DieterTextareaProps {
   readOnly?: boolean;
   required?: boolean;
   state?: State;
-  rows?: number;            // default 3
+  rows?: number;
 }
 
 // Select
@@ -66,17 +66,6 @@ export interface DieterValidationSummaryProps {
   message: string;
   role?: 'alert' | 'status';
 }
-
-// Barrel exports (contracts only)
-export type {
-  DieterButtonProps,
-  DieterInputProps,
-  DieterTextareaProps,
-  DieterSelectProps,
-  DieterChoiceProps,
-  DieterFormGroupProps,
-  DieterValidationSummaryProps
-};
 
 
 

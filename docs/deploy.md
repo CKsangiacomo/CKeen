@@ -1,12 +1,17 @@
 # Deployment Guide
 
+## Dieter is served by the App (single deployment)
+- Dieter contracts live in `/dieter/components/index.ts`.
+- `/apps/app/public/dieter` contains only static preview assets (HTML/CSS/JS).
+- Studio loads `/dieter/components.html` from the App deployment.
+- ⚠️ The separate `c-keen-dieter` Vercel project must be deleted in the dashboard; only `c-keen-app`, `c-keen-embed`, and `c-keen-site` remain valid.
+
 ## Vercel Projects
 These are the ONLY valid projects. Do not create new ones.
 
 - **c-keen-app** → Root: `/apps/app` → https://c-keen-app.vercel.app  
 - **c-keen-embed** → Root: `/services/embed` → https://c-keen-embed.vercel.app  
 - **c-keen-site** → Root: `/site` → https://c-keen-site.vercel.app  
-- **c-keen-dieter** → Root: `/dieter` → https://c-keen-dieter.vercel.app  
 
 ⚠️ **Warning:** Do not create new Vercel projects. All deployments must go to one of the above.
 
@@ -19,5 +24,6 @@ These are the ONLY valid projects. Do not create new ones.
 
 ## Troubleshooting
 - If a new project appears in Vercel, delete it immediately
-- If deployments fail, confirm Root Directory matches (apps/app, services/embed, site, dieter)
+- If deployments fail, confirm Root Directory matches (apps/app, services/embed, site)
 - If GitHub pushes don’t trigger deploys, check Vercel Git integration and webhooks
+ 
