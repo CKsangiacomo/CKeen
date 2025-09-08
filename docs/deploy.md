@@ -1,28 +1,23 @@
-# Deployment Notes — c-keen-app (apps/app Root)
+# Deployment Guide
 
-## Project and Source Layout
-- Vercel project: c-keen-app
-- Root Directory: apps/app
-- vercel.json location: apps/app/vercel.json
-- Only c-keen-app should exist. Do not create duplicate projects (e.g., c-keen).
+## Vercel Projects
+These are the ONLY valid projects. Do not create new ones.
 
-## Build/Install/Dev Commands
-These are configured by the project and vercel.json in apps/app. Do not set overrides in the Vercel dashboard.
-- Install Command: pnpm install
-- Build Command: pnpm build
-- Development Command: pnpm dev
+- **c-keen-app** → Root: `/apps/app` → https://c-keen-app.vercel.app  
+- **c-keen-embed** → Root: `/services/embed` → https://c-keen-embed.vercel.app  
+- **c-keen-site** → Root: `/site` → https://c-keen-site.vercel.app  
+- **c-keen-dieter** → Root: `/dieter` → https://c-keen-dieter.vercel.app  
 
-## Deployment Policy
-- Auto-deploy: main branch only (Production builds come from main)
-- Preview deploys: Allowed, but builds must use Root Directory = apps/app
-- Do not enable or rely on overrides in Project Settings → Build & Deployment
-- Do not add a vercel.json at the repository root
+⚠️ **Warning:** Do not create new Vercel projects. All deployments must go to one of the above.
+
+## Deployment Rules
+- Branch: `main` → Production deploy
+- Feature branches → Preview deploys (auto-enabled in Vercel)
+- vercel.json lives inside each root folder (`/apps/app/vercel.json`, etc.)
+- No vercel.json at repo root
+- pnpm only (never npm/yarn)
 
 ## Troubleshooting
-- Deploy doesn’t trigger: Confirm GitHub integration is connected for this repo in Vercel (Project Settings → Git).
-- Wrong project builds: Delete the rogue project in Vercel (Settings → General → Danger Zone), leaving only c-keen-app.
-- Overrides reappear: Reset overrides in Project Settings → Build & Deployment and ensure vercel.json remains only in apps/app.
-
-## Notes
-- Keep the monorepo structure intact. All app code for this deploy lives under apps/app.
-- Future pushes to main automatically trigger new deployments in c-keen-app.
+- If a new project appears in Vercel, delete it immediately
+- If deployments fail, confirm Root Directory matches (apps/app, services/embed, site, dieter)
+- If GitHub pushes don’t trigger deploys, check Vercel Git integration and webhooks
