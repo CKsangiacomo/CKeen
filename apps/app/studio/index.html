@@ -4,10 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Studio</title>
+    <!-- Host shell styles only (no Dieter CSS) -->
     <link rel="stylesheet" href="/studio/studio.css" />
   </head>
   <body>
-    <!-- Top Bar -->
+    <!-- Top Bar (global chrome) -->
     <header class="studio-topbar" role="banner">
       <nav class="studio-topbar__left">
         <a class="studio-logo" href="/">Clickeen</a>
@@ -25,46 +26,40 @@
       </div>
     </header>
 
-    <!-- Panels -->
+    <!-- 3 panels -->
     <main class="studio-grid" role="main">
-      <!-- Left: global tools (NO Dieter specifics) -->
+      <!-- Left: neutral tools (no Dieter specifics) -->
       <aside class="panel panel--left" aria-label="Sidebar">
         <div class="panel__section">
           <div class="panel__header">
             <h2 class="panel__title">Preview Source</h2>
           </div>
           <div class="panel__body">
-            <label class="muted" for="previewUrl">URL to load in center preview</label>
+            <label class="muted" for="previewUrl">URL to load in Preview</label>
             <div class="row">
               <input id="previewUrl" class="input" type="text" placeholder="/dieter/components.html" />
               <button id="loadBtn" class="btn">Load</button>
             </div>
-            <p class="muted small">Tip: you can also open /studio?preview=/dieter/components.html</p>
+            <p class="muted small">Tip: /studio?preview=/dieter/components.html</p>
           </div>
         </div>
       </aside>
 
-      <!-- Center: iframe preview (blank by default) -->
+      <!-- Center: iframe preview (defaults to Dieter to make verification easy) -->
       <section class="panel panel--center" aria-label="Preview">
-        <div class="preview__chrome">
-          <span class="muted">Preview</span>
-        </div>
+        <div class="preview__chrome"><span class="muted">Preview</span></div>
         <div class="preview__frame-wrap" id="previewWrap">
           <iframe
             id="previewFrame"
             class="preview__frame"
             title="Preview"
-            src="about:blank"
-            sandbox="allow-scripts allow-same-origin allow-forms"
+            src="/dieter/components.html"
+            sandbox="allow-scripts allow-same-origin"
           ></iframe>
-          <div id="blankNotice" class="blank-notice">
-            <div>No preview loaded.</div>
-            <div class="muted">Provide a URL in the left panel or use ?preview=/dieter/components.html</div>
-          </div>
         </div>
       </section>
 
-      <!-- Right: host-only CSS editor -->
+      <!-- Right: host-only CSS injection -->
       <aside class="panel panel--right" aria-label="CSS Editor">
         <div class="panel__section">
           <div class="panel__header">
