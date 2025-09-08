@@ -19,6 +19,13 @@
     "smoke:prod": "bash scripts/e2e-prod-smoke.sh"
   },
   "devDependencies": {
+    "@radix-ui/react-dialog": "latest",
+    "@radix-ui/react-dropdown-menu": "latest",
+    "@radix-ui/react-slot": "latest",
+    "@radix-ui/react-tabs": "latest",
+    "clsx": "latest",
+    "lucide-react": "latest",
+    "tailwind-merge": "latest",
     "stylelint": "16.8.1",
     "stylelint-config-standard": "36.0.1",
     "stylelint-order": "6.0.4",
