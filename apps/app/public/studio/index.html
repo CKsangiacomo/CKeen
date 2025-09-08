@@ -5,32 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Studio</title>
     <link rel="stylesheet" href="/studio/studio.css" />
+    <link rel="stylesheet" href="/dieter/components/icon.css" />
+    <link rel="stylesheet" href="/dieter/components/icon-helpers.css" />
   </head>
   <body>
     <header class="studio-topbar" role="banner">
       <nav class="studio-topbar__left">
         <a class="studio-logo" href="/">Clickeen</a>
-        <span class="studio-title">Studio</span>
+        <span class="studio-title">Lorem Ipsum</span>
       </nav>
       <div class="studio-topbar__right" role="toolbar" aria-label="Studio controls">
         <div class="segmented" role="group" aria-label="Theme">
-          <button class="segmented__btn is-active" data-theme="light" title="Light"><span class="icon-sun"></span><span class="sr-only">Light</span></button>
-          <button class="segmented__btn" data-theme="dark" title="Dark"><span class="icon-moon"></span><span class="sr-only">Dark</span></button>
+          <button class="segmented__btn is-active" data-theme="light" title="Light"><span class="diet-icon" data-icon="sun"></span><span class="sr-only">Light</span></button>
+          <button class="segmented__btn" data-theme="dark" title="Dark"><span class="diet-icon" data-icon="moon"></span><span class="sr-only">Dark</span></button>
         </div>
         <div class="segmented" role="group" aria-label="Viewport">
-          <button class="segmented__btn is-active" data-viewport="desktop" title="Desktop"><span class="icon-desktop"></span><span class="sr-only">Desktop</span></button>
-          <button class="segmented__btn" data-viewport="mobile" title="Mobile"><span class="icon-phone"></span><span class="sr-only">Mobile</span></button>
+          <button class="segmented__btn is-active" data-viewport="desktop" title="Desktop"><span class="diet-icon" data-icon="desktop"></span><span class="sr-only">Desktop</span></button>
+          <button class="segmented__btn" data-viewport="mobile" title="Mobile"><span class="diet-icon" data-icon="phone"></span><span class="sr-only">Mobile</span></button>
         </div>
       </div>
     </header>
 
-    <main class="studio-grid" role="main">
+    <main class="studio-grid" data-left="open" data-right="open" role="main">
       <aside class="panel panel--left" aria-label="Left Panel">
         <div class="panel__header">
-          <span class="panel__icon">📂</span>
+          <span class="diet-icon" data-icon="folder"></span>
           <span class="panel__title">Lorem Ipsum</span>
           <div class="panel__actions">
-            <button class="icon-btn" data-collapse="left" title="Collapse left"><span class="icon-chevron-left"></span><span class="sr-only">Collapse left</span></button>
+            <button class="icon-btn" data-collapse="left" title="Collapse left"><span class="diet-icon" data-icon="chevron-left"></span><span class="sr-only">Collapse left</span></button>
           </div>
         </div>
         <div class="panel__body">Lorem Ipsum</div>
@@ -38,23 +40,21 @@
 
       <section class="panel panel--center" aria-label="Center Panel">
         <div class="panel__header">
-          <span class="panel__icon">🧪</span>
+          <span class="diet-icon" data-icon="edit"></span>
           <span class="panel__title">Lorem Ipsum</span>
         </div>
         <div class="panel__body">
-          <div id="centerPreview" class="preview">
-            <div class="preview__placeholder">Lorem Ipsum</div>
-          </div>
+          <div id="centerPreview" class="preview"><div class="preview__placeholder">Lorem Ipsum</div></div>
         </div>
       </section>
 
       <aside class="panel panel--right" aria-label="Right Panel">
         <div class="panel__header">
-          <span class="panel__icon">🛠️</span>
+          <span class="diet-icon" data-icon="wrench"></span>
           <span class="panel__title">Lorem Ipsum</span>
           <div class="panel__actions">
-            <button class="icon-btn" id="copyBtn" title="Copy"><span class="icon-copy"></span><span class="sr-only">Copy</span></button>
-            <button class="icon-btn" data-collapse="right" title="Collapse right"><span class="icon-chevron-right"></span><span class="sr-only">Collapse right</span></button>
+            <button class="icon-btn" id="copyBtn" title="Copy"><span class="diet-icon" data-icon="copy"></span><span class="sr-only">Copy</span></button>
+            <button class="icon-btn" data-collapse="right" title="Collapse right"><span class="diet-icon" data-icon="chevron-right"></span><span class="sr-only">Collapse right</span></button>
           </div>
         </div>
         <div class="panel__body">Lorem Ipsum</div>
