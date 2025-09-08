@@ -67,16 +67,11 @@ export interface DieterValidationSummaryProps {
   role?: 'alert' | 'status';
 }
 
-// Barrel exports (contracts only)
-export type {
-  DieterButtonProps,
-  DieterInputProps,
-  DieterTextareaProps,
-  DieterSelectProps,
-  DieterChoiceProps,
-  DieterFormGroupProps,
-  DieterValidationSummaryProps
-};
+/**
+ * Note: Interfaces above are already exported via `export interface`.
+ * Do NOT re-export them with `export type { ... }`, which can cause
+ * "Export declaration conflicts with exported declaration" errors.
+ */
 
 
 
