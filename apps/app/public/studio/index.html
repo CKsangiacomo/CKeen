@@ -13,28 +13,50 @@
         <span class="studio-title">Studio</span>
       </nav>
       <div class="studio-topbar__right" role="toolbar" aria-label="Studio controls">
-        <button class="btn btn--ghost" data-theme-btn="light" aria-pressed="true" title="Light">☀️</button>
-        <button class="btn btn--ghost" data-theme-btn="dark" title="Dark">🌙</button>
-        <button class="btn btn--ghost" data-theme-btn="hc" title="High Contrast">⬛️</button>
-        <span class="sep" aria-hidden="true"></span>
-        <button class="btn btn--ghost" aria-pressed="true" title="Desktop">🖥️</button>
-        <button class="btn btn--ghost" title="Mobile">📱</button>
+        <div class="segmented" role="group" aria-label="Theme">
+          <button class="segmented__btn is-active" data-theme="light" title="Light"><span class="icon-sun"></span><span class="sr-only">Light</span></button>
+          <button class="segmented__btn" data-theme="dark" title="Dark"><span class="icon-moon"></span><span class="sr-only">Dark</span></button>
+        </div>
+        <div class="segmented" role="group" aria-label="Viewport">
+          <button class="segmented__btn is-active" data-viewport="desktop" title="Desktop"><span class="icon-desktop"></span><span class="sr-only">Desktop</span></button>
+          <button class="segmented__btn" data-viewport="mobile" title="Mobile"><span class="icon-phone"></span><span class="sr-only">Mobile</span></button>
+        </div>
       </div>
     </header>
 
     <main class="studio-grid" role="main">
       <aside class="panel panel--left" aria-label="Left Panel">
-        <div class="panel__header"><span class="panel__icon">📂</span><span class="panel__title">Lorem Ipsum</span></div>
+        <div class="panel__header">
+          <span class="panel__icon">📂</span>
+          <span class="panel__title">Lorem Ipsum</span>
+          <div class="panel__actions">
+            <button class="icon-btn" data-collapse="left" title="Collapse left"><span class="icon-chevron-left"></span><span class="sr-only">Collapse left</span></button>
+          </div>
+        </div>
         <div class="panel__body">Lorem Ipsum</div>
       </aside>
 
       <section class="panel panel--center" aria-label="Center Panel">
-        <div class="panel__header"><span class="panel__icon">🧪</span><span class="panel__title">Lorem Ipsum</span></div>
-        <div class="panel__body">Lorem Ipsum</div>
+        <div class="panel__header">
+          <span class="panel__icon">🧪</span>
+          <span class="panel__title">Lorem Ipsum</span>
+        </div>
+        <div class="panel__body">
+          <div id="centerPreview" class="preview">
+            <div class="preview__placeholder">Lorem Ipsum</div>
+          </div>
+        </div>
       </section>
 
       <aside class="panel panel--right" aria-label="Right Panel">
-        <div class="panel__header"><span class="panel__icon">🛠️</span><span class="panel__title">Lorem Ipsum</span></div>
+        <div class="panel__header">
+          <span class="panel__icon">🛠️</span>
+          <span class="panel__title">Lorem Ipsum</span>
+          <div class="panel__actions">
+            <button class="icon-btn" id="copyBtn" title="Copy"><span class="icon-copy"></span><span class="sr-only">Copy</span></button>
+            <button class="icon-btn" data-collapse="right" title="Collapse right"><span class="icon-chevron-right"></span><span class="sr-only">Collapse right</span></button>
+          </div>
+        </div>
         <div class="panel__body">Lorem Ipsum</div>
       </aside>
     </main>
