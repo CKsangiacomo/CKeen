@@ -1,13 +1,12 @@
 (() => {
   const root = document.documentElement;
   const frame = document.getElementById('previewFrame');
-  const wrap = document.getElementById('previewWrap');
   const blank = document.getElementById('blankNotice');
   const cssTA = document.getElementById('cssEditor');
   const cssWrap = document.getElementById('cssEditorWrap');
   const cssCollapseBtn = document.getElementById('cssCollapseBtn');
 
-  // Theme controls — LIGHT default
+  // Theme controls — LIGHT default (already set in <html data-theme="light">)
   const themeBtns = document.querySelectorAll('[data-theme-btn]');
   themeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -38,17 +37,18 @@
   function loadPreview(url) {
     if (!url) return;
     frame.src = url;
-    blank.style.display = 'none';
+    if (blank) blank.style.display = 'none';
   }
 
+  // If ?preview= is present, override default src
   const qp = new URLSearchParams(location.search);
   const previewParam = qp.get('preview');
   if (previewParam) {
-    urlInput.value = previewParam;
+    if (urlInput) urlInput.value = previewParam;
     loadPreview(previewParam);
   }
 
-  loadBtn.addEventListener('click', () => loadPreview(urlInput.value.trim()));
+  if (loadBtn) loadBtn.addEventListener('click', () => loadPreview(urlInput.value.trim()));
 
   // Inject CSS into iframe (host-only experiment)
   function injectCss(css) {
@@ -62,16 +62,18 @@
         doc.head.appendChild(style);
       }
       style.textContent = css || '';
-    } catch {}
+    } catch { /* ignore cross-origin errors */ }
   }
-  cssTA?.addEventListener('input', (e) => injectCss(e.target.value));
+  if (cssTA) cssTA.addEventListener('input', (e) => injectCss(e.target.value));
 
   // Collapse editor
-  cssCollapseBtn?.addEventListener('click', () => {
-    const open = cssCollapseBtn.getAttribute('aria-expanded') !== 'false';
-    cssWrap.style.display = open ? 'none' : 'block';
-    cssCollapseBtn.setAttribute('aria-expanded', open ? 'false' : 'true');
-  });
+  if (cssCollapseBtn) {
+    cssCollapseBtn.addEventListener('click', () => {
+      const open = cssCollapseBtn.getAttribute('aria-expanded') !== 'false';
+      cssWrap.style.display = open ? 'none' : 'block';
+      cssCollapseBtn.setAttribute('aria-expanded', open ? 'false' : 'true');
+    });
+  }
 })();
 
 
