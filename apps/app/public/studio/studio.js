@@ -1,59 +1,77 @@
-/* Studio Host Shell behaviors only (no Dieter logic here). */
-
-// Theme toggles
-(function () {
-  const setTheme = (t) => document.documentElement.setAttribute('data-theme', t);
-  document.querySelectorAll('[data-theme-btn]').forEach(btn => {
-    btn.addEventListener('click', () => setTheme(btn.getAttribute('data-theme-btn')));
-  });
-})();
-
-// Preview size toggles (desktop/mobile)
-(function () {
+(() => {
+  const root = document.documentElement;
   const frame = document.getElementById('previewFrame');
-  const wrap  = document.getElementById('previewWrap');
-  document.querySelectorAll('[data-preview-size]').forEach(btn => {
+  const wrap = document.getElementById('previewWrap');
+  const blank = document.getElementById('blankNotice');
+  const cssTA = document.getElementById('cssEditor');
+  const cssWrap = document.getElementById('cssEditorWrap');
+  const cssCollapseBtn = document.getElementById('cssCollapseBtn');
+
+  // Theme controls — LIGHT default
+  const themeBtns = document.querySelectorAll('[data-theme-btn]');
+  themeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      const mode = btn.getAttribute('data-preview-size');
-      frame.classList.toggle('preview__frame--mobile', mode === 'mobile');
+      themeBtns.forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      root.setAttribute('data-theme', btn.dataset.themeBtn);
     });
   });
-})();
 
-// CSS injection into iframe (safe for same-origin Dieter preview)
-(function () {
-  const ta = document.getElementById('cssEditor');
-  const frame = document.getElementById('previewFrame');
-  let styleTag = null;
+  // Desktop / Mobile viewport
+  const sizeBtns = document.querySelectorAll('[data-preview-size]');
+  sizeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      sizeBtns.forEach(b => b.setAttribute('aria-pressed', 'false'));
+      btn.setAttribute('aria-pressed', 'true');
+      if (btn.dataset.previewSize === 'mobile') {
+        frame.classList.add('preview__frame--mobile');
+      } else {
+        frame.classList.remove('preview__frame--mobile');
+      }
+    });
+  });
 
-  function applyCSS() {
+  // Load preview URL (query param or input)
+  const urlInput = document.getElementById('previewUrl');
+  const loadBtn = document.getElementById('loadBtn');
+
+  function loadPreview(url) {
+    if (!url) return;
+    frame.src = url;
+    blank.style.display = 'none';
+  }
+
+  const qp = new URLSearchParams(location.search);
+  const previewParam = qp.get('preview');
+  if (previewParam) {
+    urlInput.value = previewParam;
+    loadPreview(previewParam);
+  }
+
+  loadBtn.addEventListener('click', () => loadPreview(urlInput.value.trim()));
+
+  // Inject CSS into iframe (host-only experiment)
+  function injectCss(css) {
     try {
       const doc = frame.contentDocument;
       if (!doc) return;
-      if (!styleTag) {
-        styleTag = doc.getElementById('studio-injected-css');
-        if (!styleTag) {
-          styleTag = doc.createElement('style');
-          styleTag.id = 'studio-injected-css';
-          doc.head.appendChild(styleTag);
-        }
+      let style = doc.getElementById('__studio_injected_css__');
+      if (!style) {
+        style = doc.createElement('style');
+        style.id = '__studio_injected_css__';
+        doc.head.appendChild(style);
       }
-      styleTag.textContent = ta.value || '';
-    } catch (e) {
-      // Cross-origin or timing — fail silently in host shell
-      // (Dieter remains functional even if injection is unavailable)
-    }
+      style.textContent = css || '';
+    } catch {}
   }
+  cssTA?.addEventListener('input', (e) => injectCss(e.target.value));
 
-  // Apply on input and once when iframe loads
-  ta.addEventListener('input', applyCSS);
-  document.getElementById('cssCollapseBtn').addEventListener('click', () => {
-    const wrap = document.getElementById('cssEditorWrap');
-    const open = wrap.style.display !== 'none';
-    wrap.style.display = open ? 'none' : 'block';
-    document.getElementById('cssCollapseBtn').setAttribute('aria-expanded', String(!open));
+  // Collapse editor
+  cssCollapseBtn?.addEventListener('click', () => {
+    const open = cssCollapseBtn.getAttribute('aria-expanded') !== 'false';
+    cssWrap.style.display = open ? 'none' : 'block';
+    cssCollapseBtn.setAttribute('aria-expanded', open ? 'false' : 'true');
   });
-  document.getElementById('previewFrame').addEventListener('load', applyCSS);
 })();
 
 
