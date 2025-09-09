@@ -6,6 +6,7 @@
   "scripts": {
     "ci:lockfile-check": "node tools/ci/check-lockfile.cjs",
     "ci:verify-pnpm": "node tools/ci/verify-pnpm-config.cjs",
+    "ci:verify-vercel-config": "node tools/ci/verify-vercel-config.cjs",
     "lint:css": "stylelint \"**/*.css\"",
     "lint:css:fix": "stylelint \"**/*.css\" --fix",
     "build": "turbo build",

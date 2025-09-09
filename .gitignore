@@ -12,3 +12,4 @@ test-results
 .vercel
 infra/supabase/migrations/
 tsconfig.tsbuildinfo
+.vercel/project.json
