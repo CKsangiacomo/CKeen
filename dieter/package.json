@@ -1,0 +1,11 @@
+{
+  "name": "@ck/dieter",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'No build step for dieter'"
+  }
+}
+
+
