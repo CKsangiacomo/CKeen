@@ -3,12 +3,7 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: [],
   },
-  async redirects() {
-    return [
-      // Ensure /studio loads the static host shell in /public/studio/index.html
-      { source: "/studio", destination: "/studio/index.html", permanent: true },
-    ];
-  },
+  // Remove legacy redirect to static studio; Next.js page will handle /studio
   headers: async () => [{
     source: "/(.*)",
     headers: [
