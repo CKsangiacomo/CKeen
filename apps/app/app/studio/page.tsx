@@ -106,7 +106,7 @@ export default function StudioPage() {
             <span className={styles.panelTitle}>Lorem Ipsum</span>
             <div className={styles.panelActions}>
               <button className={styles.iconBtn} title="Copy" aria-label="Copy">
-                <SystemIcon name={"doc.on.doc--bold" as IconName} size="sm" />
+                <SystemIcon name={"document.on.document--bold" as IconName} size="sm" />
               </button>
               <button className={styles.iconBtn} onClick={() => setRightOpen(v => !v)} title="Collapse right" aria-label="Collapse right">
                 <SystemIcon name={"chevron.right--bold" as IconName} size="sm" />
