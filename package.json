@@ -4,6 +4,7 @@
   "packageManager": "pnpm@10.15.1",
   "workspaces": ["apps/*", "services/*", "packages/*", "infra/*"],
   "scripts": {
+    "ci:lockfile-check": "node tools/ci/check-lockfile.cjs",
     "lint:css": "stylelint \"**/*.css\"",
     "lint:css:fix": "stylelint \"**/*.css\" --fix",
     "build": "turbo build",
