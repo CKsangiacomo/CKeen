@@ -1,0 +1,21 @@
+name: docs-check
+on: [push, pull_request]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate CONTEXT references
+        run: |
+          systems=$(ls docs/systems/core/*.md docs/systems/supporting/*.md | xargs -n1 basename | sed 's/.md$//')
+          missing=0
+          for s in $systems; do
+            if ! grep -qi "$s" docs/CONTEXT.md; then
+              echo "Missing in CONTEXT.md: $s"; missing=1
+            fi
+          done
+          exit $missing
+      - name: Ensure deployments == 3
+        run: |
+          n=$(ls docs/deployments/*.md | wc -l)
+          test "$n" -eq 3 || (echo "Expected 3 deployments, got $n" && exit 1)

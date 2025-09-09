@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+systems=$(ls docs/systems/core/*.md docs/systems/supporting/*.md | xargs -n1 basename | sed 's/.md$//')
+missing=0
+for s in $systems; do
+  if ! grep -qi "$s" docs/CONTEXT.md; then echo "ERROR: CONTEXT missing $s"; missing=1; fi
+
+done
+if [ $missing -ne 0 ]; then exit 1; fi
