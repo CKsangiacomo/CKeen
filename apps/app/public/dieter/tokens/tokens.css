@@ -37,6 +37,12 @@
   --space-9: 2.25rem;   /* 36px */
   --space-10: 2.5rem;   /* 40px */
 
+  /* icon sizes */
+  --icon-size-xs: 0.75rem;
+  --icon-size-sm: 1rem;
+  --icon-size-md: 1.25rem;
+  --icon-size-lg: 1.5rem;
+
   /* base colors (Apple-like vibe) */
   --color-bg: #ffffff;
   --color-surface: #f6f7f9;
