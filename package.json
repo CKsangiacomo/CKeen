@@ -5,6 +5,7 @@
   "workspaces": ["apps/*", "services/*", "packages/*", "infra/*"],
   "scripts": {
     "ci:lockfile-check": "node tools/ci/check-lockfile.cjs",
+    "ci:verify-pnpm": "node tools/ci/verify-pnpm-config.cjs",
     "lint:css": "stylelint \"**/*.css\"",
     "lint:css:fix": "stylelint \"**/*.css\" --fix",
     "build": "turbo build",
