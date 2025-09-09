@@ -1,44 +1,39 @@
 # Deployment Guide
 
-## Dieter is served by the App (single deployment)
-- Dieter contracts live in `/dieter/components/index.ts`.
-- `/apps/app/public/dieter` contains only static preview assets (HTML/CSS/JS).
-- Studio loads `/dieter/components.html` from the App deployment.
-- ⚠️ The separate `c-keen-dieter` Vercel project must be deleted in the dashboard; only `c-keen-app`, `c-keen-embed`, and `c-keen-site` remain valid.
-
-### Studio
-- Studio is an empty host shell (chrome, sidebar, iframe, toggles) with no Dieter logic.
-- Default iframe source is `/dieter/components.html` for visualization.
-- Guardrails: CSP allows `frame-src 'self'`; iframe is sandboxed. Stylelint override for `/apps/app/public/studio/**` forbids `.diet-*` and `--role-*`.
-- ⚠️ Do NOT create a separate Vercel project for Studio. It is served by `c-keen-app`.
-
-### Studio Host Shell
-- Route file: `apps/app/studio/index.html` serves `/studio` (HTML only here).
-- Assets: `apps/app/public/studio/studio.css` and `apps/app/public/studio/studio.js`.
-- No HTML should exist under `apps/app/public/studio/`.
-- Visualization must live strictly inside the iframe (defaults to `/dieter/components.html`).
+## Dieter (served by the App)
+- Dieter is **not** a standalone deployment.
+- Contracts live in `/dieter/components/index.ts`.
+- `/apps/app/public/dieter` contains static preview assets (HTML/CSS/JS).
+- Studio loads `/dieter/components.html` **from the App deployment**.
+- ⚠️ Delete the `c-keen-dieter` Vercel project (do not recreate). Valid projects are: `c-keen-app`, `c-keen-embed`, `c-keen-site`.
 
 ## Studio (Host Shell Only)
-Studio at `/studio` is an empty host shell. It MUST NOT contain Dieter components, styles, or logic. Visualization loads strictly via an iframe to `/dieter/components.html` with `sandbox="allow-scripts allow-same-origin"`, and CSP restricts to `'self'`. Do not create a separate Vercel project for Studio; it ships with **c-keen-app**.
+- Studio is an empty host shell (chrome, sidebar, iframe, toggles). It contains **no Dieter logic**.
+- **Location:** `apps/app/public/studio/` (static host shell).
+- **Access:** `/studio` redirects to `/studio/index.html` (configured in `apps/app/next.config.mjs`).
+- The iframe visualization loads `/dieter/components.html`.
+- Guardrails:
+  - CSP allows `frame-src 'self'`.
+  - Iframe is `sandbox="allow-scripts allow-same-origin"`.
+  - Stylelint override for `/apps/app/public/studio/**` forbids `.diet-*` and `--role-*`.
+- ⚠️ Do **not** create a separate Vercel project for Studio; it ships with **c-keen-app**.
 
-## Vercel Projects
-These are the ONLY valid projects. Do not create new ones.
+## Vercel Projects (only these three)
+- **c-keen-app** → Root: `/apps/app` → https://c-keen-app.vercel.app
+- **c-keen-embed** → Root: `/services/embed` → https://c-keen-embed.vercel.app
+- **c-keen-site** → Root: `/apps/site` → https://c-keen-site.vercel.app
 
-- **c-keen-app** → Root: `/apps/app` → https://c-keen-app.vercel.app  
-- **c-keen-embed** → Root: `/services/embed` → https://c-keen-embed.vercel.app  
-- **c-keen-site** → Root: `/site` → https://c-keen-site.vercel.app  
-
-⚠️ **Warning:** Do not create new Vercel projects. All deployments must go to one of the above.
+⚠️ **Rule:** Do not create new Vercel projects. All deployments must target one of the above.
 
 ## Deployment Rules
-- Branch: `main` → Production deploy
-- Feature branches → Preview deploys (auto-enabled in Vercel)
-- vercel.json lives inside each root folder (`/apps/app/vercel.json`, etc.)
-- No vercel.json at repo root
-- pnpm only (never npm/yarn)
+- Branch `main` → Production deploy.
+- Feature branches → Preview deploys (auto in Vercel).
+- **vercel.json lives at the repo root** and must contain **install-only** settings (lockfile enforcement). Do **not** set a repo-level `buildCommand`.
+- Do **not** add per-project `vercel.json` files unless explicitly required.
+- Use **pnpm** only (never npm/yarn).
 
 ## Troubleshooting
-- If a new project appears in Vercel, delete it immediately
-- If deployments fail, confirm Root Directory matches (apps/app, services/embed, site)
-- If GitHub pushes don’t trigger deploys, check Vercel Git integration and webhooks
+- If a new Vercel project appears → delete it immediately.
+- If a deployment fails for site/embed with `routes-manifest.json` missing → confirm the project’s Build Command is `pnpm build` and that no repo-level `buildCommand` exists.
+- If GitHub pushes don’t trigger deploys → check Vercel Git integration and webhooks.
  
