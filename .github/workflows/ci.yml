@@ -24,5 +24,8 @@ jobs:
       - name: Install (frozen)
         run: pnpm install --frozen-lockfile
 
+      - name: Verify Vercel config
+        run: pnpm ci:verify-vercel-config
+
       - name: Workspace build (smoke)
         run: pnpm -w -r run build --if-present
