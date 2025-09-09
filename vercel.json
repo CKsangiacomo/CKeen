@@ -1,5 +1,4 @@
 {
   "installCommand": "pnpm --version && echo CWD=$(pwd) && pnpm config get use-lockfile && pnpm config list --location project && pnpm config list --location user && pnpm config list --location global && pnpm install --frozen-lockfile --config.use-lockfile=true",
-  "buildCommand": "pnpm --filter @ck/app build",
   "ignoreCommand": ""
 }
