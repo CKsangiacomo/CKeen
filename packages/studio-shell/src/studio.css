@@ -1,0 +1,87 @@
+/* Studio Shell CSS - scoped to center canvas for theme and viewport */
+@import url("tokens.css");
+
+:root {
+  --studio-topbar-height: 48px;
+  --studio-template-row-height: 36px;
+  --studio-panel-width: 280px;
+}
+
+.studio-topbar {
+  height: var(--studio-topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--ck-color-border, #e5e7eb);
+  background: var(--ck-color-bg, #ffffff);
+}
+
+.studio-grid {
+  display: grid;
+  grid-template-rows: var(--studio-topbar-height) var(--studio-template-row-height) 1fr;
+  grid-template-columns: var(--studio-panel-width) 1fr var(--studio-panel-width);
+  grid-template-areas:
+    "topbar topbar topbar"
+    "template template template"
+    "left center right";
+  min-height: 100vh;
+}
+
+.studio-topbar { grid-area: topbar; }
+.studio-template-row { grid-area: template; }
+.panel-left { grid-area: left; }
+.panel-center { grid-area: center; }
+.panel-right { grid-area: right; }
+
+.studio-template-row:empty { display: none; }
+
+.panel {
+  border-right: 1px solid var(--ck-color-border, #e5e7eb);
+  background: var(--ck-color-bg-subtle, #fafafa);
+}
+.panel-right { border-right: none; border-left: 1px solid var(--ck-color-border, #e5e7eb); }
+
+#centerCanvas {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+  background: var(--ck-canvas-bg, #ffffff);
+}
+
+/* Theme and viewport are applied ONLY to centerCanvas */
+#centerCanvas.studio-theme-light { --ck-canvas-bg: #ffffff; color: #111827; }
+#centerCanvas.studio-theme-dark { --ck-canvas-bg: #0b0f1a; color: #e5e7eb; }
+
+#centerCanvas.studio-viewport-desktop { padding: 24px; }
+#centerCanvas.studio-viewport-mobile {
+  padding: 16px;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* Collapsible panels */
+.panel.collapsed { display: none; }
+
+.studio-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--ck-color-border, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.segmented button {
+  padding: 6px 10px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.segmented button[aria-pressed="true"] {
+  background: var(--ck-color-bg-muted, #f3f4f6);
+}
+
+
