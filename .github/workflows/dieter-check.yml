@@ -1,0 +1,67 @@
+name: Dieter Guardrails
+
+on:
+  pull_request:
+    branches: [ "main" ]
+  push:
+    branches: [ "main" ]
+
+jobs:
+  guardrails:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build (root)
+        run: pnpm -r build
+
+      - name: Fail on legacy Dieter imports
+        run: |
+          set -e
+          # Detect ESM-style imports from legacy path
+          if grep -R "from \(['\"]apps/app/dieter" --include="*.ts" --include="*.tsx" .; then
+            echo "Legacy Dieter import detected (ESM-style)."; exit 1;
+          fi
+          # Detect CommonJS requires from legacy path
+          if grep -R "require(.*['\"]apps/app/dieter" --include="*.ts" --include="*.tsx" .; then
+            echo "Legacy Dieter import detected (CJS-style)."; exit 1;
+          fi
+          echo "✓ No legacy Dieter imports found."
+
+      - name: Verify Dieter link/junction exists
+        run: |
+          set -e
+          if [ -L apps/app/public/dieter ] || [ -d apps/app/public/dieter ]; then
+            echo "✓ Dieter link/junction exists"
+          else
+            echo "✗ Missing Dieter link/junction"
+            ls -la apps/app/public || true
+            exit 1
+          fi
+
+      - name: Verify Dieter asset reachable via link/junction
+        run: |
+          set -e
+          if [ -f apps/app/public/dieter/tokens.css ]; then
+            echo "✓ Dieter assets accessible via link/junction"
+          else
+            echo "✗ Dieter assets not found at apps/app/public/dieter/tokens.css"
+            ls -la apps/app/public/dieter || true
+            exit 1
+          fi
+
+
