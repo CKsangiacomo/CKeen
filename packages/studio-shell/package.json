@@ -1,0 +1,16 @@
+{
+  "name": "@ck/studio-shell",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./ui/Icon": "./src/ui/Icon.tsx"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "build": "echo 'studio-shell build OK'",
+    "clean": "rimraf dist"
+  }
+}

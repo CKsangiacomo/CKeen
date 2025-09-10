@@ -1,5 +1,3 @@
-import { IconName } from "@/dieter/tokens/icon.types";
-
 type IconSize = "xs" | "sm" | "md" | "lg";
 
 const SIZE_MAP: Record<IconSize, string> = {
@@ -9,13 +7,13 @@ const SIZE_MAP: Record<IconSize, string> = {
   lg: "var(--icon-size-lg)",
 };
 
-export function SystemIcon({
+export function Icon({
   name,
   size = "md",
   className = "",
   ariaLabel,
 }: {
-  name: IconName;
+  name: string;
   size?: IconSize;
   className?: string;
   ariaLabel?: string;
