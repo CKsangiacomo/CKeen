@@ -1,1 +1,1 @@
-{ "name": "@ck/embed-core", "version": "0.0.0", "type": "module" }
+{ "name": "@ck/embed-core", "version": "0.0.0", "type": "module", "engines": { "node": "20.x" } }

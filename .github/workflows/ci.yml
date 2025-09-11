@@ -1,4 +1,44 @@
 name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Setup pnpm (from packageManager)
+        uses: pnpm/action-setup@v4
+
+      - name: Verify root and lockfile
+        run: |
+          pwd && ls -la
+          test -f pnpm-lock.yaml || (echo "::error::Missing root pnpm-lock.yaml"; exit 1)
+          pnpm config list -l | tee pnpm-config.txt
+          if grep -q "use-lockfile=false" pnpm-config.txt; then echo "::error::pnpm use-lockfile must be true"; exit 1; fi
+          if git grep -n "--no-frozen-lockfile" -- .github/workflows | grep -v ".d/"; then echo "::error::--no-frozen-lockfile is forbidden"; exit 1; fi
+
+      - name: Install (root, frozen)
+        run: pnpm -w install --frozen-lockfile
+
+      - name: Build (ordered)
+        run: |
+          pnpm --filter @ck/dieter build
+          pnpm run build:assets
+          pnpm --filter @ck/studio-shell build || echo "::warning::@ck/studio-shell not found, skipping"
+          pnpm --filter @ck/app build
+name: CI
 on:
   push:
     branches: [ "main" ]

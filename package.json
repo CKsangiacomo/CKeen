@@ -10,6 +10,7 @@
     "lint:css": "stylelint \"**/*.css\"",
     "lint:css:fix": "stylelint \"**/*.css\" --fix",
     "build": "turbo build",
+    "build:assets": "rm -rf apps/app/public/dieter && mkdir -p apps/app/public/dieter && if [ -d dieter/dist ]; then cp -R dieter/dist/* apps/app/public/dieter/; else echo \"::warning::dieter/dist not found\"; fi",
     "dev": "concurrently -n site,app,embed -c blue,green,yellow \"pnpm dev:site\" \"pnpm dev:app\" \"pnpm dev:embed\"",
     "lint": "turbo lint",
     "test": "turbo test",
