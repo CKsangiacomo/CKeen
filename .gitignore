@@ -21,3 +21,5 @@ apps/app/dieter/
 /dieter.zip
 /packages/studio-shell.zip
 *.log
+apps/app/public/dieter/*
+!apps/app/public/dieter/README.md
