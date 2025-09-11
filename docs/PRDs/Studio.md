@@ -1,140 +1,168 @@
-# Studio — Product Requirements Definition (PRD)
+# Studio PRD (v1, Frozen)
 
-## Definition
-Studio is the **layout service**.  
-It provides a standardized container (top bar + three panels + workspace) for interactive work.  
-Studio has **no business logic** of its own and does not import Dieter CSS/JS.  
-It is consumed by apps/services that need an editor, previewer, or visualization shell.
+**Last updated:** 2025-09-09  
+**Owner:** Platform / CTO  
+**Status:** ✅ Frozen for v1 (implementation green-light)
 
 ---
 
-## Purpose
-- Provide a **consistent layout** (topbar, left/right panels, workspace) across services.  
-- Allow services to plug in their content logic without reinventing chrome.  
-- Enforce strict separation: Studio = shell, Dieter = design system.  
+## Summary
+Studio is a standalone shell reused by multiple products (Bob, MiniBob, Dieter). It provides chrome (topbar, template row), a 3-panel layout (left | center | right), theme + viewport toggles (affect center only), panel collapse, and a typed event bus. Studio does not own business logic, templates, preview rendering, persistence, or network calls. These are the responsibility of the host.
 
 ---
 
-## Scope
-- **Top bar** (branding, title, global actions).  
-- **Left panel** (primary controls/navigation, collapsible).  
-- **Center workspace** (visualizer/editor, iframe host).  
-- **Right panel** (secondary controls, collapsible).  
-- **Global controls**: theme toggle (light/dark), viewport toggle (desktop/mobile), panel collapse.  
+## Goals
+- Provide a single reusable shell for all builders and internal tools  
+- Guarantee consistent UX and behavior (theme/viewport toggles, panel chrome)  
+- Define a tiny, stable API for hosts to inject content and react to shell events  
+- Enforce correctness via explicit error throwing, typed events, and predictable lifecycle  
 
 ---
 
-## Current Implementation
-- **Location:** `/apps/app/public/studio/`  
-- **Files:**  
-  - `index.html` (host shell entry)  
-  - `studio.css` (layout and chrome styles)  
-  - `studio.js` (panel toggles, iframe communication, global controls)  
-- **Deployment:** Served via **c-keen-app** at `/studio`  
-  - Live URL: https://c-keen-app.vercel.app/studio  
+## Non-Goals
+- Template system  
+- Preview runtime (e.g. Venice integration)  
+- Persistence or network calls  
+- Resizing or panel width control in v1  
+- Shadow DOM encapsulation  
 
 ---
 
-## Architecture
-### Shell (Studio)
-- Provides chrome and layout (top bar, panels, global toggles).  
-- No Dieter imports (no `.diet-*`, no Dieter CSS/JS).  
-- Enforces CSP and Stylelint guardrails.  
+## Primary Consumers
 
-### Content (Iframe)
-- Target: `/dieter/components.html`  
-- Sandboxed with CSP: `sandbox="allow-scripts allow-same-origin"`  
-- Receives theme/viewport changes via `postMessage`.  
-- Exposes available sections/components back to Studio.  
+### Bob / MiniBob (Widget Builder & Editor)
+- Display a template selector row directly under the topbar  
+- Left panel: controls for features/edits derived from the selected template  
+- Center panel: live preview of the template with edits (critical feature)  
+- Right panel: editable fields/specs (flexible use)  
+- Host owns: template data, preview engine (e.g., Venice), persistence, and network calls  
 
----
+### Dieter (Components Manager)
+- Right panel: list of components; clicking one updates the center panel  
+- Center panel: preview of all variants of the selected component  
+- Right panel: CSS and specs for the component  
+- Host owns: component catalog, rendering logic, persistence  
 
-## Communication Protocol
-- **Studio → Iframe**  
-  - `{ type: 'theme', value: 'dark' }`  
-  - `{ type: 'viewport', value: 'mobile' }`  
-  - `{ type: 'panel', side: 'left', collapsed: true }`  
-
-- **Iframe → Studio**  
-  - `{ type: 'ready', sections: [...] }`  
-  - `{ type: 'select', component: 'Button' }`  
+**Common behavior across all hosts**: theme toggle (light/dark) and viewport toggle (desktop/mobile) that apply only to the center panel.
 
 ---
 
-## Sidebar Generation
-- Studio inspects iframe DOM for `[data-component]`.  
-- Builds sidebar navigation dynamically from detected components.  
-- Navigation scrolls smoothly to component via `scrollIntoView()`.  
+## Scope & Constraints
+- Scope: layout shell, chrome, theme + viewport toggles, panel collapse, typed events, slot mounting API  
+- Out of scope: resizing, shadow DOM, persistence, preview runtimes, templates  
+- Monorepo & Deploy: must follow CTO Execution Checklist (pnpm workspaces, Node 20.x, integrations in `/apps/app` for Bob, `/site` for MiniBob, `/dieter` for Dieter; no new Vercel projects)  
+- Design System: Studio shell uses Oslo/Dieter tokens and components where appropriate; no Shadow DOM  
 
 ---
 
-## Guardrails
-- Studio must not import Dieter CSS/JS directly.  
-- Studio must not define `.diet-*` classes.  
-- Visualization logic must live inside the iframe, not in Studio chrome.  
-- CSP: `frame-src 'self'`, `img-src 'self' data:`.  
-- Stylelint override enforces no `.diet-*` or `--role-*` inside `/studio/**`.  
+## UI Structure (DOM & Accessibility)
+
+**Required slots (element IDs):**
+- `#slot-templateRow`: empty container under topbar (auto-hides when empty)  
+- `#slot-left`: left panel  
+- `#slot-center`: center panel body containing `#centerCanvas`  
+  - Studio applies classes here: `.studio-theme-light` / `.studio-theme-dark`, `.studio-viewport-desktop` / `.studio-viewport-mobile`  
+- `#slot-right`: right panel  
+
+**Accessibility roles:**
+- Topbar: `<header role="banner">`  
+- Template row: `role="region" aria-label="Template selector"`  
+- Panels: `role="region" aria-label="Left|Center|Right panel"`  
+- Toggles: `role="tablist"` with `role="tab"` and `aria-selected`  
+
+**Panel chrome:**
+- Header (icon, title, actions), body (host content)  
+- Collapse buttons for left/right panels  
 
 ---
 
-## Technology Stack (Claude Recommendations)
-
-### Framework Choice
-- **Final:** Keep Studio lightweight with vanilla JS + HTML + CSS for now.  
-- **Reason:** Introducing Solid/Svelte adds framework overhead without strong need.  
-- **Future:** Reevaluate if Studio grows complex; Solid.js would be preferred over React.  
-
-### Panel Management
-- **Final:** Keep CSS Grid (already in place).  
-- **Future:** Adopt Floating UI for advanced tooltips/popovers if sidebar expands.  
-
-### Animation Engine
-- **Final:** Adopt Motion One for micro-interactions and panel transitions.  
-- **Reason:** Lightweight, WAAPI-based, no React dependency.  
-
-### State Management
-- **Final:** Skip external state libraries in Phase 1.  
-- **Reason:** Native DOM state management is sufficient now.  
-- **Future:** If Studio state grows (multi-service plugins), adopt Zustand.  
-
-### UX Enhancements
-- **Final:**  
-  - Adopt keyboard shortcuts (cmd+1/2/3 panels, cmd+shift+d theme, cmd+shift+v viewport).  
-  - Implement persistent layout memory (localStorage).  
-  - Add focus management for accessibility.  
-- **Future:** ResizeObserver optimization can come later if panel resizing is added.  
-
-### Performance Optimizations
-- **Final:**  
-  - Use CSS containment + `will-change`.  
-  - Apply progressive enhancement (works without JS baseline).  
-- **Future:** Intersection Observer for sidebar only if sidebar grows very large.  
-
-### “Wow” Factors
-- **Final:** Defer magnetic edges, contextual animations, adaptive density.  
-- **Adopt later:** Command palette (Raycast-style fuzzy search) when Studio matures.  
+## Behavior (v1)
+- **Theme toggle**: updates classes on `#centerCanvas` only, never `<html>`  
+- **Viewport toggle**: updates classes on `#centerCanvas` only  
+- **Panel collapse**: visually hides/shows panel; mounted content remains  
+- **Template row**: auto-hides when empty (CSS `display:none`), auto-shows on mount  
+- **Lifecycle**:  
+  - `studio:ready` event fires exactly once when DOM is ready  
+  - `ready()` can be called multiple times and resolves with current state  
 
 ---
 
-## Implementation Roadmap
+## Public API (Frozen)
 
-### Phase 1 (Now)
-- Rock-solid CSS Grid layout.  
-- CSP + Stylelint guardrails.  
-- No framework overhead.  
+### Types
+type SlotType = 'left' | 'center' | 'right' | 'templateRow';
 
-### Phase 2
-- Keyboard shortcuts (panels, theme, viewport).  
-- Persistent layout memory.  
-- Focus management for accessibility.  
+type StudioState = {
+  theme: 'light' | 'dark';
+  viewport: 'desktop' | 'mobile';
+  panels: {
+    left:  { collapsed: boolean };
+    right: { collapsed: boolean };
+  };
+};
 
-### Phase 3
-- Smooth panel transitions with Motion One.  
-- Micro-interactions for buttons/controls.  
+type StudioEventMap = {
+  'studio:ready': StudioState;
+  'studio:theme': { theme: 'light' | 'dark' };
+  'studio:viewport': { viewport: 'desktop' | 'mobile' };
+  'studio:panel': { side: 'left' | 'right'; collapsed: boolean; source: 'user' | 'host' };
+};
 
-### Phase 4
-- Command palette with fuzzy search.  
-- Optional: Floating UI for popovers.  
-- Optional: Intersection Observer for very large sidebars.  
+### API
+interface StudioAPI {
+  // Lifecycle
+  ready(): Promise<StudioState>; // resolves with current state, safe to call multiple times
+  destroy(): void;
+
+  // Slot management (throws on conflict)
+  mount(slot: SlotType, element: HTMLElement): void;
+  unmount(slot: SlotType): void;
+  getSlot(slot: SlotType): HTMLElement | null;
+
+  // State
+  getState(): StudioState;
+  setTheme(theme: 'light' | 'dark'): void;          // affects center canvas only
+  setViewport(viewport: 'desktop' | 'mobile'): void; // affects center canvas only
+  togglePanel(side: 'left' | 'right', source?: 'host'): void;
+
+  // Events
+  on<T extends keyof StudioEventMap>(
+    event: T,
+    handler: (detail: StudioEventMap[T]) => void
+  ): () => void;
+}
+
+---
+
+## Event Contracts
+- `studio:ready`: fires once; payload = current state  
+- `studio:theme`: payload = `{ theme }`  
+- `studio:viewport`: payload = `{ viewport }`  
+- `studio:panel`: payload = `{ side, collapsed, source }`  
+
+---
+
+## Implementation Checklist
+1. Studio applies `.studio-theme-{light|dark}` to `#centerCanvas` only  
+2. Studio applies `.studio-viewport-{desktop|mobile}` to `#centerCanvas` only  
+3. Template row auto-hides when empty  
+4. All mount/unmount conflicts throw errors  
+5. `studio:ready` fires exactly once  
+6. Panel events include `source` field  
+
+---
+
+## Deferred (Future Versions)
+- Resize events (v1.1 when real stories exist)  
+- Shadow DOM (never; use CSS containment instead)  
+- Panel width control (not needed in v1)  
+
+---
+
+## Risks & Mitigations
+- **Host misuse**: hosts might ignore thrown errors. Mitigation: document strict usage in API guide.  
+- **Panel toggle feedback loops**: mitigated with `source` field on `studio:panel`.  
+- **Style conflicts**: mitigated via CSS containment rules, not Shadow DOM.  
+- **Performance**: hosts must mount once and update content, not repeatedly remount.  
 
 ---

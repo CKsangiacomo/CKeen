@@ -1,155 +1,131 @@
-# Dieter — Product Requirements Definition (PRD)
+# Dieter PRD (v1, Frozen)
 
-## Definition
-Dieter is the **design system service**.  
-It provides the foundational **tokens, icons, and components** used across all Clickeen apps and services.  
-Dieter is not an app and is not deployed standalone — it is consumed by other services (e.g., Studio, App, Embed, Site).
-
----
-
-## Purpose
-- Ensure **visual and interaction consistency** across all apps/services.  
-- Provide a **single source of truth** for system icons, typography, spacing, colors, and reusable UI primitives.  
-- Reduce duplication and design drift by centralizing tokens and components.  
+**Last updated:** 2025-09-09  
+**Owner:** Oslo/Dieter (Design System)  
+**Status:** ✅ Frozen for v1 (implementation green-light)
 
 ---
 
-## Scope
-- **Tokens** (typography, spacing, colors, roles).  
-- **Icons** (all SF Symbols exported to `/dieter/icons/*.svg`).  
-- **Components** (primitive UI elements, e.g., buttons, segmented controls).  
-- **Contracts**: exposed APIs in `/dieter/components/index.ts` for consuming apps.  
+## 1) Purpose
+
+**Dieter** is Clickeen’s **design system** (tokens, icons, components, primitives, docs) and the **components manager** UX used internally to browse/inspect components. Dieter is delivered as a **workspace package** (`@ck/dieter`) and static assets served at `/dieter/*`. It is the single source of visual truth for **Studio**, **Bob**, **MiniBob**, and internal tools.
 
 ---
 
-## Inputs
-- Design specifications from the design team.  
-- System-level iconography (SF Symbols exports).  
-- Token definitions (colors, typography, spacing, roles).  
+## 2) In/Out of Scope
+
+**In scope (v1)**
+- **Tokens:** color, typography, spacing, radii, shadow, motion, z-index, durations, easing, breakpoints.
+- **Foundations:** reset/normalization, base typography scale, focus ring, state styles, density.
+- **Components (foundational):** Button, Input, Select, Textarea, Checkbox, Radio, Switch, SegmentedControl, Tooltip, Tag/Badge, Card, Tabs, Table (essentials only), Icon primitives.
+- **Icons:** curated set, consistent optical size, strokes, and naming.
+- **CSS/JS exports:** CSS tokens and component styles; minimal JS helpers/types.
+- **Docs:** usage guidelines, props, a11y notes, do/don’t, code samples.
+- **Components Manager UI (internal):** list + variants browser (via Studio).
+
+**Out of scope (v1)**
+- App-specific components (billing forms, template-specific widgets).
+- Runtime theme switching across host roots (Studio handles center-only toggles).
+- i18n copy libraries.
+- Shadow DOM encapsulation.
 
 ---
 
-## File Structure
-`/dieter`  
-- `/tokens`  
-  - `tokens.json` → source of truth for design tokens  
-  - `tokens.css` → generated CSS variables consumed by apps/services  
-- `/icons`  
-  - `*.svg` → full SF Symbols export set  
-- `/components`  
-  - `index.ts` → entry point contract for components  
-  - `components.html` → static preview used by Studio iframe  
-  - `icon.css`, `icon-helpers.css`, `segmented.css` → CSS definitions for Dieter primitives  
+## 3) Consumers & Responsibilities
+
+- **Studio Shell** (`@ck/studio-shell`): imports Dieter **tokens** and selected primitives for chrome; no tight coupling.  
+- **Bob / MiniBob**: use Dieter components/tokens; templates render inside Studio’s center panel.  
+- **Internal Dieter Manager**: embedded in Studio to browse components/variants and expose specs.
+
+**Dieter owns:** tokens, icons, foundational components, styles, docs.  
+**Hosts own:** business logic, persistence, preview engines, data fetching.
 
 ---
 
-## Outputs
-- **Static assets**:  
-  - `/dieter/icons/` → all SVG icons  
-  - `/dieter/components.html` → component previews (for Studio iframe)  
-- **Contracts**:  
-  - `/dieter/components/index.ts` → TypeScript entry point for component exports  
-- **Helper CSS**:  
-  - `/dieter/components/icon.css`, `/dieter/components/segmented.css`, etc.  
+## 4) Distribution & Runtime
+
+**Single source:** `dieter/` (repo root) → workspace package **`@ck/dieter`**  
+**Build outputs:** `dieter/dist/**`  
+**Static serving (CDN):** `/dieter/*` via a **symlink/junction**:  
+- `apps/app/public/dieter` → symlink/junction → `../../../dieter/dist`  
+- Vercel resolves and **copies** symlinked content at build; CDN serves assets.
+
+**Build order:** `apps/app` depends on `@ck/dieter` (`workspace:*`), and `dieter/package.json` has `prepare: pnpm run build` so fresh clones produce `dist/`.
+
+**No routes, no copies:** We do **not** proxy Dieter through Next routes; we rely on CDN static serving.
 
 ---
 
-## Build Process
-- **Tokens**: `tokens.json` → transformed into `tokens.css` by build script (CSS custom properties).  
-- **Components**: CSS + TypeScript contracts, previewed in `/dieter/components.html`.  
-- **Icons**: exported via SF Symbols pipeline into `/dieter/icons/`.  
+## 5) Package Layout (authoritative)
+dieter/
+package.json
+src/
+tokens/
+index.ts             # token definitions (TS)
+css/                 # source templates for CSS tokens
+icons/
+sources/*.svg        # raw normalized SVG sources
+index.ts             # icon registry (optional JS export)
+components/
+button/
+Button.tsx
+button.css.ts      # CSS-in-JS or CSS module
+docs.md
+tests.spec.tsx
+input/
+…
+foundations/
+reset.css
+focus.css
+typography.css
+docs/
+overview.md
+accessibility.md
+dist/
+tokens.css             # compiled CSS tokens (public)
+foundations.css        # reset, focus, base styles
+components.css         # aggregated component CSS
+icons/
+.svg                # optimized public icons
+docs/
+.html|.md|.json   # generated docs (optional, for serving)
+---
+
+## 6) Component Manager (Dieter UI in Studio)
+
+- **Right panel:** lists all Dieter components.  
+- **Center panel:** shows all variants of the selected component, rendered live.  
+- **Right panel detail:** shows CSS variables, props, and implementation specs for that component.  
+- **Toggles:** desktop vs. mobile viewport, light vs. dark theme (scoped to Studio center canvas).  
 
 ---
 
-## Build Outputs
-- `/dieter/tokens/tokens.css` — generated from `tokens.json`  
-- `/dieter/components.html` — static preview page  
-- No bundled JS (components are CSS + contracts only)  
+## 7) API / Exports
+
+- **Tokens:**  
+  - JS/TS: `import { colors, spacing } from '@ck/dieter/tokens'`  
+  - CSS: `@import '@ck/dieter/dist/tokens.css';`  
+
+- **Components:**  
+  - `import { Button, Input } from '@ck/dieter/components'`  
+
+- **Icons:**  
+  - `import { IconPlus } from '@ck/dieter/icons'`  
+  - Runtime path: `/dieter/icons/plus.svg`  
+
+- **Foundations:**  
+  - `@import '@ck/dieter/dist/foundations.css';`  
+
+- **Docs:**  
+  - Served at `/dieter/docs/*` (static HTML/MD/JSON from dist/docs).
 
 ---
 
-## Technology Recommendations
+## 8) Governance & Guardrails
 
-### Component Architecture
-- CSS primitives + TypeScript contracts only.  
-- No React/Vue/Web Components.  
-- Lightweight by design; compatible with Venice (<28KB bundle).  
-
-### Build Pipeline
-- **Adopt Style Dictionary** for professional token transformation.  
-  - Input: `tokens.json`  
-  - Outputs: `tokens.css`, JS, Swift, Kotlin (if needed).  
-- PostCSS for autoprefixing, future CSS features.  
-
-### Component Preview System
-- Keep `components.html` as static preview.  
-- Enhance with **dev-only live reload** using WebSocket for faster iteration.  
-- Studio consumes this directly.  
-
-### Animation System
-- CSS `@layer` + custom properties for motion tokens.  
-- No JS dependencies for animations.  
-- Allows runtime theme/motion tweaks without rebuild.  
-
-### Icon System
-- Keep SF Symbols → SVG export pipeline.  
-- Add **SVGO optimization** for smaller files.  
-- Optional: sprite sheet generation for HTTP/2 performance (later phase).  
-
-### Testing Strategy
-- Visual regression testing with Playwright against `/dieter/components.html`.  
-- Screenshots per component state → detect regressions early.  
-- No heavy test frameworks required.  
-
-### Documentation
-- Self-documenting via `components.html`.  
-- Inline docs + usage examples per component.  
-- Studio sidebar generation consumes `[data-component]` metadata.  
-- No Storybook or separate doc site required.  
-
-### Performance Optimizations
-- Preload tokens CSS in consuming apps: `<link rel="preload" href="/dieter/tokens/tokens.css" as="style">`  
-- Inline critical CSS tokens at startup: `<style id="diet-critical">:root { --diet-color-primary: #007AFF; }</style>`  
-- Apply SVGO for icons.  
-- Guidance for consuming apps: use critical CSS + preloading strategies.  
-
----
-
-## Guardrails
-- Dieter must not depend on Studio.  
-- Dieter must remain **UI-agnostic** — no business logic.  
-- No frameworks (React/Vue), no Storybook, no CSS-in-JS.  
-- Contracts must be versioned and documented in `/dieter/components/index.ts`.  
-- Tokens must be the single source of truth — no duplication in apps.  
-- Dieter icons must always resolve under `/dieter/icons/*.svg` via `c-keen-app`.  
-
----
-
-## Deployment
-- Dieter is served only through **c-keen-app**.  
-- Live URLs:  
-  - Components preview: https://c-keen-app.vercel.app/dieter/components.html  
-  - Icons: https://c-keen-app.vercel.app/dieter/icons/  
-- ⚠️ Do not create a standalone Vercel project for Dieter.  
-
----
-
-## Integration Examples
-- **Studio**  
-  - Loads `/dieter/components.html` into the workspace iframe.  
-  - Uses Dieter icons (`/dieter/icons/*.svg`) in its chrome.  
-- **App (c-keen-app)**  
-  - Imports tokens and components from `/dieter/components/index.ts`.  
-- **Embed (c-keen-embed)**  
-  - Uses Dieter icons for consistent widget visuals.  
-- **Site (c-keen-site)**  
-  - May import Dieter tokens for styling marketing pages.  
-
----
-
-## Implementation Priority
-1. Already Done: tokens, icons, base components.  
-2. Next: integrate Style Dictionary for token pipeline.  
-3. Then: add Playwright visual regression tests.  
-4. Later: add SVGO + sprite sheets + critical CSS.  
-5. Never: React/Vue components, Storybook, CSS-in-JS, heavy bundlers.  
+- **Single source of truth:** `dieter/` at repo root.  
+- **No copies:** symlink/junction only; never duplicate Dieter sources.  
+- **CI checks:** block imports from `apps/app/dieter/`; assert `apps/app/public/dieter` is a link/junction and `dist/tokens.css` exists.  
+- **Manual cleanup:** unused legacy folders will be deleted once symlink + builds are validated.  
+- **Versioning:** Dieter package versions must follow SemVer; breaking changes require major bump and ADR update.  
+- **Documentation generation:** optional; if generated, docs are served statically from `/dieter/docs/*`.  
