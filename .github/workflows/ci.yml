@@ -15,17 +15,32 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'pnpm'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
           version: 10.15.1
 
       - name: Install (frozen)
         run: pnpm install --frozen-lockfile
 
-      - name: Verify Vercel config
-        run: pnpm ci:verify-vercel-config
+      - name: Verify lockfile contents
+        run: pnpm ls --depth 0
 
-      - name: Workspace build (smoke)
-        run: pnpm -w -r run build --if-present
+      - name: Build Dieter and copy assets
+        run: |
+          pnpm --filter @ck/dieter build
+          pnpm run build:assets
+
+      - name: Build packages
+        run: |
+          pnpm --filter @ck/studio-shell build
+          pnpm --filter @ck/app build
+
+      - name: CI enforcement checks
+        run: |
+          test ! -e apps/app/public/dieter/icons/svg || (echo "apps/app/public/dieter should not be committed" && exit 1)
+          test -d dieter/dist || (echo "dieter/dist missing after build" && exit 1)
+          rg -n "@ck/dieter/icons" -g "*.{ts,tsx}" || true
+          test -z "$(git ls-files '*.zip')" || (echo "zip files are not allowed in repo" && exit 1)

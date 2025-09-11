@@ -17,3 +17,5 @@ tsconfig.tsbuildinfo
 # Prevent accidental legacy Dieter (app-local) resurrection
 apps/app/dieter/
 !apps/app/public/dieter
+
+apps/app/public/dieter
