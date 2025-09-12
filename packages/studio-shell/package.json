@@ -1,0 +1,11 @@
+{
+  "name": "@ck/studio-shell",
+  "version": "0.1.0",
+  "private": false,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": { "build": "tsc -p tsconfig.json" },
+  "dependencies": { "@ck/dieter": "workspace:*", "react": "^18.2.0" },
+  "peerDependencies": { "react": "^18.2.0" }
+}
