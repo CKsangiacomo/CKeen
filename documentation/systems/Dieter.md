@@ -135,3 +135,20 @@ docs/
 - **SVG Normalization:** `scripts/process-svgs.js` enforces `fill="currentColor"`; `scripts/verify-svgs.js` asserts compliance; counts compared to `icons.json`.  
 - **Tooling Consistency (ADR-004):** Canonical pnpm in root `package.json` (`pnpm@10.15.1`); CI uses `--frozen-lockfile`.  
 - **Verification:** CI checks (a) no committed files under `apps/app/public/dieter/`, (b) presence of `dieter/dist`, (c) Dieter built before Studio/App.
+
+---
+
+## Status: Icons/Tokens/Build-chain Alignment — DONE (2025-09-12)
+
+- Consumers fetch icons from `/dieter/icons/svg/*`; tokens are consumed with center-canvas scoping in Studio.
+
+---
+
+## PR Checklist — Dieter Icon & Token Changes
+
+- [ ] Verified no suffixed icons introduced (all SVGs are unsuffixed, e.g. `chevron-left.svg` not `chevron-left-16.svg`).
+- [ ] Verified Dieter tokens (`--ck-icon-size-sm`, `--ck-icon-size-md`, `--ck-icon-size-lg`) control sizing, not file suffixes.
+- [ ] Verified SVGs are normalized with `fill="currentColor"`.
+- [ ] Ran `pnpm build:ci` successfully with frozen lockfile.
+- [ ] Confirmed copy-on-build populated `apps/app/public/dieter` (no symlinks, no committed files).
+- [ ] CI guard passes with no false positives.
