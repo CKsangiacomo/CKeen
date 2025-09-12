@@ -1,15 +1,15 @@
 name: CI
 on:
   push:
-    branches: ["**"]
+    branches: ["*"]
     paths-ignore:
       - "documentation/**"
-      - "**/*.md"
+      - "/*.md"
   pull_request:
-    branches: ["**"]
+    branches: ["*"]
     paths-ignore:
       - "documentation/**"
-      - "**/*.md"
+      - "/*.md"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,13 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Enable Corepack
         run: corepack enable
-
       - name: Use packageManager version
         run: corepack install
-
       - name: Cache pnpm store
         uses: actions/cache@v4
         with:
@@ -34,15 +31,11 @@ jobs:
           key: pnpm-store-${{ runner.os }}-${{ hashFiles(pnpm-lock.yaml) }}
           restore-keys: |
             pnpm-store-${{ runner.os }}-
-
       - name: Install dependencies (frozen)
         run: pnpm install --frozen-lockfile
-
       - name: Typecheck
         run: pnpm -r -w run typecheck || true
-
       - name: Lint
         run: pnpm -r -w run lint || true
-
       - name: Build
         run: pnpm -r -w run build
