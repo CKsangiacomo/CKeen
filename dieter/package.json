@@ -5,7 +5,7 @@
   "packageManager": "pnpm@10.15.1",
   "main": "index.html",
   "scripts": {
-    "build": "echo \"[dieter] build: (TODO) implement actual build to dist\" && mkdir -p dist && touch dist/tokens.css",
+    "build": "node ../scripts/build-dieter.js && node ../scripts/copy-dieter-assets.js",
     "prepare": "pnpm run build"
   }
 }

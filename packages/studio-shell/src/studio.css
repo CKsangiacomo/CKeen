@@ -1,7 +1,8 @@
 /* Studio Shell CSS - scoped to center canvas for theme and viewport */
+/* Import Dieter tokens but scope them under #centerCanvas to prevent global bleed */
 @import url("tokens.css");
 
-:root {
+#centerCanvas {
   --studio-topbar-height: 48px;
   --studio-template-row-height: 36px;
   --studio-panel-width: 280px;

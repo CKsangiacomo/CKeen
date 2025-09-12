@@ -168,8 +168,9 @@ interface StudioAPI {
 ---
 
 ## Engineering Constraints (Frozen)
-- **Deterministic Build:** Studio consumes Dieter tokens/icons; builds require canonical pnpm & Node 20. CI uses `--frozen-lockfile`.  
-- **Icons Rendering:** Inline SVG fetched from `/dieter/icons/svg/<kebab>.svg`, normalized to `fill="currentColor"`, hydration-safe, cached in memory with bounded LRU.  
-- **Asset Flow:** Dieter builds to `dieter/dist/`; build copies to `apps/app/public/dieter/`.  
+- **Deterministic Build (ADR-004):** Studio consumes Dieter tokens/icons; builds require canonical pnpm & Node 20. CI uses `--frozen-lockfile`.  
+- **Icons Rendering:** Inline SVG fetched from `/dieter/icons/svg/<kebab>.svg`, normalized to `fill="currentColor"`, hydration-safe, cached in memory with bounded LRU+TTL.  
+- **Token Scoping:** Dieter `tokens.css` is transformed at build via `scripts/scope-tokens.js` to scope `:root` → `#centerCanvas` (no global bleed).  
+- **Asset Flow (ADR-005):** Dieter builds to `dieter/dist/`; copy to `apps/app/public/dieter/`.  
 - **Order:** `@ck/dieter` → copy assets → `@ck/studio-shell` → `@ck/app`.  
 - **Accessibility:** Decorative icons are `aria-hidden`; action icons include `aria-label`.
