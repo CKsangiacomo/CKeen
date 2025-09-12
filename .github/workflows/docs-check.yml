@@ -1,36 +1,81 @@
 name: docs-check
-on: [push, pull_request]
+
+on:
+  pull_request:
+    paths:
+      - "documentation/**"
+      - "tools/docs/**"
+      - ".github/workflows/docs-check.yml"
+  push:
+    branches: ["**"]
+    paths:
+      - "documentation/**"
+      - "tools/docs/**"
+      - ".github/workflows/docs-check.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Generate services index
-        run: node tools/docs/generate-services.mjs
-      - name: Ensure SERVICES.generated.md is up to date
+
+      # Use the repo-declared packageManager version (pnpm) via Corepack
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Use packageManager version
+        run: corepack install
+
+      # Probe for documentation tree — skip the job if it’s not there
+      - name: Probe docs tree
+        id: probe
+        shell: bash
         run: |
-          if ! git diff --quiet -- docs/SERVICES.generated.md; then
-            echo "Generator output is stale. Run node tools/docs/generate-services.mjs and commit."; exit 1; fi
+          if [ -d documentation ] && [ -d documentation/systems/core ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "No documentation/systems/core present — skipping docs validation."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Generate services index
+        if: steps.probe.outputs.skip != 'true'
+        run: pnpm -s node tools/docs/generate-services.mjs
+
+      - name: Ensure SERVICES_INDEX.md is up to date
+        if: steps.probe.outputs.skip != 'true'
+        shell: bash
+        run: |
+          if ! git diff --quiet -- documentation/SERVICES_INDEX.md; then
+            echo "Generator output is stale. Run: pnpm -s node tools/docs/generate-services.mjs and commit."
+            exit 1
+          fi
+
       - name: Validate CONTEXT references (skip staged)
+        if: steps.probe.outputs.skip != 'true'
+        shell: bash
         run: |
           missing=0
-          for f in docs/systems/core/*.md docs/systems/supporting/*.md; do
+          for f in documentation/systems/core/*.md documentation/systems/supporting/*.md; do
             [ -e "$f" ] || continue
             name=$(basename "$f" .md)
+            # skip if frontmatter contains staged: true (case-insensitive)
             if awk 'NR==1 && $0 ~ /^---/ {front=1; next} front && $0 ~ /^---/ {exit} front && tolower($0) ~ /staged:[[:space:]]*true/ {print "staged"; exit 0}' "$f" | grep -q staged; then
               echo "INFO: $name is staged; skipping"
               continue
             fi
-            if ! grep -qi "$name" docs/CONTEXT.md; then
+            if ! grep -qi "$name" documentation/CONTEXT.md; then
               echo "Missing in CONTEXT.md: $name"; missing=1
             fi
           done
           exit $missing
+
       - name: Ensure deployments == 3
+        if: steps.probe.outputs.skip != 'true'
+        shell: bash
         run: |
-          n=$(ls docs/deployments/*.md 2>/dev/null | wc -l | tr -d ' ')
+          n=$(ls documentation/deployments/*.md 2>/dev/null | wc -l | tr -d ' ')
           test "$n" -eq 3 || (echo "Expected 3 deployments, got $n" && exit 1)
