@@ -1,4 +1,4 @@
-import { StudioEvent, StudioEventListener } from ./types;
+import { StudioEvent, StudioEventListener } from './types';
 
 export class StudioEventBus extends EventTarget {
   emit(event: StudioEvent) {
@@ -7,12 +7,12 @@ export class StudioEventBus extends EventTarget {
 
   on(fn: StudioEventListener) {
     const handler = (ev: Event) => fn((ev as CustomEvent).detail as StudioEvent);
-    const types: Array<StudioEvent[type]> = [
-      studio:ready,
-      studio:panel,
-      studio:theme,
-      studio:viewport,
-      studio:error,
+    const types: Array<StudioEvent['type']> = [
+      'studio:ready',
+      'studio:panel',
+      'studio:theme',
+      'studio:viewport',
+      'studio:error',
     ];
     types.forEach(t => this.addEventListener(t, handler));
     return () => types.forEach(t => this.removeEventListener(t, handler));
