@@ -1,10 +1,15 @@
-import StudioShellComponent from ../components/StudioRoot;
-export const StudioShell = StudioShellComponent;     // named export (stable symbol)
-export default StudioShellComponent;                 // default export (for flexibility)
+import StudioShellComponent from "../components/StudioRoot";
 
-export { studioBus } from ../events/bus;
-export type { StudioEvent, StudioEventListener } from ../events/types;
+// Concrete exports that survive bundler rewrites
+export const StudioShell = StudioShellComponent;   // named
+export default StudioShellComponent;               // default
 
-// V0 stubs; real wiring added in later phases
-export function setTheme(_: light | dark) {}
-export function setViewport(_: desktop | mobile) {}
+export { studioBus } from "../events/bus";
+
+// Re-export types safely
+import type { StudioEvent, StudioEventListener } from "../events/types";
+export type { StudioEvent, StudioEventListener };
+
+// V0 stubs; wired in later phases
+export function setTheme(_: "light" | "dark") {}
+export function setViewport(_: "desktop" | "mobile") {}
