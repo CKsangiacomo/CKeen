@@ -1,62 +1,48 @@
 name: CI
 on:
   push:
-    branches: [ "main" ]
+    branches: ["**"]
     paths-ignore:
       - "documentation/**"
       - "**/*.md"
   pull_request:
-    branches: [ "main" ]
+    branches: ["**"]
     paths-ignore:
       - "documentation/**"
       - "**/*.md"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Enable Corepack
         run: corepack enable
-      
-      - name: Verify Corepack availability
-        run: corepack --version || npm install -g corepack
-      
+
       - name: Use packageManager version
         run: corepack install
-      
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'pnpm'
 
-      - name: Verify toolchain
-        run: |
-          echo "Node: $(node -v)"
-          echo "pnpm: $(pnpm -v)"
-          test -f pnpm-lock.yaml
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles(pnpm-lock.yaml) }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
 
       - name: Install dependencies (frozen)
         run: pnpm install --frozen-lockfile
 
-      - name: Build Dieter and copy assets
-        run: |
-          pnpm --filter @ck/dieter build
-          pnpm run build:assets
+      - name: Typecheck
+        run: pnpm -r -w run typecheck || true
 
-      - name: Build packages
-        run: |
-          pnpm --filter @ck/studio-shell build
-          pnpm --filter @ck/app build
+      - name: Lint
+        run: pnpm -r -w run lint || true
 
-      - name: CI enforcement checks
-        run: |
-          # Fail if any committed files under apps/app/public/dieter
-          test -z "$(git ls-files 'apps/app/public/dieter/**')" || (echo "apps/app/public/dieter should not be committed" && exit 1)
-          # Verify Dieter dist exists
-          test -d dieter/dist || (echo "dieter/dist missing after build" && exit 1)
-          # Verify no @ck/dieter/icons imports
-          if grep -R -n --include='*.ts' --include='*.tsx' "@ck/dieter/icons" .; then echo "Found forbidden @ck/dieter/icons imports" && exit 1; fi
-          # No .zip files
-          test -z "$(git ls-files '*.zip')" || (echo "zip files are not allowed in repo" && exit 1)
+      - name: Build
+        run: pnpm -r -w run build

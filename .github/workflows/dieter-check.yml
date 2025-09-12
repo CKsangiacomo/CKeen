@@ -1,13 +1,16 @@
 name: Dieter Guardrails
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "**" ]
     paths-ignore:
       - "documentation/**"
       - "**/*.md"
   push:
-    branches: [ "main" ]
+    branches: [ "**" ]
     paths-ignore:
       - "documentation/**"
       - "**/*.md"
@@ -27,6 +30,14 @@ jobs:
 
       - name: Use packageManager version
         run: corepack install
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-store-${{ runner.os }}-
 
       - name: Setup Node
         uses: actions/setup-node@v4

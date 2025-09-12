@@ -1,8 +1,13 @@
 {
   "name": "clickeen",
   "private": true,
-  "packageManager": "pnpm@10.15.1",
-  "workspaces": ["apps/*", "services/*", "packages/*", "infra/*"],
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*",
+    "infra/*"
+  ],
   "scripts": {
     "ci:lockfile-check": "node tools/ci/check-lockfile.cjs",
     "ci:verify-pnpm": "node tools/ci/verify-pnpm-config.cjs",
