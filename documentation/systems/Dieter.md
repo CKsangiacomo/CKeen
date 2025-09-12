@@ -1,5 +1,16 @@
 # Dieter PRD (v1, Frozen)
 
+---
+## Icon Suffix Policy — ENFORCED
+
+- **Allowed**: `*-<digits>.svg` (e.g., `chevron-2.svg`) when `<digits>` denotes a semantically different icon variant (e.g., wide vs narrow).
+- **Prohibited**: Size-based suffixes (`-16.svg`, `-20.svg`, `-24.svg`, etc.). Icon sizing comes only from Dieter tokens/classes.
+- **Runtime usage**: Both unsuffixed and `-<digits>` icons may be referenced in code. Sizes must never be encoded in filenames.
+- **CI Guard Rules**:
+  1. Fail if any `/studio` or `/app` HTML/CSS/JS references size-suffixed icons (`-16|-20|-24`).
+  2. Pass if `*-<digits>.svg` are referenced (these are canonical variants).
+  3. Ensure Dieter icons remain size-agnostic; sizes controlled via classes only.
+---
 **Last updated:** 2025-09-09  
 **Owner:** Oslo/Dieter (Design System)  
 **Status:** ✅ Frozen for v1 (implementation green-light)
