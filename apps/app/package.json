@@ -1,0 +1,24 @@
+{
+  "name": "@ck/app",
+  "private": true,
+  "scripts": {
+    "prebuild": "pnpm --filter @ck/dieter build && node ../../scripts/copy-dieter-assets.js",
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "postinstall": "echo 'no symlink; copy-on-build per ADR-005'",
+    "postbuild": "node ../../tools/ci/assert-dieter-icon-present.cjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.7.0",
+    "@supabase/supabase-js": "^2.45.0",
+    "@ck/dieter": "workspace:*",
+    "next": "14.2.5",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "@ck/studio-shell": "workspace:*"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
