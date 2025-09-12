@@ -1,13 +1,7 @@
-import StudioRoot from "../components/StudioRoot";
-
-export const StudioShell = StudioRoot;   // named export (concrete symbol)
-export default StudioRoot;               // default export
-
+export { default as StudioShell } from "../components/StudioRoot";   // named export
+export { default } from "../components/StudioRoot";                   // default export
 export { studioBus } from "../events/bus";
-
-// Safe type re-exports (no )
-import type { StudioEvent, StudioEventListener } from "../events/types";
-export type { StudioEvent, StudioEventListener };
+export type { StudioEvent, StudioEventListener } from "../events/types";
 
 // V0 stubs
 export function setTheme(_: "light" | "dark") {}
