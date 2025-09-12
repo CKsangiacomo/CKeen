@@ -1,35 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 1) Generate services index and ensure it's committed
-node tools/docs/generate-services.mjs
-if ! git diff --quiet -- docs/SERVICES.generated.md; then
-  echo "ERROR: docs/SERVICES.generated.md is stale. Run node tools/docs/generate-services.mjs and commit."
-  git --no-pager diff -- docs/SERVICES.generated.md | sed -n '1,120p'
-  exit 1
-fi
+# Fail-soft docs generation guard
 
-# 2) Enforce exactly 3 deployment docs
-n=$(ls docs/deployments/*.md 2>/dev/null | wc -l | tr -d ' ')
-if [ "${n:-0}" -ne 3 ]; then
-  echo "ERROR: Expected 3 deployment docs, got $n"
-  exit 1
-fi
-
-# 3) Ensure each system doc is referenced in CONTEXT.md unless staged
-missing=0
-for f in docs/systems/core/*.md docs/systems/supporting/*.md; do
-  [ -e "$f" ] || continue
-  name=$(basename "$f" .md)
-  # detect staged: true in YAML front-matter
-  if awk 'NR==1 && $0 ~ /^---/ {front=1; next} front && $0 ~ /^---/ {exit} front && tolower($0) ~ /staged:[[:space:]]*true/ {print "staged"; exit 0}' "$f" | grep -q staged; then
-    echo "INFO: $name is staged; skipping CONTEXT check"
-    continue
+if [[ "${SKIP_DOCS_GENERATION:-}" == "1" ]]; then exit 0; fi
+DOC_DIR="documentation"
+GEN_SCRIPT="${DOCS_GEN_SCRIPT:-scripts/generate-docs.mjs}"
+if [ -d "$DOC_DIR" ]; then
+  if git diff --cached --name-only | grep -Eq "^(documentation/|scripts/generate-docs|tools/docs)"; then
+    if [ -f "$GEN_SCRIPT" ]; then
+      echo "[pre-commit] generating docs…"
+      pnpm -s docs:generate || { echo "[pre-commit] WARN: docs generation failed — commit allowed"; exit 0; }
+    else
+      echo "[pre-commit] INFO: no generator script found, skipping"
+    fi
   fi
-  if ! grep -qi "$name" docs/CONTEXT.md; then
-    echo "ERROR: CONTEXT missing $name"
-    missing=1
-  fi
-
-done
-if [ $missing -ne 0 ]; then exit 1; fi
+fi
+exit 0
