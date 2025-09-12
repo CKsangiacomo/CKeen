@@ -1,0 +1,15 @@
+{
+  "name": "@ck/studio-shell",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/studio.js",
+  "scripts": {
+    "build": "mkdir -p dist && cp src/studio.css dist/studio.css && cp ../../dieter/tokens/tokens.css dist/tokens.css && esbuild src/index.js --bundle --format=iife --global-name=Studio --outfile=dist/studio.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "esbuild": "^0.21.5"
+  }
+}
+
+

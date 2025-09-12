@@ -5,7 +5,8 @@
   "packageManager": "pnpm@10.15.1",
   "main": "index.html",
   "scripts": {
-    "build": "echo 'No build step for dieter'"
+    "build": "echo \"[dieter] build: (TODO) implement actual build to dist\" && mkdir -p dist && touch dist/tokens.css",
+    "prepare": "pnpm run build"
   }
 }
 

@@ -13,3 +13,13 @@ test-results
 infra/supabase/migrations/
 tsconfig.tsbuildinfo
 .vercel/project.json
+
+# Prevent accidental legacy Dieter (app-local) resurrection
+apps/app/dieter/
+!apps/app/public/dieter
+
+/dieter.zip
+/packages/studio-shell.zip
+*.log
+apps/app/public/dieter/*
+!apps/app/public/dieter/README.md
