@@ -3,16 +3,16 @@ import React, { useEffect, useState } from 'react';
 type IconSize = 'sm' | 'md' | 'lg';
 type CacheEntry = { svg: string; ts: number };
 
-const MAX_CACHE_SIZE = 100;
+const MAX_CACHE_SIZE = 120;
 const TARGET_SIZE = 80;
 const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 
 const cache = new Map<string, CacheEntry>();
 
 function prune() {
-  if (cache.size < MAX_CACHE_SIZE) return;
+  if (cache.size <= MAX_CACHE_SIZE) return;
   const entries = Array.from(cache.entries()).sort((a, b) => a[1].ts - b[1].ts);
-  const toRemove = cache.size - TARGET_SIZE;
+  const toRemove = Math.max(0, cache.size - TARGET_SIZE);
   for (const [key] of entries.slice(0, toRemove)) cache.delete(key);
 }
 
@@ -29,6 +29,7 @@ async function fetchIcon(name: string): Promise<string> {
   if (hit) {
     const isFresh = Date.now() - hit.ts < CACHE_TTL_MS;
     if (isFresh) return hit.svg;
+    // stale -> treat as miss; update timestamp after re-fetch
     cache.delete(name);
   }
   try {

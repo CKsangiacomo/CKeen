@@ -1,7 +1,7 @@
 {
   "name": "clickeen",
   "private": true,
-  "packageManager": "pnpm@9.0.0",
+  "packageManager": "pnpm@10.15.1",
   "workspaces": [
     "apps/*",
     "services/*",
@@ -9,12 +9,14 @@
     "infra/*"
   ],
   "scripts": {
+    "ci:install": "pnpm install --frozen-lockfile",
     "ci:lockfile-check": "node tools/ci/check-lockfile.cjs",
     "ci:verify-pnpm": "node tools/ci/verify-pnpm-config.cjs",
     "ci:verify-vercel-config": "node tools/ci/verify-vercel-config.cjs",
     "lint:css": "stylelint \"**/*.css\"",
     "lint:css:fix": "stylelint \"**/*.css\" --fix",
     "build": "turbo build",
+    "build:ci": "pnpm --filter @ck/dieter build && node scripts/copy-dieter-assets.js && pnpm --filter @ck/studio-shell build && pnpm --filter @ck/app build",
     "build:assets": "node scripts/copy-dieter-assets.js",
     "dev": "concurrently -n site,app,embed -c blue,green,yellow \"pnpm dev:site\" \"pnpm dev:app\" \"pnpm dev:embed\"",
     "lint": "turbo lint",

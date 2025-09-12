@@ -46,13 +46,13 @@
 
 **Single source:** `dieter/` (repo root) → workspace package **`@ck/dieter`**  
 **Build outputs:** `dieter/dist/**`  
-**Static serving (CDN):** `/dieter/*` via a **symlink/junction**:  
-- `apps/app/public/dieter` → symlink/junction → `../../../dieter/dist`  
-- Vercel resolves and **copies** symlinked content at build; CDN serves assets.
+**Static serving (CDN):** `/dieter/*` via **copy-on-build** per ADR-005:  
+- `pnpm --filter @ck/dieter build` writes to `dieter/dist/**`  
+- `scripts/copy-dieter-assets.js` copies to `apps/app/public/dieter/**` (never committed)
 
 **Build order:** `apps/app` depends on `@ck/dieter` (`workspace:*`), and `dieter/package.json` has `prepare: pnpm run build` so fresh clones produce `dist/`.
 
-**No routes, no copies:** We do **not** proxy Dieter through Next routes; we rely on CDN static serving.
+**No routes, no symlinks:** We do **not** proxy through Next routes and we do not use symlinks. Static serving from copied assets only.
 
 ---
 
@@ -124,14 +124,14 @@ docs/
 ## 8) Governance & Guardrails
 
 - **Single source of truth:** `dieter/` at repo root.  
-- **No copies:** symlink/junction only; never duplicate Dieter sources.  
-- **CI checks:** block imports from `apps/app/dieter/`; assert `apps/app/public/dieter` is a link/junction and `dist/tokens.css` exists.  
+- **No symlinks:** copy-on-build only (ADR-005).  
+- **CI checks:** block imports from `apps/app/dieter/`; assert `apps/app/public/dieter` has no tracked files and `dieter/dist/tokens.css` exists.  
 - **Manual cleanup:** unused legacy folders will be deleted once symlink + builds are validated.  
 - **Versioning:** Dieter package versions must follow SemVer; breaking changes require major bump and ADR update.  
 - **Documentation generation:** optional; if generated, docs are served statically from `/dieter/docs/*`.  
 
 ## Distribution & Build Requirements (Frozen)
-- **Copy-on-Build Only:** Publish artifacts (tokens.css, icons SVG, icons.json) to `dieter/dist/`; CI copies to `apps/app/public/dieter/`. No symlinks.  
-- **SVG Normalization:** All SVGs must use `fill="currentColor"` (preprocessing step documented).  
-- **Tooling Consistency:** Canonical pnpm in `package.json`; Node 20 in `engines`; frozen lockfile enforced in CI.  
-- **Verification:** CI checks (a) no committed files under `apps/app/public/dieter/`, (b) presence of `dieter/dist`, (c) no imports from `@ck/dieter/icons`.
+- **Copy-on-Build Only (ADR-005):** Publish artifacts (tokens.css, icons SVG, icons.json) to `dieter/dist/`; copy to `apps/app/public/dieter/`. No symlinks.  
+- **SVG Normalization:** `scripts/process-svgs.js` enforces `fill="currentColor"`; `scripts/verify-svgs.js` asserts compliance; counts compared to `icons.json`.  
+- **Tooling Consistency (ADR-004):** Canonical pnpm in root `package.json` (`pnpm@10.15.1`); CI uses `--frozen-lockfile`.  
+- **Verification:** CI checks (a) no committed files under `apps/app/public/dieter/`, (b) presence of `dieter/dist`, (c) Dieter built before Studio/App.

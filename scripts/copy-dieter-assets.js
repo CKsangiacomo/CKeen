@@ -32,10 +32,23 @@ function main() {
     process.exit(1);
   }
 
+  // If destination is a symlink, remove it first
+  try {
+    const st = fs.lstatSync(dst);
+    if (st.isSymbolicLink()) {
+      fs.unlinkSync(dst);
+    }
+  } catch (_) {}
+
   // Clean destination then copy
   fs.rmSync(dst, { recursive: true, force: true });
   fs.mkdirSync(dst, { recursive: true });
   copyRecursiveSync(src, dst);
+  // Ensure README exists to keep directory in repo but prevent asset commits
+  const readmePath = path.join(dst, 'README.md');
+  if (!fs.existsSync(readmePath)) {
+    fs.writeFileSync(readmePath, '# Generated assets\n\nThis folder is populated by the Dieter copy step. Do not commit files here.');
+  }
   console.log(`[copy-dieter-assets] Copied assets from ${src} to ${dst}`);
 }
 
