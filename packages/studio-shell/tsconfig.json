@@ -5,7 +5,9 @@
     "outDir": "dist",
     "rootDir": "src",
     "jsx": "react-jsx",
-    "strict": true
+    "types": ["react", "react/jsx-runtime"],
+    "strict": true,
+    "skipLibCheck": true
   },
   "include": ["src"]
 }
