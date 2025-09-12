@@ -1,6 +1,6 @@
 "use client";
 
-import { StudioShell } from @ck/studio-shell;
+import { StudioShell } from '@ck/studio-shell';
 
 export default function StudioPage() {
   return (
