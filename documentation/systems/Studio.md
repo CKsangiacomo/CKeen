@@ -191,3 +191,30 @@ interface StudioAPI {
 - [ ] Confirmed in-memory cache prevents redundant network fetches.
 - [ ] Verified theme colors are applied through normalized `currentColor`.
 - [ ] CI guard passes and build completes without regression.
+
+## Studio ⇄ Dieter Icon Integration (Operational Contract)
+
+**Path Convention (canonical):**
+
+/dieter/icons/svg/.svg
+
+Example: `chevron-left.svg`, `plus.svg`, `xmark.svg`
+
+**Sizing Semantics (tokens, not filenames):**
+- `--ck-icon-size-sm` (16px)
+- `--ck-icon-size-md` (20px)
+- `--ck-icon-size-lg` (24px)
+
+**Do Not:**
+- Do NOT reference suffixed filenames like `*-16.svg`, `*-20.svg`, `*-24.svg`
+- Do NOT inline physical sizes in `<img>` attributes; size comes from tokens
+
+**Runtime Behavior:**
+- Icons are fetched by Studio’s Icon component and cached in-memory (LRU + TTL)
+- Color is controlled via `currentColor` with theme tokens
+
+### PR Checklist — Studio Icon Usage
+- [ ] All icon paths use `/dieter/icons/svg/<name>.svg` (unsuffixed)
+- [ ] Sizes are driven by Studio/Dieter tokens (sm/md/lg), not filenames
+- [ ] Spot-checked common icons render (chevron.left, plus, xmark)
+- [ ] No 404s in `/studio` network tab for icon fetches

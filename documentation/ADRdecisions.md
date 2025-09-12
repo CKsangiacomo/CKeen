@@ -152,3 +152,19 @@ Past cycles introduced instability because the principal engineer (GPT) drifted 
 - Prevents scope drift and CI churn.  
 - Keeps repo clean of temporary artifacts.  
 - Reduces hours of rework by enforcing clarity on roles and scope.  
+
+## ADR-014 — Icon File Naming Convention
+
+**Decision:** All Dieter icon SVG filenames MUST be unsuffixed. Sizing is applied exclusively through Dieter CSS tokens (`--ck-icon-size-sm`, `--ck-icon-size-md`, `--ck-icon-size-lg`).  
+
+**Status:** Accepted  
+**Date:** 2025-09-12  
+
+**Context:**  
+Prior engineering tasks incorrectly assumed size-suffixed icons (e.g., `chevron-left-16.svg`) existed. This caused CI guard failures and 404s.  
+
+**Consequences:**  
+- Single, unsuffixed SVG per icon ensures consistency.  
+- CI now rejects any suffixed filenames.  
+- Studio and all consumers reference unsuffixed paths.  
+- Maintenance overhead reduced by eliminating redundant variants.

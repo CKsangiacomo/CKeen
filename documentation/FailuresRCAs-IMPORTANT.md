@@ -36,3 +36,18 @@
 - Principal must confirm alignment with documentation before introducing new elements.  
 - CI workflows limited to documentation/ scope only.  
 
+## RCA — Icon Size Suffix Regressions
+
+**Date:** 2025-09-12  
+**Incident:** CI guard and Studio public page referenced size-suffixed icons (`*-16.svg`), while Dieter correctly outputs unsuffixed files. Result: CI failures, missing asset errors.
+
+**Root Cause:** Ambiguous prior assumptions about per-size variants; documentation did not contain explicit “NO SUFFIXES” prohibition; no automated guard prevented reintroduction.
+
+**Impact:** ~3–4 hours engineering time; one PR temporarily blocked; delayed confidence in Studio preview.
+
+**Corrective Actions:**
+- Documentation updated with explicit “NO SUFFIXES” rule and examples
+- CI guard rejects any `*-<digits>.svg` under `dieter/icons/svg/`
+- Studio consumption clarified to use unsuffixed names + token-based sizing
+- Added icon-related PR checklists
+

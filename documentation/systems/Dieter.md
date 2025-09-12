@@ -152,3 +152,30 @@ docs/
 - [ ] Ran `pnpm build:ci` successfully with frozen lockfile.
 - [ ] Confirmed copy-on-build populated `apps/app/public/dieter` (no symlinks, no committed files).
 - [ ] CI guard passes with no false positives.
+
+## Icon File Naming — CRITICAL, Enforced
+
+**Rule:** Icon SVG filenames MUST be **unsuffixed**. All sizing is controlled via Dieter CSS tokens.
+
+- GOOD: `chevron-left.svg` + `--ck-icon-size-sm|md|lg`
+- BAD:  `chevron-left-16.svg`, `chevron-left-20.svg`, `chevron-left-24.svg`
+
+**Rationale:** File-per-size variants create drift, duplicate assets, and CI breakage. Tokens provide a single source of truth for dimension semantics.
+
+**CI Enforcement:** Our CI rejects suffixed icons. Any `*-<digits>.svg` under `dieter/icons/svg/` is a hard error.
+
+**Consumption Contract:** Studio and any consumers must reference unsuffixed paths:
+
+/dieter/icons/svg/.svg
+
+Sizing MUST come from Dieter tokens only:
+- `--ck-icon-size-sm` (16px)
+- `--ck-icon-size-md` (20px)
+- `--ck-icon-size-lg` (24px)
+
+### PR Checklist — Dieter Icons
+- [ ] No suffixed SVGs introduced (e.g., `*-16.svg`, `*-20.svg`, `*-24.svg`)
+- [ ] All icons normalized to `fill="currentColor"`
+- [ ] Tokens control size (sm/md/lg). No width/height baked into markup.
+- [ ] Ran SVG verification (`verify-svgs`) locally
+- [ ] Confirmed CI guard for suffixed names passes
