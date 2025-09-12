@@ -7,7 +7,7 @@ export class StudioEventBus extends EventTarget {
 
   on(fn: StudioEventListener) {
     const handler = (ev: Event) => fn((ev as CustomEvent).detail as StudioEvent);
-    const types: StudioEvent[type][] = [
+    const types: Array<StudioEvent[type]> = [
       studio:ready,
       studio:panel,
       studio:theme,
