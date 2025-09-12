@@ -23,3 +23,5 @@ apps/app/dieter/
 *.log
 apps/app/public/dieter/*
 !apps/app/public/dieter/README.md
+
+.turbo
