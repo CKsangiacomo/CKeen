@@ -1,8 +1,8 @@
-import Script from next/script
+import Script from 'next/script'
 
 export default function StudioPage() {
   return (
-    <main style={{height:100dvh}}>
+    <main style={{height:'100dvh'}}>
       <link rel="stylesheet" href="/studio/tokens.css" />
       <link rel="stylesheet" href="/studio/studio.css" />
       <div className="studio-grid">
