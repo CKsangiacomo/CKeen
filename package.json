@@ -1,8 +1,13 @@
 {
   "name": "clickeen",
   "private": true,
-  "packageManager": "pnpm@10.15.1",
-  "workspaces": ["apps/*", "services/*", "packages/*", "infra/*"],
+  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*",
+    "infra/*"
+  ],
   "scripts": {
     "ci:lockfile-check": "node tools/ci/check-lockfile.cjs",
     "ci:verify-pnpm": "node tools/ci/verify-pnpm-config.cjs",
@@ -10,6 +15,7 @@
     "lint:css": "stylelint \"**/*.css\"",
     "lint:css:fix": "stylelint \"**/*.css\" --fix",
     "build": "turbo build",
+    "build:assets": "node scripts/copy-dieter-assets.js",
     "dev": "concurrently -n site,app,embed -c blue,green,yellow \"pnpm dev:site\" \"pnpm dev:app\" \"pnpm dev:embed\"",
     "lint": "turbo lint",
     "test": "turbo test",

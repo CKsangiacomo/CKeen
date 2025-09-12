@@ -1,9 +1,0 @@
-/* Dieter Status v0 — dot/badge */
-.diet-status { display:inline-flex; align-items:center; gap: .5ch; font-size: .875rem; }
-.diet-status__dot { inline-size: .6rem; block-size: .6rem; border-radius: 50%; background: var(--color-border); }
-.diet-status--success .diet-status__dot { background: var(--color-success, #1a7f37); }
-.diet-status--warning .diet-status__dot { background: var(--color-warning, #b7791f); }
-.diet-status--error   .diet-status__dot { background: var(--color-danger, #d93025); }
-.diet-status--info    .diet-status__dot { background: var(--color-primary); }
-
-
