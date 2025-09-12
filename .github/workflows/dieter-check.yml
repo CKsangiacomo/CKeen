@@ -3,8 +3,14 @@ name: Dieter Guardrails
 on:
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - "documentation/**"
+      - "**/*.md"
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - "documentation/**"
+      - "**/*.md"
 
 jobs:
   guardrails:
@@ -13,16 +19,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Verify Corepack availability
+        run: corepack --version || npm install -g corepack
+
+      - name: Use packageManager version
+        run: corepack install
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          run_install: false
 
       - name: Verify toolchain
         run: |

@@ -2,19 +2,31 @@ name: CI
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - "documentation/**"
+      - "**/*.md"
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - "documentation/**"
+      - "**/*.md"
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          run_install: false
-
-      - uses: actions/setup-node@v4
+      
+      - name: Enable Corepack
+        run: corepack enable
+      
+      - name: Verify Corepack availability
+        run: corepack --version || npm install -g corepack
+      
+      - name: Use packageManager version
+        run: corepack install
+      
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'pnpm'
@@ -25,20 +37,7 @@ jobs:
           echo "pnpm: $(pnpm -v)"
           test -f pnpm-lock.yaml
 
-      - name: Ensure lockfile is enabled for pnpm
-        run: |
-          pnpm config set lockfile true
-          echo "pnpm lockfile setting: $(pnpm config get lockfile || echo unset)"
-          ls -l pnpm-lock.yaml
-
-      - name: Assert pnpm version matches packageManager
-        run: |
-          EXPECT=$(node -p "require('./package.json').packageManager.split('@')[1]")
-          ACTUAL=$(pnpm -v)
-          echo "expect pnpm $EXPECT, actual $ACTUAL"
-          [ "$ACTUAL" = "$EXPECT" ]
-
-      - name: Install (frozen)
+      - name: Install dependencies (frozen)
         run: pnpm install --frozen-lockfile
 
       - name: Build Dieter and copy assets
