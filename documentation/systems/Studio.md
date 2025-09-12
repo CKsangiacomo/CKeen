@@ -174,3 +174,20 @@ interface StudioAPI {
 - **Asset Flow (ADR-005):** Dieter builds to `dieter/dist/`; copy to `apps/app/public/dieter/`.  
 - **Order:** `@ck/dieter` → copy assets → `@ck/studio-shell` → `@ck/app`.  
 - **Accessibility:** Decorative icons are `aria-hidden`; action icons include `aria-label`.
+
+---
+
+## Status: Icons/Tokens/Build-chain Alignment — DONE (2025-09-12)
+
+- Deterministic build order: `@ck/dieter` → copy assets → `@ck/studio-shell` → `@ck/app`.  
+
+---
+
+## PR Checklist — Studio Icon Integration
+
+- [ ] Verified Studio `Icon.tsx` references unsuffixed SVGs under `/dieter/icons/svg/`.
+- [ ] Verified token-based sizing works in Studio (`sm`, `md`, `lg` via Dieter tokens).
+- [ ] Smoke-tested `/studio` page icons (e.g. `chevron-left`, `plus`, `xmark`) render without 404 errors.
+- [ ] Confirmed in-memory cache prevents redundant network fetches.
+- [ ] Verified theme colors are applied through normalized `currentColor`.
+- [ ] CI guard passes and build completes without regression.
