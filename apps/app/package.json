@@ -2,10 +2,12 @@
   "name": "@ck/app",
   "private": true,
   "scripts": {
+    "prebuild": "pnpm --filter @ck/dieter build && node ../../scripts/copy-dieter-assets.js",
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start -p 3001",
-    "postinstall": "echo 'no symlink; copy-on-build per ADR-005'"
+    "postinstall": "echo 'no symlink; copy-on-build per ADR-005'",
+    "postbuild": "node ../../tools/ci/assert-dieter-icon-present.cjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
