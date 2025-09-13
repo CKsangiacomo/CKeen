@@ -26,16 +26,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Align pnpm with the repo's packageManager (10.15.1). Declare it ONCE.
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10.15.1
+          run_install: false
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "pnpm"
+
+      - name: Show toolchain versions (debug)
+        run: |
+          node -v
+          pnpm -v
+          jq -r '.packageManager' package.json || true
 
       - name: Frozen install
         run: pnpm install --frozen-lockfile
@@ -53,4 +61,4 @@ jobs:
         run: node tools/verify-studio-shell.cjs
 
       - name: Build App
-        run: pnpm --filter @ck/app run build 
+        run: pnpm --filter @ck/app run build
