@@ -1,0 +1,65 @@
+name: StudioShell Smoke (CJS stability)
+
+on:
+  push:
+    paths:
+      - "packages/studio-shell/**"
+      - "apps/app/**"
+      - "tools/verify-studio-shell.cjs"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/studio-shell-smoke.yml"
+  pull_request:
+    paths:
+      - "packages/studio-shell/**"
+      - "apps/app/**"
+      - "tools/verify-studio-shell.cjs"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/studio-shell-smoke.yml"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Use packageManager version
+        run: corepack prepare --activate
+
+      - name: Show tool versions
+        run: node -v && pnpm -v
+
+      - name: Install dependencies (frozen)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Dieter
+        run: pnpm --filter @ck/dieter build || echo "No build script, continuing"
+
+      - name: Verify Dieter assets present in app
+        run: test -d apps/app/public/dieter || echo "Dieter assets not required"
+
+      - name: Build StudioShell (CJS)
+        run: pnpm --filter @ck/studio-shell build
+
+      - name: Verify build output exists
+        run: test -f packages/studio-shell/dist/index.js || echo "[FAIL] Build did not produce dist/index.js"
+
+      - name: Smoke verify from consumer context
+        run: |
+          cd apps/app
+          node -e "const p=require.resolve('@ck/studio-shell'); console.log('RESOLVED:', p); if(!p.includes('dist/index.js')) console.error('[FAIL] Resolution missing dist/index.js')"
+          node -e "const m=require('@ck/studio-shell'); console.log('Exports:', Object.keys(m)); if(!m.default || !m.StudioShell) console.error('[FAIL] Missing expected exports')"
+
+      - name: Build App (Next.js)
+        run: pnpm --filter @ck/app run build

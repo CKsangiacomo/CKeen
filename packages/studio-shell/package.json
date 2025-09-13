@@ -1,15 +1,22 @@
 {
   "name": "@ck/studio-shell",
   "version": "0.1.0",
-  "private": true,
-  "main": "dist/studio.js",
+  "private": false,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "sideEffects": false,
   "scripts": {
-    "build": "mkdir -p dist && cp src/studio.css dist/studio.css && node ../../scripts/scope-tokens.js ../../dieter/tokens/tokens.css dist/tokens.css && esbuild src/index.js --bundle --format=iife --global-name=Studio --outfile=dist/studio.js"
+    "build": "tsc"
   },
-  "dependencies": {},
+  "dependencies": {
+    "react": "^18.2.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
+  },
   "devDependencies": {
-    "esbuild": "^0.21.5"
+    "@types/react": "^18.2.0",
+    "typescript": "^5.0.0"
   }
 }
-
-
