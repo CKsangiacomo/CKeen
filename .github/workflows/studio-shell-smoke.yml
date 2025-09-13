@@ -1,0 +1,56 @@
+name: StudioShell Smoke (CJS stability)
+
+on:
+  push:
+    paths:
+      - "packages/studio-shell/**"
+      - "apps/app/**"
+      - "tools/verify-studio-shell.cjs"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/studio-shell-smoke.yml"
+  pull_request:
+    paths:
+      - "packages/studio-shell/**"
+      - "apps/app/**"
+      - "tools/verify-studio-shell.cjs"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/studio-shell-smoke.yml"
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Frozen install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Dieter
+        run: pnpm --filter @ck/dieter build
+
+      - name: Verify Dieter assets present in app
+        run: test -d apps/app/public/dieter
+
+      - name: Build StudioShell (CJS)
+        run: pnpm --filter @ck/studio-shell build
+
+      - name: Smoke verify from consumer context
+        run: node tools/verify-studio-shell.cjs
+
+      - name: Build App
+        run: pnpm --filter @ck/app run build 
