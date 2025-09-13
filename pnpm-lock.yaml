@@ -74,6 +74,9 @@ importers:
       '@ck/dieter':
         specifier: workspace:*
         version: link:../../dieter
+      '@ck/studio-shell':
+        specifier: workspace:*
+        version: link:../../packages/studio-shell
       '@supabase/ssr':
         specifier: ^0.7.0
         version: 0.7.0(@supabase/supabase-js@2.56.1)
