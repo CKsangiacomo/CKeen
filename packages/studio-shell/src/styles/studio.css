@@ -1,3 +1,4 @@
+@import "./tokens.css";
 /* Studio Shell CSS - scoped to center canvas for theme and viewport */
 /* Import Dieter tokens but scope them under #centerCanvas to prevent global bleed */
 @import url("tokens.css");

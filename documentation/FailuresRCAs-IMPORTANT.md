@@ -36,3 +36,47 @@
 - Principal must confirm alignment with documentation before introducing new elements.  
 - CI workflows limited to documentation/ scope only.  
 
+
+## RCA: StudioShell Export and Runtime Failures (Sept 2025)
+
+**Summary**  
+StudioShell failed to render in `/studio` due to missing exports, slot misconfiguration, and sloppy incremental fixes that wasted significant engineering cycles.
+
+**Root Causes**  
+1. **Empty Exports**  
+   - `packages/studio-shell/src/index.ts` and `src/api/index.ts` contained no exports.  
+   - `StudioRoot.tsx` defined components but did not export them.  
+   - This was the fundamental issue, repeatedly overlooked.
+
+2. **Pre-Check Failures**  
+   - GPT proposed speculative fixes (PostCSS, Tailwind, tokens) without auditing file contents.  
+   - Multiple prompts assumed complex issues (TypeScript stripping, runtime attach) when the reality was trivial: no exports.
+
+3. **Process Drift**  
+   - Prompts appended code blindly, causing file corruption (`$@` artifacts in `StudioRoot.tsx`).  
+   - Dangerous sed/cat usage overwrote or duplicated content without validation.  
+   - Inconsistent application of “pre-audit before patching” rule.
+
+4. **Unnecessary Detours**  
+   - Time wasted debugging PostCSS/Tailwind when the build error was unrelated to missing exports.  
+   - Studio CSS tokens mis-scoped, adding noise rather than addressing the true runtime problem.
+
+5. **Failure to Validate Outputs**  
+   - Did not check dist artifacts (`dist/api/index.js`, `.d.ts`) early.  
+   - Did not test runtime exports before claiming success.  
+   - Relied on assumptions instead of evidence.
+
+**Impact**  
+- >20 hours lost debugging irrelevant issues.  
+- User frustration escalated.  
+- Repo corruption and repeated rollbacks.  
+- Loss of trust in AI-assisted engineering for critical path.
+
+**Preventive Actions**  
+- Enforce **mandatory repo audit** (grep for exports, list dist outputs) before suggesting fixes.  
+- Ban unsafe file write patterns (`cat > file` with inline content) without explicit backups.  
+- Require runtime validation (`node -e "console.log(Object.keys(require(...)))"`) after every build.  
+- Capture every failure in RCA to avoid repetition.
+
+
+

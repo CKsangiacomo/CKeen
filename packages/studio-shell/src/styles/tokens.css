@@ -1,11 +1,20 @@
-:root {
-  --color-border:#e0e0e0;
+:root{
   --color-surface:#ffffff;
+  --color-surface-muted:#f7f7f9;
   --color-surface-inverse:#1a1a1a;
-  --color-text:#000000;
+  --color-border:#e0e0e0;
+  --color-text:#111111;
   --color-primary:#007bff;
+
+  --space-2:2px;
   --space-4:4px;
+  --space-6:6px;
   --space-8:8px;
+  --space-12:12px;
   --space-16:16px;
-  --shadow-sm:0 1px 2px rgba(0,0,0,0.1);
+
+  --radius-2:2px;
+  --radius-4:4px;
+
+  --shadow-sm:0 0 20px rgba(0,0,0,0.1);
 }

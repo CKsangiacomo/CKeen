@@ -25,3 +25,25 @@ apps/app/public/dieter/**
 !apps/app/public/dieter/README.md
 
 .turbo
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+.history/
+node_modules/
+.pnpm-store/
+.next/
+.turbo/
+.vercel/
+coverage/
+.eslintcache
+*.tsbuildinfo
+*.tmp
+*.temp
+*.bak
+*.bak.*
+*.orig
+*.rej
+.ci_logs/
+packages/**/dist/

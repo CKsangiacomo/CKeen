@@ -152,3 +152,47 @@ Past cycles introduced instability because the principal engineer (GPT) drifted 
 - Prevents scope drift and CI churn.  
 - Keeps repo clean of temporary artifacts.  
 - Reduces hours of rework by enforcing clarity on roles and scope.  
+
+
+## ADR 13: Fix StudioShell Exports and Slot Components
+**Date:** 2025-09-14  
+**Status:** Accepted  
+**Tags:** studio-shell, exports, slots, bugfix
+
+### Context
+The `@ck/studio-shell` package was unusable because its public API was empty:
+- `src/index.ts` and `src/api/index.ts` contained no exports.  
+- `StudioRoot.tsx` defined `StudioShell` but never exported it.  
+- Slot components (`Left`, `Canvas`, `Inspector`) were undefined at runtime.  
+This caused `/studio` to fail with `type is invalid` errors when rendering `<StudioShell.Left>`.
+
+### Decision
+- Add explicit exports to `StudioRoot.tsx`:
+  - `export default StudioShell;`
+  - `export { StudioShell };`
+- Define slot components using `mkSlot`:
+  - `const StudioShellLeft = mkSlot('Left');`
+  - `const StudioShellCanvas = mkSlot('Canvas');`
+  - `const StudioShellInspector = mkSlot('Inspector');`
+- Attach slots to `StudioShell` for JSX syntax:
+  - `StudioShell.Left = StudioShellLeft;` etc.
+- Export slot components as named exports for alternative usage.  
+- Update `src/api/index.ts` to re-export all public components.  
+- Update `src/index.ts` to barrel-export from `./api`.
+
+### Consequences
+- Backward compatibility is preserved (`<StudioShell.Left>` still works).  
+- Forward compatibility is improved with named exports (`StudioShellLeft`).  
+- Build artifacts (`dist`) now include both default and named exports.  
+- Added maintenance cost: slot definitions must be maintained consistently.
+
+### Alternatives Considered
+- **Runtime-only property attachment:** Failed due to TypeScript stripping declarations.  
+- **Named exports only:** Would break existing usage patterns.  
+- **Do nothing:** Left the package broken with missing exports.
+
+### Rationale
+This approach balances type safety, runtime correctness, and developer ergonomics:
+- Ensures StudioShell works out of the box.  
+- Prevents future runtime errors from missing exports.  
+- Creates a clear API surface through `api/index.ts`.
