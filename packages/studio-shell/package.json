@@ -4,10 +4,14 @@
   "private": false,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist",
+    "package.json"
+  ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "prepack": "npm run build"
   },
   "dependencies": {
     "react": "^18.2.0"
