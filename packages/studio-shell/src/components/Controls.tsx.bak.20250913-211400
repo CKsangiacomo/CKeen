@@ -1,9 +1,0 @@
-import React from 'react';
-export function Controls() {
-  return (
-    <div id="studio-controls" className="studio-controls" aria-label="Studio Controls">
-      {/* Step 2 will replace with SegmentedControl for Theme & Viewport */}
-      <div style={{fontSize:12,opacity:0.7}}>Controls mount here</div>
-    </div>
-  );
-}

@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "package.json"
+    "src/styles"
   ],
   "sideEffects": false,
   "scripts": {
