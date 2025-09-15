@@ -36,7 +36,10 @@
     "size:embed": "size-limit",
     "dev:seed": "node scripts/dev-seed.mjs",
     "check:no-pii": "node scripts/check-no-pii.mjs",
-    "check:embed-size": "pnpm size:embed"
+    "check:embed-size": "pnpm size:embed",
+    "dev:serve": "node scripts/dev-serve.mjs",
+    "test:e2e": "playwright test --config=playwright.config.ts",
+    "test:unit": "vitest run --config vitest.config.ts"
   },
   "devDependencies": {
     "@radix-ui/react-dialog": "latest",
@@ -56,12 +59,14 @@
     "prettier": "^3.3.2",
     "@size-limit/preset-app": "^11.1.4",
     "size-limit": "^11.1.4",
-    "playwright": "^1.45.0",
+    "playwright": "^1.47.0",
+    "@playwright/test": "^1.47.0",
     "axe-core": "^4.9.1",
-    "concurrently": "^8.2.2",
+    "concurrently": "^9.0.0",
     "esbuild": "^0.21.5",
     "gzip-size-cli": "^5.1.0",
-    "@size-limit/preset-small-lib": "^11.1.4"
+    "@size-limit/preset-small-lib": "^11.1.4",
+    "vitest": "^2.0.5"
   }
   ,
   "size-limit": [

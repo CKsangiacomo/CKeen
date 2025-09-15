@@ -61,6 +61,9 @@ function validateEnvelope(e: any): e is Envelope {
   return true;
 }
 
+// test-only export (tree-shaken in production bundles)
+export function __validateEnvelopeForTest(e: any) { return validateEnvelope(e); }
+
 function bad(status: number, code: string) {
   return new Response(JSON.stringify({ ok: false, error: code }), withCORS({
     status,
