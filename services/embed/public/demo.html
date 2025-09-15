@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Clickeen Demo</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      body { font-family: -apple-system, system-ui, Segoe UI, Roboto, sans-serif; padding: 24px; }
+      #mount { max-width: 520px; border: 1px dashed #ccc; padding: 12px; margin-top: 16px; }
+      .row { margin: 4px 0; }
+      input { width: 100%; padding: 6px; }
+      code { background: #f6f8fa; padding: 2px 4px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>Clickeen Demo</h1>
+    <p>Provide <code>?publicId=&lt;id&gt;&amp;token=et_...</code> in the URL.</p>
+    <div id="mount"><em>Awaiting query params…</em></div>
+
+    <script>
+      (function () {
+        const usp = new URLSearchParams(location.search);
+        const publicId = usp.get('publicId');
+        const token = usp.get('token');
+        if (!publicId || !token) return;
+        document.getElementById('mount').textContent = '';
+        var s = document.createElement('script');
+        s.async = true;
+        s.src = '/e/' + encodeURIComponent(publicId);
+        s.dataset.ckeenToken = token; // preferred attribute passing
+        document.body.appendChild(s);
+      })();
+    </script>
+  </body>
+  </html>
+
+

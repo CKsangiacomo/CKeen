@@ -7,7 +7,8 @@
     "start": "next start -p 3002",
     "smoke:atlas": "node ./scripts/atlas-smoke.mjs",
     "smoke:e2e": "NODE_OPTIONS=--no-warnings node ./scripts/e2e-real-widget.mjs",
-    "smoke:form": "NODE_OPTIONS=--no-warnings node ./scripts/smoke-form.mjs"
+    "smoke:form": "NODE_OPTIONS=--no-warnings node ./scripts/smoke-form.mjs",
+    "build:embed": "node ./scripts/build-embed.mjs"
   },
   "dependencies": {
     "next": "14.2.5",

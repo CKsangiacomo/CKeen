@@ -31,7 +31,12 @@
     "verify:studio-shell": "pnpm --filter @ck/studio-shell build && node tools/verify-studio-shell.cjs",
     "dev:api": "pnpm --filter @ck/services-api dev",
     "build:api": "pnpm --filter @ck/services-api build",
-    "start:api": "pnpm --filter @ck/services-api start"
+    "start:api": "pnpm --filter @ck/services-api start",
+    "build:embed": "node services/embed/scripts/build-embed.mjs",
+    "size:embed": "size-limit",
+    "dev:seed": "node scripts/dev-seed.mjs",
+    "check:no-pii": "node scripts/check-no-pii.mjs",
+    "check:embed-size": "pnpm size:embed"
   },
   "devDependencies": {
     "@radix-ui/react-dialog": "latest",
@@ -53,6 +58,17 @@
     "size-limit": "^11.1.4",
     "playwright": "^1.45.0",
     "axe-core": "^4.9.1",
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "esbuild": "^0.21.5",
+    "gzip-size-cli": "^5.1.0",
+    "@size-limit/preset-small-lib": "^11.1.4"
   }
+  ,
+  "size-limit": [
+    {
+      "path": "services/embed/public/embed-bundle.js",
+      "limit": "28 KB",
+      "gzip": true
+    }
+  ]
 }

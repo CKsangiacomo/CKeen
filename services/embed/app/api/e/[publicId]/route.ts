@@ -33,7 +33,20 @@ function js(publicId: string) {
       return import(bundle).then(function(m){
         var fn = (m&& (m.render||m.boot||m.default)) || (window.CKeen && (window.CKeen.render||window.CKeen.boot));
         if(typeof fn!=='function') throw new Error('bundle_missing_render');
-        fn(mount,{ publicId:publicId, token:token, cfg:cfg });
+        var handle = fn(mount,{ publicId:publicId, token:token, cfg:cfg, apiBase:apiBase }) || null;
+        try{
+          var PREFIX='ckeen:preview:';
+          window.addEventListener('message', function(ev){
+            try{
+              var msg = ev && ev.data;
+              if(!msg || typeof msg !== 'object' || typeof msg.type !== 'string') return;
+              if(msg.type !== PREFIX+'update') return;
+              if(handle && typeof handle.update==='function'){
+                handle.update(msg.cfg || cfg);
+              }
+            }catch(_){ }
+          });
+        }catch(_){ }
       });
     }).catch(function(err){
       if(/localhost|127\\.0\\.0\\.1/.test(location.host)){
