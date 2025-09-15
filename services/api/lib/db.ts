@@ -26,4 +26,46 @@ export async function getTokenIdFromString(token: string): Promise<string | null
   return (data as string | null) ?? null;
 }
 
+// Re-export admin as supa for convenience in route modules
+export const supa = admin;
+
+export async function resolveWidgetIdByPublicId(publicId: string): Promise<string | null> {
+  if (!supa) return null;
+  const { data, error } = await supa
+    .from('widget_instances')
+    .select('widget_id')
+    .eq('public_id', publicId)
+    .limit(1)
+    .maybeSingle();
+  if (error || !data) return null;
+  return (data as any).widget_id ?? null;
+}
+
+/** Rate-limit via RPC (throws 'rate_limited' on exceeding). */
+export async function enforceRateLimitByToken(token: string): Promise<void> {
+  if (!supa) throw new Error('db_unavailable');
+  const { error } = await supa.rpc('enforce_submission_rate_limit_by_token_v1', {
+    p_token: token
+  });
+  if (error) {
+    if (String(error.message).includes('rate_limited')) {
+      const e: any = new Error('rate_limited');
+      e.code = 'rate_limited';
+      throw e;
+    }
+    throw new Error('rate_limit_failed');
+  }
+}
+
+const PII_KEYS = new Set(['email','phone','ip','user_agent','ua','url']);
+export function hasPII(v: any): boolean {
+  if (!v || typeof v !== 'object') return false;
+  for (const k of Object.keys(v)) {
+    if (PII_KEYS.has(k.toLowerCase())) return true;
+    const child = (v as any)[k];
+    if (child && typeof child === 'object' && hasPII(child)) return true;
+  }
+  return false;
+}
+
 
