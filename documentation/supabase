@@ -1,0 +1,138 @@
+Below is a schema-only SQL dump for documentation. Run it in a safe environment (do not run with production data changes unless you intend to recreate schema). I created extensions under the extensions schema per best practices.
+
+-- NOTE: This is schema-only. It reproduces structures from metadata; constraints like FK names are not all enumerated verbatim where not available, but indexes for FK columns are created. Adjust names/ownership as needed before applying.
+
+################################################################
+
+CREATE EXTENSIONS (installed)
+
+################################################################ CREATE SCHEMA IF NOT EXISTS extensions;
+
+-- Install extensions into the extensions schema (as a best practice) CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA extensions; CREATE EXTENSION IF NOT EXISTS "pg_graphql" WITH SCHEMA extensions;
+
+################################################################
+
+TABLES (public schema)
+
+################################################################ SET search_path = public, pg_catalog;
+
+-- public.profiles CREATE TABLE IF NOT EXISTS public.profiles ( user_id uuid NOT NULL, name text, company text, subscription_status text DEFAULT 'trial'::text, created_at timestamp with time zone DEFAULT now(), created_by uuid, created_source user_created_source DEFAULT 'signup_form'::user_created_source, created_ip inet, created_user_agent text, PRIMARY KEY (user_id) );
+
+-- public.widgets CREATE TABLE IF NOT EXISTS public.widgets ( id uuid NOT NULL DEFAULT gen_random_uuid(), user_id uuid NOT NULL, name text NOT NULL, type text NOT NULL, public_key text NOT NULL UNIQUE, config jsonb NOT NULL DEFAULT '{}'::jsonb, created_at timestamp with time zone DEFAULT now(), workspace_id uuid NOT NULL, status text NOT NULL DEFAULT 'active'::text, PRIMARY KEY (id) );
+
+-- Index for FK: widgets.workflow_id -> workspaces.id (FK name in metadata: widgets_workspace_fk) CREATE INDEX IF NOT EXISTS idx_widgets_workspace_id ON public.widgets (workspace_id);
+
+-- public.widget_events CREATE TABLE IF NOT EXISTS public.widget_events ( id uuid NOT NULL DEFAULT gen_random_uuid(), widget_id uuid NOT NULL, type text NOT NULL, meta jsonb DEFAULT '{}'::jsonb, ts timestamp with time zone DEFAULT now(), PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_widget_events_widget_id ON public.widget_events (widget_id);
+
+-- public.widget_submissions CREATE TABLE IF NOT EXISTS public.widget_submissions ( id uuid NOT NULL DEFAULT gen_random_uuid(), widget_id uuid NOT NULL, payload jsonb NOT NULL CHECK (pg_column_size(payload) <= 32768), ts timestamp with time zone DEFAULT now(), ip text, ua text, widget_instance_id text, payload_hash text, ts_second timestamp with time zone, PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_widget_submissions_widget_id ON public.widget_submissions (widget_id);
+
+-- public.widget_instances CREATE TABLE IF NOT EXISTS public.widget_instances ( id uuid NOT NULL DEFAULT gen_random_uuid(), widget_id uuid NOT NULL, public_id text NOT NULL UNIQUE, status text NOT NULL DEFAULT 'draft'::text CHECK (status = ANY (ARRAY['draft'::text, 'published'::text, 'inactive'::text])), config jsonb NOT NULL DEFAULT '{}'::jsonb, created_at timestamp with time zone NOT NULL DEFAULT now(), draft_token uuid, claimed_at timestamp with time zone, expires_at timestamp with time zone, updated_at timestamp with time zone DEFAULT now(), PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_widget_instances_widget_id ON public.widget_instances (widget_id);
+
+-- public.usage_events CREATE TABLE IF NOT EXISTS public.usage_events ( id uuid NOT NULL DEFAULT gen_random_uuid(), workspace_id uuid NOT NULL, event_type text NOT NULL DEFAULT 'feature_usage'::text, event_id uuid, quantity integer NOT NULL DEFAULT 1, metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_at timestamp with time zone NOT NULL DEFAULT now(), feature_key text, widget_type text, widget_instance_id text, cfg_version text, embed_version text, client_run_id uuid, page_origin_hash text, PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_usage_events_workspace_id ON public.usage_events (workspace_id);
+
+-- public.plan_limits CREATE TABLE IF NOT EXISTS public.plan_limits ( plan_id text NOT NULL, limit_type text NOT NULL, limit_value integer NOT NULL, enforcement text NOT NULL DEFAULT 'soft'::text, grace_amount integer NOT NULL DEFAULT 0, PRIMARY KEY (plan_id, limit_type) );
+
+-- public.workspaces CREATE TABLE IF NOT EXISTS public.workspaces ( id uuid NOT NULL, name text NOT NULL, plan text NOT NULL DEFAULT 'free'::text, created_at timestamp with time zone NOT NULL DEFAULT now(), kind text NOT NULL DEFAULT 'business'::text CHECK (kind = ANY (ARRAY['agency'::text, 'business'::text])), parent_workspace_id uuid, PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_workspaces_parent_workspace_id ON public.workspaces (parent_workspace_id);
+
+-- public.test_migration CREATE TABLE IF NOT EXISTS public.test_migration ( id uuid NOT NULL DEFAULT gen_random_uuid(), created_at timestamp with time zone DEFAULT now(), PRIMARY KEY (id) );
+
+-- public.workspace_members CREATE TABLE IF NOT EXISTS public.workspace_members ( id uuid NOT NULL DEFAULT gen_random_uuid(), workspace_id uuid NOT NULL, user_id uuid NOT NULL, role text NOT NULL DEFAULT 'owner'::text CHECK (role = ANY (ARRAY['owner'::text, 'admin'::text, 'super_editor'::text, 'editor'::text, 'collaborator'::text, 'viewer'::text])), status text NOT NULL DEFAULT 'active'::text, created_at timestamp with time zone NOT NULL DEFAULT now(), invited_by uuid, invited_at timestamp with time zone DEFAULT now(), accepted_at timestamp with time zone, PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_workspace_members_workspace_id ON public.workspace_members (workspace_id); CREATE INDEX IF NOT EXISTS idx_workspace_members_user_id ON public.workspace_members (user_id); CREATE INDEX IF NOT EXISTS idx_workspace_members_invited_by ON public.workspace_members (invited_by);
+
+-- public.user_creation_audit CREATE TABLE IF NOT EXISTS public.user_creation_audit ( id uuid NOT NULL DEFAULT gen_random_uuid(), user_id uuid NOT NULL, created_by uuid, created_source user_created_source NOT NULL, created_ip inet, created_user_agent text, raw_meta jsonb DEFAULT '{}'::jsonb, created_at timestamp with time zone NOT NULL DEFAULT now(), PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_user_creation_audit_user_id ON public.user_creation_audit (user_id); CREATE INDEX IF NOT EXISTS idx_user_creation_audit_created_by ON public.user_creation_audit (created_by);
+
+-- public.agency_packages CREATE TABLE IF NOT EXISTS public.agency_packages ( id uuid NOT NULL DEFAULT gen_random_uuid(), agency_workspace_id uuid NOT NULL, product billing_product NOT NULL, units_purchased integer NOT NULL CHECK (units_purchased > 0), status package_status NOT NULL DEFAULT 'active'::package_status, starts_at timestamp with time zone NOT NULL DEFAULT now(), ends_at timestamp with time zone, notes text, created_at timestamp with time zone NOT NULL DEFAULT now(), PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_agency_packages_agency_workspace_id ON public.agency_packages (agency_workspace_id);
+
+-- public.workspace_allocations CREATE TABLE IF NOT EXISTS public.workspace_allocations ( id uuid NOT NULL DEFAULT gen_random_uuid(), package_id uuid NOT NULL, workspace_id uuid NOT NULL, units_allocated integer NOT NULL CHECK (units_allocated > 0), status text NOT NULL DEFAULT 'active'::text, notes text, created_at timestamp with time zone NOT NULL DEFAULT now(), PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_workspace_allocations_package_id ON public.workspace_allocations (package_id); CREATE INDEX IF NOT EXISTS idx_workspace_allocations_workspace_id ON public.workspace_allocations (workspace_id);
+
+-- public.plan_features CREATE TABLE IF NOT EXISTS public.plan_features ( plan_id text NOT NULL, feature_key text NOT NULL, limit_value integer, enabled boolean, metadata jsonb NOT NULL DEFAULT '{}'::jsonb, updated_at timestamp with time zone NOT NULL DEFAULT now(), PRIMARY KEY (plan_id, feature_key) );
+
+-- public.events CREATE TABLE IF NOT EXISTS public.events ( id uuid NOT NULL DEFAULT gen_random_uuid(), workspace_id uuid NOT NULL, entity_type text, entity_id uuid, event_type text NOT NULL, actor_id uuid, payload jsonb NOT NULL DEFAULT '{}'::jsonb, metadata jsonb NOT NULL DEFAULT '{}'::jsonb, created_at timestamp with time zone NOT NULL DEFAULT now(), event_id uuid, cfg_version text, embed_version text, client_run_id uuid, page_origin_hash text, PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_events_workspace_id ON public.events (workspace_id);
+
+-- public.feature_flags CREATE TABLE IF NOT EXISTS public.feature_flags ( workspace_id uuid NOT NULL, feature_key text NOT NULL, enabled boolean NOT NULL DEFAULT false, variant text, updated_at timestamp with time zone NOT NULL DEFAULT now(), PRIMARY KEY (workspace_id, feature_key) );
+
+-- public.widget_claim_audit CREATE TABLE IF NOT EXISTS public.widget_claim_audit ( id uuid NOT NULL DEFAULT gen_random_uuid(), widget_instance_id uuid NOT NULL, user_id uuid, workspace_id uuid, draft_token uuid, success boolean NOT NULL, reason text, claimed_at timestamp with time zone NOT NULL DEFAULT now(), PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_widget_claim_audit_widget_instance_id ON public.widget_claim_audit (widget_instance_id);
+
+-- public.widget_fetch_errors CREATE TABLE IF NOT EXISTS public.widget_fetch_errors ( id uuid NOT NULL DEFAULT gen_random_uuid(), public_id text NOT NULL, error_code text NOT NULL, error_message text, created_at timestamp with time zone NOT NULL DEFAULT now(), PRIMARY KEY (id) );
+
+-- public.embed_tokens CREATE TABLE IF NOT EXISTS public.embed_tokens ( id uuid NOT NULL DEFAULT gen_random_uuid(), widget_instance_id uuid NOT NULL, token text NOT NULL UNIQUE, expires_at timestamp with time zone NOT NULL, created_by uuid, created_at timestamp with time zone NOT NULL DEFAULT now(), rotated_at timestamp with time zone, PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_embed_tokens_widget_instance_id ON public.embed_tokens (widget_instance_id);
+
+-- public.plugin_artifacts CREATE TABLE IF NOT EXISTS public.plugin_artifacts ( id uuid NOT NULL DEFAULT gen_random_uuid(), widget_id uuid NOT NULL, version text NOT NULL, content bytea NOT NULL CHECK (octet_length(content) <= 28672), bytes integer GENERATED ALWAYS AS (octet_length(content)) STORED, created_at timestamp with time zone NOT NULL DEFAULT now(), PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_plugin_artifacts_widget_id ON public.plugin_artifacts (widget_id);
+
+-- public.materialized_view_refresh_log CREATE TABLE IF NOT EXISTS public.materialized_view_refresh_log ( view_name text NOT NULL, refreshed_at timestamp with time zone NOT NULL DEFAULT now() );
+
+-- public.performance_baseline_audit CREATE TABLE IF NOT EXISTS public.performance_baseline_audit ( id uuid NOT NULL DEFAULT gen_random_uuid(), test_name text NOT NULL, run_at timestamp with time zone NOT NULL DEFAULT now(), duration_ms numeric NOT NULL, status text NOT NULL, PRIMARY KEY (id) );
+
+-- public.submission_rate_window CREATE TABLE IF NOT EXISTS public.submission_rate_window ( token_id uuid NOT NULL, bucket_start timestamp with time zone NOT NULL, count integer NOT NULL DEFAULT 0, PRIMARY KEY (token_id, bucket_start) );
+
+-- public.billing_accounts CREATE TABLE IF NOT EXISTS public.billing_accounts ( id uuid NOT NULL DEFAULT gen_random_uuid(), owner_user_id uuid NOT NULL, created_at timestamp with time zone NOT NULL DEFAULT now(), PRIMARY KEY (id) );
+
+CREATE INDEX IF NOT EXISTS idx_billing_accounts_owner_user_id ON public.billing_accounts (owner_user_id);
+
+-- public.billing_account_workspaces CREATE TABLE IF NOT EXISTS public.billing_account_workspaces ( billing_account_id uuid NOT NULL, workspace_id uuid NOT NULL, PRIMARY KEY (billing_account_id, workspace_id) );
+
+CREATE INDEX IF NOT EXISTS idx_baw_workspace_id ON public.billing_account_workspaces (workspace_id);
+
+################################################################
+
+ENABLE RLS and CREATE POLICIES (where applicable)
+
+################################################################ -- Enable RLS on tables that had rls_enabled = true ALTER TABLE public.widgets ENABLE ROW LEVEL SECURITY; ALTER TABLE public.widget_submissions ENABLE ROW LEVEL SECURITY; ALTER TABLE public.widget_instances ENABLE ROW LEVEL SECURITY; ALTER TABLE public.workspaces ENABLE ROW LEVEL SECURITY; ALTER TABLE public.workspace_members ENABLE ROW LEVEL SECURITY; ALTER TABLE public.plan_features ENABLE ROW LEVEL SECURITY; ALTER TABLE public.events ENABLE ROW LEVEL SECURITY; ALTER TABLE public.embed_tokens ENABLE ROW LEVEL SECURITY; ALTER TABLE public.billing_accounts ENABLE ROW LEVEL SECURITY; ALTER TABLE public.billing_account_workspaces ENABLE ROW LEVEL SECURITY;
+
+-- Example CREATE POLICY statements reproduced from fetched policies. -- NOTE: policy predicates often reference auth.uid() and helper functions. Keep these as-is. -- Replace auth.uid() with (SELECT auth.uid()) if you prefer the wrapper recommended in docs.
+
+CREATE POLICY "Owner can select own widgets" ON public.widgets FOR SELECT TO authenticated USING (user_id = auth.uid()); CREATE POLICY "Owner can update own widgets" ON public.widgets FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid()); CREATE POLICY "Owner can delete own widgets" ON public.widgets FOR DELETE TO authenticated USING (user_id = auth.uid()); CREATE POLICY "Owner can insert own widgets" ON public.widgets FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "widget_instances_select_own_auth" ON public.widget_instances FOR SELECT TO authenticated USING (EXISTS ( SELECT 1 FROM public.widgets w WHERE ((w.id = widget_instances.widget_id) AND (w.user_id = auth.uid())))); CREATE POLICY "widget_instances_insert_own_auth" ON public.widget_instances FOR INSERT TO authenticated WITH CHECK (EXISTS ( SELECT 1 FROM public.widgets w WHERE ((w.id = widget_instances.widget_id) AND (w.user_id = auth.uid())))); CREATE POLICY "widget_instances_update_own_auth" ON public.widget_instances FOR UPDATE TO authenticated USING (EXISTS ( SELECT 1 FROM public.widgets w WHERE ((w.id = widget_instances.widget_id) AND (w.user_id = auth.uid())))) WITH CHECK (EXISTS ( SELECT 1 FROM public.widgets w WHERE ((w.id = widget_instances.widget_id) AND (w.user_id = auth.uid())))); CREATE POLICY "widget_instances_delete_own_auth" ON public.widget_instances FOR DELETE TO authenticated USING (EXISTS ( SELECT 1 FROM public.widgets w WHERE ((w.id = widget_instances.widget_id) AND (w.user_id = auth.uid()))));
+
+CREATE POLICY "members_read_own" ON public.workspace_members FOR SELECT TO public USING (user_id = auth.uid()); CREATE POLICY "member can update self" ON public.workspace_members FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+
+CREATE POLICY "members_can_select_their_workspace_members" ON public.workspace_members FOR SELECT TO authenticated USING (EXISTS ( SELECT 1 FROM workspace_members me WHERE ((me.workspace_id = workspace_members.workspace_id) AND (me.user_id = auth.uid()) AND (me.status = 'active'::text)))); CREATE POLICY "owners_or_admins_can_insert_members" ON public.workspace_members FOR INSERT TO authenticated WITH CHECK (EXISTS ( SELECT 1 FROM workspace_members me WHERE ((me.workspace_id = workspace_members.workspace_id) AND (me.user_id = auth.uid()) AND (me.role = ANY (ARRAY['owner'::text, 'admin'::text])) AND (me.status = 'active'::text)))); CREATE POLICY "owners_or_admins_can_update_members" ON public.workspace_members FOR UPDATE TO authenticated USING (EXISTS ( SELECT 1 FROM workspace_members me WHERE ((me.workspace_id = workspace_members.workspace_id) AND (me.user_id = auth.uid()) AND (me.role = ANY (ARRAY['owner'::text, 'admin'::text])) AND (me.status = 'active'::text)))) WITH CHECK (EXISTS ( SELECT 1 FROM workspace_members me WHERE ((me.workspace_id = workspace_members.workspace_id) AND (me.user_id = auth.uid()) AND (me.role = ANY (ARRAY['owner'::text, 'admin'::text])) AND (me.status = 'active'::text))));
+
+CREATE POLICY "Users can select their own workspace" ON public.workspaces FOR SELECT TO authenticated USING (id = auth.uid()); CREATE POLICY "Users can insert their own workspace" ON public.workspaces FOR INSERT TO authenticated WITH CHECK (id = auth.uid()); CREATE POLICY "Users can update their own workspace" ON public.workspaces FOR UPDATE TO authenticated USING (id = auth.uid()) WITH CHECK (id = auth.uid()); CREATE POLICY "Users can delete their own workspace" ON public.workspaces FOR DELETE TO authenticated USING (id = auth.uid());
+
+CREATE POLICY "plan_features_read_all" ON public.plan_features FOR SELECT TO anon, authenticated USING (true);
+
+CREATE POLICY "events_read_members" ON public.events FOR SELECT TO authenticated USING (EXISTS ( SELECT 1 FROM workspace_members m WHERE ((m.workspace_id = events.workspace_id) AND (m.user_id = auth.uid()))));
+
+CREATE POLICY "billing_accounts_owner_rw" ON public.billing_accounts FOR ALL TO authenticated USING (owner_user_id = auth.uid()) WITH CHECK (owner_user_id = auth.uid());
+
+CREATE POLICY "baw_owner_or_member_read" ON public.billing_account_workspaces FOR SELECT TO authenticated USING (((EXISTS ( SELECT 1 FROM billing_accounts ba WHERE ((ba.id = billing_account_workspaces.billing_account_id) AND (ba.owner_user_id = auth.uid())))) OR (EXISTS ( SELECT 1 FROM workspace_members m WHERE ((m.workspace_id = billing_account_workspaces.workspace_id) AND (m.user_id = auth.uid())))))); CREATE POLICY "baw_owner_write" ON public.billing_account_workspaces FOR ALL TO authenticated USING (EXISTS ( SELECT 1 FROM billing_accounts ba WHERE ((ba.id = billing_account_workspaces.billing_account_id) AND (ba.owner_user_id = auth.uid())))) WITH CHECK (EXISTS ( SELECT 1 FROM billing_accounts ba WHERE ((ba.id = billing_account_workspaces.billing_account_id) AND (ba.owner_user_id = auth.uid()))));
+
+-- Embed tokens: deny all by default, then allow members read CREATE POLICY "embed_tokens_deny_all" ON public.embed_tokens FOR ALL TO public USING (false) WITH CHECK (false); CREATE POLICY "embed_tokens_member_read" ON public.embed_tokens FOR SELECT TO authenticated USING (EXISTS ( SELECT 1 FROM ((widget_instances wi JOIN widgets w ON ((w.id = wi.widget_id))) JOIN workspace_members m ON ((m.workspace_id = w.workspace_id))) WHERE ((wi.id = embed_tokens.widget_instance_id) AND (m.user_id = auth.uid()))));
+
+-- Additional RLS / policy reproductions may be needed for other tables. Review the policies above and adapt the wrapper (SELECT auth.uid()) if you follow the dev guide recommendation.
+
+################################################################
+
+FOREIGN KEYS (add if you want to enforce referential integrity)
+
+################################################################ -- The metadata included relationships; here are representative FK constraints you can add if desired. -- Add them only if you want the DB to enforce FKs (these were not included automatically because metadata may not include exact constraint DDL). -- Example FK ALTERs (uncomment to enable):
+
+-- ALTER TABLE public.widgets ADD CONSTRAINT widgets_workspace_fk FOREIGN KEY (workspace_id) REFERENCES public.workspaces (id); -- ALTER TABLE public.widgets ADD CONSTRAINT widgets_user_fk FOREIGN KEY (user_id) REFERENCES auth.users (id); -- ALTER TABLE public.widget_events ADD CONSTRAINT widget_events_widget_id_fkey FOREIGN KEY (widget_id) REFERENCES public.widgets (id); -- ALTER TABLE public.widget_submissions ADD CONSTRAINT widget_submissions_widget_id_fkey FOREIGN KEY (widget_id) REFERENCES public.widgets (id); -- ALTER TABLE public.widget_instances ADD CONSTRAINT widget_instances_widget_id_fkey FOREIGN KEY (widget_id) REFERENCES public.widgets (id); -- ALTER TABLE public.workspace_members ADD CONSTRAINT workspace_members_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES public.workspaces (id); -- ALTER TABLE public.workspace_members ADD CONSTRAINT workspace_members_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users (id); -- ALTER TABLE public.embed_tokens ADD CONSTRAINT embed_tokens_instance_fk FOREIGN KEY (widget_instance_id) REFERENCES public.widget_instances (id); -- ALTER TABLE public.plugin_artifacts ADD CONSTRAINT plugin_artifacts_widget_id_fkey FOREIGN KEY (widget_id) REFERENCES public.widgets (id); -- ALTER TABLE public.billing_accounts ADD CONSTRAINT billing_accounts_owner_user_id_fkey FOREIGN KEY (owner_user_id) REFERENCES auth.users (id); -- ALTER TABLE public.billing_account_workspaces ADD CONSTRAINT billing_account_workspaces_billing_account_id_fkey FOREIGN KEY (billing_account_id) REFERENCES public.billing_accounts (id); -- ALTER TABLE public.billing_account_workspaces ADD CONSTRAINT billing_account_workspaces_workspace_id_fkey FOREIGN KEY (workspace_id) REFERENCES public.workspaces (id);
+

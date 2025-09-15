@@ -1,5 +1,6 @@
 packages:
   - apps/*
+  - services/api
   - services/*
   - packages/*
   - infra/*

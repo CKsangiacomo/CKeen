@@ -1,4 +1,4 @@
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 export async function POST(req: Request, { params }: { params: { publicId: string }}) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;

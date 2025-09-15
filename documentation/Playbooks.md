@@ -140,3 +140,131 @@
 2. Run `pnpm install` locally with the canonical pnpm, commit updated lockfile.  
 3. Re-run CI.  
 **Guardrail:** CI step fails if `--no-frozen-lockfile` is used.
+
+## Paris → Phoenix Ingest (P1 canonical | Option B, final)
+
+Scope: Phase 1 only. TechPhases.md is authoritative; this playbook block captures the execution details for the telemetry ingest endpoint (Venice → Paris → Phoenix).
+
+### 1) DB prerequisite (Michael) — already applied
+CREATE UNIQUE INDEX IF NOT EXISTS events_event_id_unique_idx
+  ON public.events(event_id)
+  WHERE event_id IS NOT NULL;
+
+### 2) Endpoint contract (Paris)
+- Route: POST /api/ingest
+  - TEMP path (current repo): services/embed/app/api/ingest/route.ts
+  - FINAL path (after Paris split): services/api/app/api/ingest/route.ts
+- Runtime: Edge (Next.js)
+- Auth: None (public telemetry). Envelope MUST contain no PII.
+- Request body (WidgetEventEnvelope JSON)
+  - required: event_name (string), event_id (uuid string), ts (ms epoch number), workspace_id (uuid), widget_id (uuid)
+  - optional: token_id (uuid), cfg_version (string), embed_version (string), client_run_id (uuid), page_origin_hash (string), payload (object; non-PII only)
+- Responses
+  - 200 { ok: true, inserted: true }      — first insert
+  - 200 { ok: true, inserted: false }     — duplicate event_id (idempotent no-op)
+  - 400 { ok: false, error: 'invalid_envelope' }
+  - 500 { ok: false, error: 'ingest_failed' }
+
+### 3) Insert pattern (Option B — canonical)
+INSERT INTO public.events (
+  event_id, event_name, ts, workspace_id, widget_id, token_id,
+  cfg_version, embed_version, client_run_id, page_origin_hash, payload
+)
+VALUES ($1, $2, to_timestamp($3/1000.0), $4, $5, $6, $7, $8, $9, $10, $11::jsonb)
+ON CONFLICT (event_id) DO NOTHING
+RETURNING event_id;   -- NULL ⇒ duplicate (no insert)
+
+### 4) Reference implementation (Edge/Next.js)
+export const runtime = 'edge';
+
+type Envelope = {
+  event_name: string;
+  event_id: string;
+  ts: number;
+  workspace_id: string;
+  widget_id: string;
+  token_id?: string;
+  cfg_version?: string;
+  embed_version?: string;
+  client_run_id?: string;
+  page_origin_hash?: string;
+  payload?: unknown; // non-PII only
+};
+
+const PII_KEYS = new Set(['email','phone','ip','user_agent','ua','url']);
+const hasPII = (v: any): boolean =>
+  v && typeof v === 'object' &&
+  Object.keys(v).some(k => PII_KEYS.has(k.toLowerCase()) || hasPII((v as any)[k]));
+
+const isValid = (e: Envelope): boolean =>
+  !!e && typeof e.event_name === 'string' && typeof e.event_id === 'string' &&
+  typeof e.ts === 'number' && typeof e.workspace_id === 'string' &&
+  typeof e.widget_id === 'string' && (e.payload === undefined || !hasPII(e.payload));
+
+// NOTE: replace with your server-side DB helper
+import { sql } from '../../_db';
+
+export async function POST(req: Request) {
+  try {
+    const e = (await req.json()) as Envelope;
+    if (!isValid(e)) {
+      return Response.json({ ok: false, error: 'invalid_envelope' }, { status: 400 });
+    }
+
+    const res = await sql/* sql */`
+      INSERT INTO public.events (
+        event_id, event_name, ts, workspace_id, widget_id, token_id,
+        cfg_version, embed_version, client_run_id, page_origin_hash, payload
+      )
+      VALUES (
+        ${e.event_id},
+        ${e.event_name},
+        to_timestamp(${e.ts}/1000.0),
+        ${e.workspace_id},
+        ${e.widget_id},
+        ${e.token_id ?? null},
+        ${e.cfg_version ?? null},
+        ${e.embed_version ?? null},
+        ${e.client_run_id ?? null},
+        ${e.page_origin_hash ?? null},
+        ${e.payload ? JSON.stringify(e.payload) : null}::jsonb
+      )
+      ON CONFLICT (event_id) DO NOTHING
+      RETURNING event_id;
+    `;
+    return Response.json({ ok: true, inserted: res.rowCount === 1 }, { status: 200 });
+  } catch {
+    // Log minimal safe markers only
+    console.error('ingest_failed');
+    return Response.json({ ok: false, error: 'ingest_failed' }, { status: 500 });
+  }
+}
+
+### 5) Do NOT
+- Do NOT use advisory locks or WHERE NOT EXISTS (removed pattern).
+- Do NOT store PII, IP, UA, or raw URLs in telemetry.
+
+### 6) Smoke tests (manual)
+# first insert (should insert)
+curl -sS -X POST http://localhost:3000/api/ingest \
+  -H 'content-type: application/json' \
+  -d '{"event_name":"widget_loaded","event_id":"8bb0a1e2-2d1d-4b22-9dc2-0a4e4a3f2f77","ts":1736892345123,"workspace_id":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","widget_id":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","payload":{"render_ms":42}}'
+# => { "ok": true, "inserted": true }
+
+# duplicate (same event_id; should not insert)
+curl -sS -X POST http://localhost:3000/api/ingest \
+  -H 'content-type: application/json' \
+  -d '{"event_name":"widget_loaded","event_id":"8bb0a1e2-2d1d-4b22-9dc2-0a4e4a3f2f77","ts":1736892345123,"workspace_id":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","widget_id":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","payload":{}}'
+# => { "ok": true, "inserted": false }
+
+### 7) Observability (minimum)
+- Count: total requests, total inserts, total duplicates.
+- Error rates: 4xx/5xx per route.
+- Add a deploy marker log on release.
+
+### 8) Repo migration note
+- Until services/api exists, keep the endpoint at: services/embed/app/api/ingest/route.ts.
+- When Paris is split out:
+  1) Move file unchanged to services/api/app/api/ingest/route.ts
+  2) Fix local import paths (DB helper)
+  3) Update this playbook path note
