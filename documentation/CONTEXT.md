@@ -43,16 +43,15 @@ Every system belongs to one of three layers:
 3. **Monetization** (Tokyo, Robert, Copenhagen)
 
 ## Deployments (FROZEN)
-- **c-keen-app** (Next.js on Vercel): hosts Bob, Robert UI, Tokyo UI; serves Oslo assets; also serves /dieter/* paths; includes `/public/vendor/studio/` (built Studio bundle).
-- **c-keen-embed** (Edge functions on Vercel): hosts Venice runtime and Atlas cache.
-- **c-keen-site** (Next.js on Vercel): marketing; hosts Prague gallery; includes `/public/vendor/studio/` (built Studio bundle).
-- **Supabase**: Michael (data plane), Robert (auth), Copenhagen (AI functions).  
-**Rule:** Only these three Vercel projects exist. Studio Shell is **not** a deployment; it is built and copied into each host’s `/public/vendor/studio/`.
+- **c-keen-app** — Next.js (dashboard/studio)
+- **c-keen-embed** — Edge functions (embed runtime & cache)
+- **c-keen-site** — Marketing site
+- **c-keen-api** — Next.js (Paris — HTTP API)
 
 ## Critical Rules & Scale Guardrails
 
 ### Core Rules
-1. **Never** add a 4th Vercel project.  
+1. Deployment topology includes four Vercel projects (FROZEN for P1). 
 2. **Venice** script must remain **<28KB gzipped**.  
 3. **Preview** belongs to **Venice**; no separate preview service.  
 4. **Oslo** is the design system; "Dieter" = Oslo (historical alias).  
@@ -126,10 +125,10 @@ Clickeen is a SaaS platform with a pnpm monorepo structure. It contains apps, se
 
 # Deployment Overview
 
-## Vercel Projects (FROZEN)
-- **c-keen-app** → `/apps/app` (Next.js)  
-- **c-keen-embed** → `/services/embed` (Edge functions)  
-- **c-keen-site** → `/apps/site` (Next.js)  
+- **c-keen-app** (Next.js on Vercel): hosts Bob (Builder & Studio), Robert UI, Tokyo UI; serves Dieter assets.
+- **c-keen-embed** (Edge functions on Vercel): hosts Venice runtime and Atlas cache.
+- **c-keen-site** (Next.js on Vercel): marketing; hosts Prague gallery.
+- **c-keen-api** (Next.js API on Vercel): hosts **Paris — HTTP API**.
 
 **Rule:** No additional Vercel projects may be created.
 

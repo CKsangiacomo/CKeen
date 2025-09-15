@@ -1,24 +1,23 @@
-# System: Paris — Templates
+# System: Paris — HTTP API
 
 ## Identity
 - Tier: Core
-- Purpose: Template catalog for widgets
+- Purpose: Token issuance (Supabase RPC), submissions (schema+per-token rate limit), telemetry ingest
 - Owner: Platform
 
 ## Interfaces
-- GET templates, GET template/:id (served via app UI; data in Supabase)
-- Outputs TemplateConfig (validated by Geneva)
+- POST /api/tokens/issue
+- POST /api/submissions
+- POST /api/ingest
+- GET  /api/healthz  (dependency health)
 
 ## Dependencies
-- Depends on: Geneva
-- Used by: Bob, Venice
+- Supabase (Michael) via RPC
+- Vercel Edge Config (read path) via `EDGE_CONFIG`
 
 ## Deployment
-- Data in Supabase; UI in c-keen-app
+- Vercel project: **c-keen-api** (Root: `services/api`)
 
 ## Rules
-- Template payloads small (<50KB)
-- Must validate against Geneva
-
-## Links
-- Back: ../../CONTEXT.md
+- No PII in telemetry payloads
+- Server-only secrets scoped to this project

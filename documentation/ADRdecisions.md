@@ -196,3 +196,37 @@ This approach balances type safety, runtime correctness, and developer ergonomic
 - Ensures StudioShell works out of the box.  
 - Prevents future runtime errors from missing exports.  
 - Creates a clear API surface through `api/index.ts`.
+
+## ADR-012: Dedicated API Deployment Surface (`c-keen-api`)
+**Status:** Accepted  
+**Date:** 2025-09-15  
+**Author:** CTO / Principal Engineer  
+**Supersedes:** CONTEXT.md rule “Never add a 4th Vercel project”
+**Related:** TechPhases.md (§S3 Paris — HTTP API), Playbooks.md, verceldeployments.md
+
+### Context
+TechPhases.md (FROZEN) defines **Paris** as the HTTP API (token issuance, submissions, telemetry ingest). Deployment docs listed only three projects, creating drift from the frozen service map.
+
+### Decision
+Introduce a separate Vercel project **`c-keen-api`** hosting **Paris — HTTP API** from `services/api`, isolating server secrets and decoupling API deploys from the dashboard.
+
+### Consequences
+- **Security:** Server-only secrets live only in `c-keen-api`.  
+- **Reliability:** App/UI deploys cannot break the API.  
+- **Clarity:** Deployment topology matches Phase 1 services.
+
+### Scope
+- In: token issuance RPCs, submissions (schema+rate-limit), telemetry ingest.  
+- Out: billing (Tokyo) and embed (Venice) remain on their existing surfaces.
+
+### Ops / Env (server-only on `c-keen-api`)
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `SENTRY_DSN`
+- `EDGE_CONFIG` — Vercel Edge Config connection string (via Integration)
+
+**CI-only (never runtime):**
+- `VERCEL_API_TOKEN` — used by CI to write to Edge Config via Vercel REST API
+
+### Rollback
+Re-point consumers to the prior API; roll back in Vercel; revoke newly added secrets if compromised.
