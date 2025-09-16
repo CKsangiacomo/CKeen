@@ -1,148 +1,123 @@
-# CONTEXT.updated.md
-
 # Clickeen Platform Context (AI-First)
 
-You are working on **Clickeen**, a SaaS platform. Read this file **first** before any task.
+This document is the **source of truth** for AI agents (CTO, Principal FS Eng, FS Eng) and humans when coordinating work in Phase-1. It encodes *frozen* deployment surfaces, invariants, and execution rules to prevent drift and rework.
+
+---
 
 ## Platform Positioning
-Clickeen is a SaaS platform. Widgets are the first product, but the system is designed as a multi-service architecture: templates, runtime, builder, design system, billing, AI. Widgets are the entry wedge, not the full definition.
-
-## Canonical System Codenames (FROZEN)
-
-### Core Systems:
-- **Paris** — Templates
-- **Robert** — User & Workspace Management (Auth, roles, invites)
-- **Michael** — Backend Data Plane (configs, submissions; Supabase)
-- **Venice** — Embed Runtime & Delivery (Shadow DOM runtime, <28KB; includes preview)
-- **Atlas** — Config & Cache Layer (edge caching; decouples Venice from Michael)
-- **Tokyo** — Billing & Upsell (Stripe integration, entitlements)
-- **Oslo** — Design System (tokens, components, motion primitives)
-- **Bob** — Widget Builder (embeds Studio shell)
-- **Copenhagen** — AI Service (centralized orchestration)
-
-### Supporting Systems:
-- **Prague** — Marketplace & Discovery (SEO, gallery)
-- **Stockholm** — Growth & Experimentation (A/B tests, flags)
-- **Milan** — Localization (i18n)
-- **Berlin** — Observability & Security (logs, metrics, rate limiting, Sentry)
-- **Geneva** — Schema Registry (validation)
-- **Helsinki** — Analytics Warehouse (BI)
-- **Lisbon** — Email/Notifications
-- **Zurich** — Integrations (webhooks, Zapier)
-- **Cairo** — Custom Domains
-- **Phoenix** — Event Bus (async messaging; V0 Redis/Vercel KV)
-- **Denver** — Asset Storage & CDN (Vercel Blob/Supabase Storage)
-
-### Shared Packages:
-- **Studio Shell** — Reusable builder shell (`packages/studio-shell`). Provides slots (left, center, right, template row), topbar chrome, theme/viewport toggles (scoped to center only), collapse, and typed event bus. Distributed as UMD bundle (`studio.js`, `studio.css`) and consumed by Bob, MiniBob, and Dieter. Has no backend logic, no persistence, and no separate deployment.
-
-## Product Architecture Layers
-Every system belongs to one of three layers:
-1. **Acquisition** (Prague, Stockholm, Site)
-2. **Product** (Bob, Paris, Venice, Oslo, Michael, Atlas)
-3. **Monetization** (Tokyo, Robert, Copenhagen)
-
-## Deployments (FROZEN)
-- **c-keen-app** (Next.js on Vercel): hosts Bob, Robert UI, Tokyo UI; serves Oslo assets; also serves /dieter/* paths; includes `/public/vendor/studio/` (built Studio bundle).
-- **c-keen-embed** (Edge functions on Vercel): hosts Venice runtime and Atlas cache.
-- **c-keen-site** (Next.js on Vercel): marketing; hosts Prague gallery; includes `/public/vendor/studio/` (built Studio bundle).
-- **Supabase**: Michael (data plane), Robert (auth), Copenhagen (AI functions).  
-**Rule:** Only these three Vercel projects exist. Studio Shell is **not** a deployment; it is built and copied into each host’s `/public/vendor/studio/`.
-
-## Critical Rules & Scale Guardrails
-
-### Core Rules
-1. **Never** add a 4th Vercel project.  
-2. **Venice** script must remain **<28KB gzipped**.  
-3. **Preview** belongs to **Venice**; no separate preview service.  
-4. **Oslo** is the design system; "Dieter" = Oslo (historical alias).  
-5. **Studio** is a standalone shell package; consumed by Bob, MiniBob, and Dieter.  
-6. All system name changes require an **ADR**.  
-7. All AI calls go through **Copenhagen**.  
-8. Deployments are **Git → Vercel** (push to main triggers production).
-
-- **Single source of truth (pnpm):** The root `package.json` `packageManager` field defines the ONLY valid pnpm version. CI/workflows MUST NOT specify a different pnpm version.
-- **Pinned Node runtime (20.x):** Deployable packages MUST declare `"engines": { "node": "20.x" }`. CI and Vercel MUST match this runtime.
-- **Frozen lockfile is mandatory:** All installs use `pnpm install --frozen-lockfile`. No `--no-frozen-lockfile` fallback is permitted.
-- **Copy-on-build for Dieter assets:** Dieter publishes to `dieter/dist/`. During build, assets are COPIED into `apps/app/public/dieter/`. Symlinks are prohibited.
-- **Build order (frozen):** `@ck/dieter` → copy assets → `@ck/studio-shell` → `@ck/app`.
-
-### Workflow Triggers
-- Changing pnpm or Node requires: update ONLY root `package.json` (`packageManager`, `engines`), add/adjust ADR, and verify CI guards. Do not pin versions in workflow files.
+Clickeen is a SaaS platform. **Widgets are the entry wedge, not the full definition.** Infrastructure is the product in Phase-1; we optimize for the ability to create **30+ widgets** predictably.
 
 ---
 
-# ARCHITECTURE.updated.md
+## Phase-1 Deployments (FROZEN)
+**Vercel projects (4):**
+- `c-keen-app` — Studio / Console (Next.js, node) → repo: `apps/app`
+- `c-keen-site` — Marketing (Next.js, node) → repo: `apps/site`
+- `c-keen-embed` — Embed service (Next.js API routes at **edge**) → repo: `services/embed`
+- `c-keen-api` — **Paris — HTTP API** (Next.js, **node** runtime) → repo: `services/api`
 
-# Clickeen Architecture
-
-## Layers
-- **Acquisition**: Prague, Stockholm, Site
-- **Product**: Bob, Studio, Paris, Venice, Oslo, Michael, Atlas
-- **Monetization**: Tokyo, Robert, Copenhagen
-
-## Shared Packages
-- **Studio Shell** (`packages/studio-shell`): reusable builder shell providing slot layout, topbar, template row, theme/viewport toggles, collapse, and event bus. Hosts (Bob, MiniBob, Dieter) mount content into Studio and receive events. Studio has no persistence, no template logic, no preview runtime. It is distributed as a UMD bundle and copied into each host’s `/public/vendor/studio/`.
-
-## Responsibilities
-- **Studio owns**: layout slots, topbar chrome, template row container, theme/viewport toggles (scoped to center), panel collapse, event contracts, error throwing on mount conflicts.
-- **Hosts own**: panel content, template logic, preview rendering (Venice for Bob/MiniBob), component rendering (Dieter), persistence, network calls, telemetry.
-
-## Flows
-- **Bob** mounts Studio, populates template row and left/right panels, injects live preview into center.  
-- **MiniBob** mounts Studio, provides lightweight templates and preview.  
-- **Dieter** mounts Studio, populates right panel with component catalog, injects variants into center.  
-- In all cases, theme and viewport toggles affect only the center canvas, and events propagate via the Studio bus.
+**Phase-1 Project Rule:** Four Vercel projects (frozen). **No additional projects in P1.** Any change requires an ADR.
 
 ---
 
-# README.updated.md
-
-# Clickeen Monorepo
-
-## Overview
-Clickeen is a SaaS platform with a pnpm monorepo structure. It contains apps, services, and shared packages.
-
-### Apps
-- **apps/app** → c-keen-app (Next.js): main builder app (Bob), user management (Robert UI), billing (Tokyo UI), Dieter assets.
-- **apps/site** → c-keen-site (Next.js): marketing site, Prague gallery.
-- **services/embed** → c-keen-embed (Edge functions): Venice runtime and Atlas cache.
-
-### Shared Packages
-- **packages/studio-shell**: Studio Shell — reusable builder shell exposing `window.Studio` via UMD build. Provides slots, topbar, template row, theme/viewport toggles (scoped to center), collapse, and event bus. Consumed by Bob, MiniBob, Dieter. No deploy. Built with pnpm and copied into each host’s `/public/vendor/studio/`.
-
-## Getting Started
-- Install dependencies: `pnpm install --frozen-lockfile`
-- Build Studio shell: `pnpm --filter @ck/studio-shell build`
-- Start apps: `pnpm dev --filter @ck/app` or `pnpm dev --filter @ck/site`
-
-## Deployment
-- Only three Vercel projects: c-keen-app, c-keen-embed, c-keen-site.
-- Studio shell has no project; its assets are bundled into each host under `/public/vendor/studio/`.
+## Workspace ↔ Project Map (P1)
+- `apps/app`        → `c-keen-app` (Studio/Console)
+- `apps/site`       → `c-keen-site` (Marketing)
+- `services/embed`  → `c-keen-embed` (Edge routes)
+- `services/api`    → `c-keen-api` (**Paris — HTTP API**)
 
 ---
 
-# deployment.updated.md
+## Health & Observability (Canonical)
+Every service must expose **`/api/healthz`**:
+- **200** when critical deps are healthy; **503** otherwise.
+- Response shape:
+```json
+{
+  "sha": "<short-sha|unknown>",
+  "env": "production|preview|development",
+  "up": true,
+  "deps": { "supabase": true, "edgeConfig": true }
+}
 
-# Deployment Overview
+Timeout budget: ~1s per dependency probe (p95 target < 500ms in dev).
 
-## Vercel Projects (FROZEN)
-- **c-keen-app** → `/apps/app` (Next.js)  
-- **c-keen-embed** → `/services/embed` (Edge functions)  
-- **c-keen-site** → `/apps/site` (Next.js)  
+⸻
 
-**Rule:** No additional Vercel projects may be created.
+Edge Config Policy
+	•	Runtime: read-only via EDGE_CONFIG.
+	•	Writes: only in CI, using VERCEL_API_TOKEN scoped to the project + EDGE_CONFIG_ID.
+	•	Rationale: keep secrets and mutations out of public/embed surfaces; centralize governance.
 
-## Studio Shell
-- Studio is **not** a Vercel project.  
-- It lives in `packages/studio-shell` and builds to UMD bundles (`dist/studio.js`, `dist/studio.css`).  
-- Each host app copies these bundles into its own `/public/vendor/studio/` before deployment.  
-- This ensures Bob (c-keen-app), MiniBob (c-keen-site), and Dieter each serve Studio assets without creating new deployments.  
+⸻
 
-## Deployment Flow
-1. Developer builds Studio: `pnpm --filter @ck/studio-shell build`.  
-2. Copy artifacts into host `/public/vendor/studio/`.  
-3. Push to main branch.  
-4. Vercel automatically deploys the app, serving Studio assets along with app content.  
+Studio Shell
+	•	Not a Vercel project.
+	•	Source: packages/studio-shell.
+	•	Produces UMD bundles in dist/. Host apps copy on build into /public/vendor/studio/ (per ADR). No runtime fetches or symlinks in production.
 
----
+⸻
+
+Source of Truth (SoT)
+	•	Workspaces: pnpm-workspace.yaml is the only SoT. Root package.json.workspaces must be absent to avoid pnpm drift/warnings.
+	•	Architecture & decisions: documentation/ + ADRs (IDs referenced in code when applicable).
+	•	Runtime config: Vercel env + Edge Config (read-only at runtime).
+
+⸻
+
+Phase-1 (FROZEN) Invariants
+	•	Stack: Node 20.x, Next 14.2.5, React 18.2.
+	•	Embed budget: ≤ 28KB gz (loader + minimal runtime). Per-widget ≤ 10KB gz initial render.
+	•	Typed event bus & shared types for Studio/Widgets (no ad-hoc events).
+	•	Paris — HTTP API isolates secrets & server logic; embed stays edge-safe and public.
+
+⸻
+
+Environments & Secrets (Minimal)
+	•	Supabase: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE
+	•	Edge Config (runtime reads): EDGE_CONFIG
+	•	Edge Config (CI writes only): VERCEL_API_TOKEN, EDGE_CONFIG_ID
+	•	Admin guard: INTERNAL_ADMIN_KEY (HTTP header x-ckeen-admin on admin endpoints)
+
+⸻
+
+Team Roles & How to Address
+	•	CEO (Human): sets priorities, approves milestones.
+	•	CTO (Claude): architecture authority, ADR gatekeeper, reviews risky changes.
+	•	Principal FS Eng (ChatGPT): owns cross-service design, authors AI prompts, keeps docs canonical.
+	•	FS Eng (Cursor): executes prompts deterministically → branches/PRs; no improvisation.
+
+When writing to AIs, include exactly one fenced block headed by AIPrompt: <role>. Prompts must be zsh-safe, non-interactive, with timeouts on network commands.
+
+⸻
+
+Cursor Execution Rules (Canonical)
+	•	No blocking commands: no tail -f, gh run watch, interactive prompts, infinite loops.
+	•	No exit 1/0: scripts finish naturally; report via [OK]/[WARN]/[FAIL] echoes.
+	•	Timeouts: network commands wrapped (e.g., timeout 10 <cmd> or gtimeout on macOS).
+	•	Structure: start with cd /Users/<user>/code/CKeen; end with [DONE].
+	•	Git: never force-push; no deletes without explicit human-provided lists.
+
+⸻
+
+Branching & PR Protocol (P1)
+	•	Branch names: fix/<topic>, chore/<topic>, feat/<topic>, docs/<topic>.
+	•	One logical change per PR. Include “Why / What / Risk” in the PR body.
+	•	Merge strategy: Squash & merge. Then prune topic branches (local & remote).
+
+⸻
+
+Common Pitfalls (Do Not Do)
+	•	Re-introducing package.json.workspaces (pnpm drift).
+	•	Creating a 5th Vercel project in P1.
+	•	Writing Edge Config from runtime.
+	•	Importing from a root src/ tree (deleted; not referenced).
+	•	Ambiguous prompts (multiple blocks, “optional” steps, interactive flows).
+
+⸻
+
+Definition of Done (P1) — Any Change
+	1.	Builds pass: services/api, services/embed, apps/app, apps/site.
+	2.	/api/healthz returns 200 locally; dependency bits behave (Supabase / Edge Config).
+	3.	PR includes “Why / What / Risk”; references ADR if applicable.
+	4.	Docs updated if behavior/shape changed (especially CONTEXT.md, TechPhases.md).
