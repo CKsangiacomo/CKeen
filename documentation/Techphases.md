@@ -394,3 +394,24 @@ create policy tenant_read on ... for select using (
   exists (
     select 1 from workspace_members m
     where m.workspace_id = ...workspace_id and m.user
+### Phase 1 Deployments (FROZEN)
+
+- **Vercel projects (4):**
+  - `c-keen-app` — Studio/Console (Next.js)
+  - `c-keen-site` — Marketing site (Next.js)
+  - `c-keen-embed` — Embed service at edge (Next.js / edge routes)
+  - `c-keen-api` — **Paris — HTTP API** (Next.js / node runtime)
+- **Rule:** No additional projects in P1 (frozen).
+- **Edge Config:** **Vercel Edge Config** in P1 (runtime read-only). Any writes are performed in CI using a scoped `VERCEL_API_TOKEN` with `EDGE_CONFIG_ID`.
+
+#### Health endpoint spec (all services)
+
+Each service must expose `/api/healthz` returning 200 on pass and 503 if a critical dependency fails. The response MUST include the following shape:
+
+```json
+{
+  "sha": "<short-sha|unknown>",
+  "env": "production|preview|development",
+  "up": true,
+  "deps": { "supabase": true, "edgeConfig": true }
+}
