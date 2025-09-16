@@ -1,3 +1,5 @@
+CRITICAL P0 — For ALL AIs and humans: documentation/ is the single source of truth; you must read it and follow it. On ANY discrepancy, STOP and ask alignment questions before proceeding.
+
 # Clickeen Platform Context (AI-First)
 
 This document is the **source of truth** for AI agents (CTO, Principal FS Eng, FS Eng) and humans when coordinating work in Phase-1. It encodes *frozen* deployment surfaces, invariants, and execution rules to prevent drift and rework.
