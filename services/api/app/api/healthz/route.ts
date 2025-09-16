@@ -24,15 +24,22 @@ async function checkSupabase(timeoutMs = 1000) {
 }
 
 async function checkEdgeConfig(timeoutMs = 1000) {
-  const ctl = new AbortController();
-  const t = setTimeout(() => ctl.abort(), timeoutMs);
   try {
-    await getAll({ signal: ctl.signal as any });
+    await new Promise<void>((resolve, reject) => {
+      const t = setTimeout(() => reject(new Error('timeout')), timeoutMs);
+      getAll()
+        .then(() => {
+          clearTimeout(t);
+          resolve();
+        })
+        .catch((err) => {
+          clearTimeout(t);
+          reject(err);
+        });
+    });
     return true;
   } catch {
     return false;
-  } finally {
-    clearTimeout(t);
   }
 }
 
