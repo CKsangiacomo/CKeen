@@ -34,7 +34,7 @@
 
 ## Core Systems (Business Critical)
 
-1. **Paris — Templates System**  
+1. **Paris — HTTP API System**  
    - Purpose: Catalog of widget templates.  
    - Location: Supabase (template metadata) + UI in c-keen-app.  
    - Notes: Source for Bob (builder) when creating widgets.  
@@ -196,3 +196,21 @@
 - **Workspace Drift**: Documented in `/docs/DEPLOY.md` and `/docs/SERVICES.md`; rules added to prevent accidental new Vercel projects.  
 
 ---
+
+## Phase 1 Deployments (FROZEN)
+- Vercel projects: c-keen-app (Studio/Console), c-keen-site (Marketing), c-keen-embed (Edge Embed), c-keen-api (Paris — HTTP API).
+- Project count (P1): Four projects — frozen. Any change requires an ADR.
+
+### Health & Observability
+- Health endpoint: /api/healthz (200 on success, 503 on dependency failure) with payload:
+
+```
+{
+  "sha": "<short-sha|unknown>",
+  "env": "production|preview|development",
+  "up": true,
+  "deps": { "supabase": true, "edgeConfig": true }
+}
+```
+
+- Edge Config: Vercel Edge Config is used for runtime reads. Writes (if needed) are executed in CI using a scoped token (VERCEL_API_TOKEN) and EDGE_CONFIG_ID.

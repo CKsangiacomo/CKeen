@@ -38,3 +38,14 @@ With the foundation in place, Clickeen evolves into a full SaaS platform for ent
 - Push to the current branch.  
 
 Confirm completion.
+---
+
+### Phase-1 Implementation Snapshot (FROZEN)
+
+- **Services & Deployments:** Four Vercel projects — `c-keen-app` (Studio/Console), `c-keen-site` (Marketing), `c-keen-embed` (Edge Embed), `c-keen-api` (**Paris — HTTP API**).
+- **Data plane:** Supabase (Postgres + Auth + RLS).
+- **Edge config:** **Vercel Edge Config** (runtime read-only; any writes happen in CI with a scoped token).
+- **Health:** `/api/healthz` returns `{ sha, env, up, deps: { supabase, edgeConfig } }` with 200 on pass and 503 on dependency failure.
+- **Embed budget:** ≤28KB gz (loader + minimal runtime); per-widget ≤10KB gz initial render.
+
+> Historical sections below are retained for context; the snapshot above reflects the current, frozen Phase-1 state.
