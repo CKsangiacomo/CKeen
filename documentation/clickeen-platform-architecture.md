@@ -214,3 +214,111 @@
 ```
 
 - Edge Config: Vercel Edge Config is used for runtime reads. Writes (if needed) are executed in CI using a scoped token (VERCEL_API_TOKEN) and EDGE_CONFIG_ID.
+
+---
+
+# Executive Summary — What’s Built Now (Verified in Repo)
+- ✅ **Builds pass** for all 4 surfaces: `services/api` (Paris — HTTP API), `services/embed` (Embed), `apps/app` (Studio/Console), `apps/site` (Marketing).
+- ✅ **/api/healthz** implemented with `{sha, env, up, deps:{supabase, edgeConfig}}` and 200/503 semantics in **services/api**.
+- ✅ **Edge Config (runtime reads)** integrated (see healthz dep probe); runtime **does not** write.
+- ✅ **Dieter design system** pipeline builds and copies assets into host apps.
+- ✅ **Studio Shell** exists as a package and is copied into host apps on build (no separate deploy).
+- ✅ **Embed service** exposes API routes (cfg/e/form/ingest) and builds successfully.
+- ⚠️ **Supabase schema & functions**: contract frozen in docs, but DB artifacts are not verified from repo alone.
+- ⚠️ **Event Bus / Telemetry pipeline**: ingest endpoints exist; full pipeline status not verified.
+- ⚠️ **Localization**: marketing has localized pages; full i18n across apps is not verified.
+- ⛔ **Billing/Entitlements**, **Email/Notifications**, **AI service**, **Integrations**, **Warehouse/BI**: not implemented in repo.
+
+> Legend: ✅ Done (verified in repo) · ⚠️ Partial/Unverified · ⛔ Not started
+
+---
+
+# System Inventory & Phase Status
+
+**State values per Phase:**  
+- **DONE** — implemented and verified by repo/builds  
+- **PARTIAL** — present in repo but not function-complete, or verified only in part  
+- **NOT STARTED** — no implementation found in repo
+
+> Phase definitions: P1 = frozen infra + core surfaces; P2 = growth/completion of platform flows; P3 = scale/perf/enterprise.
+
+| System (Codename) | Purpose | Repo Path / Project | P1 | P2 | P3 | Notes |
+|---|---|---|---|---|---|---|
+| **Paris — HTTP API** | Server-side API surface (admin ops, token ops, secure server logic) | `services/api` → `c-keen-api` | PARTIAL | DONE | DONE | Healthz + skeleton verified; expand endpoints/admin ops in P2 |
+| **Venice — Embed Service** | Public embed endpoints/runtime at edge | `services/embed` → `c-keen-embed` | PARTIAL | DONE | DONE | cfg/e/form/ingest routes present; runtime hardening in P2 |
+| **Michael — Data Plane (Supabase)** | Configs, submissions, RLS, functions | Supabase | PARTIAL* | DONE | DONE | *Schema frozen in docs; repo-only verification limited |
+| **Atlas — Edge Config** | Low-latency config distribution | Vercel Edge Config | DONE | DONE | DONE | Runtime reads in P1; CI-only writes policy |
+| **Bob — Studio Builder** | Widget studio UX & shell host | `apps/app` → `c-keen-app` | PARTIAL | DONE | DONE | App builds; builder features expand in P2 |
+| **Robert — Auth & Workspaces** | Auth, roles, invites | `apps/app` + Supabase | PARTIAL | DONE | DONE | Auth pages and invites routes exist; enforce policies in P2 |
+| **Dieter — Design System** | Tokens, primitives, icons, components | `dieter/` (+ copied to apps) | DONE | DONE | DONE | Pipeline verified; a11y & coverage continue |
+| **Studio Shell (pkg)** | Reusable shell; copied on build | `packages/studio-shell` | DONE | DONE | DONE | Not a deploy; copy-on-build |
+| **Phoenix — Telemetry/Event Bus** | Ingest, idempotency, rollups | API + DB + jobs | PARTIAL | DONE | DONE | Ingest routes present; pipeline build-out in P2 |
+| **Berlin — Observability/Security** | Logs, metrics, rate limits | Sentry + Supabase | NOT STARTED | PARTIAL | DONE | Wire Sentry + rate limits beginning in P2 |
+| **Helsinki — Analytics Warehouse** | BI/aggregations | Warehouse | NOT STARTED | PARTIAL | DONE | Consume events from Venice → Berlin → Michael |
+| **Prague — Marketplace/Discovery** | SEO/galleries | `apps/site` → `c-keen-site` | PARTIAL | DONE | DONE | Marketing live; marketplace features in P2 |
+| **Stockholm — Growth/Flags** | Experimentation, feature flags | External (GB/PostHog) | NOT STARTED | PARTIAL | DONE | Hook into app/embed in P2 |
+| **Milan — Localization** | i18n infra & content | Shared + apps/site | PARTIAL | DONE | DONE | /it pages present; consolidate i18n infra |
+| **Geneva — Schema Registry** | Central validation schemas | Shared | NOT STARTED | PARTIAL | DONE | Coalesce zod/json-schema; publish to consumers |
+| **Lisbon — Email/Notifications** | Outbound comms | External provider | NOT STARTED | PARTIAL | DONE | System notifications & webhooks in P2 |
+| **Zurich — Integrations** | 3rd-party hooks/webhooks | Shared | NOT STARTED | PARTIAL | DONE | Zapier/webhooks & sandbox endpoints |
+| **Tokyo — Billing/Entitlements** | Plans, usage, limits | Stripe + API | NOT STARTED | PARTIAL | DONE | Enforce plan flags in API/middleware |
+| **Copenhagen — AI** | AI services | API + workers | NOT STARTED | PARTIAL | DONE | Targeted per-widget AI services in P2 |
+| **Denver — Assets/CDN** | Blob/storage for assets | Vercel Blob/Supabase | NOT STARTED | PARTIAL | DONE | Move from repo assets → CDN |
+
+> Where a field shows **PARTIAL*** with an asterisk, it means **defined/frozen in docs** and **partially reflected in code**, but not fully verifiable from repo alone (e.g., DB migrations).
+
+---
+
+## System Notes (Developer-Oriented Detail)
+
+### Paris — HTTP API
+- **Runtime:** Node (Next.js app routes)  
+- **Endpoints:** `/api/healthz` (dependency-aware), admin/secure endpoints expanded in P2  
+- **Dependencies:** Supabase (Michael), Edge Config (Atlas)  
+- **Security:** `INTERNAL_ADMIN_KEY` for admin ops; no runtime Edge Config writes
+
+### Venice — Embed Service
+- **Runtime:** Edge (Next.js app routes)  
+- **Endpoints (present):** `/api/cfg/[publicId]`, `/api/e/[publicId]`, `/api/form/[publicId]`, `/api/ingest`  
+- **Budgets:** Loader/runtime ≤ 28KB gz (P1), per-widget ≤ 10KB gz initial  
+- **Config Source:** Atlas (Edge Config), fallback to Michael on publish
+
+### Michael — Data Plane (Supabase)
+- **Tables/Functions:** Frozen in TechPhases.md (tokens, submissions, rate limiting)  
+- **Idempotency:** Phoenix Option B (DB uniqueness)  
+- **RLS:** Required; no PII in telemetry
+
+### Atlas — Edge Config
+- **Policy:** Runtime reads only (`EDGE_CONFIG`); writes via CI (`VERCEL_API_TOKEN`, `EDGE_CONFIG_ID`)  
+- **Health:** probed in `/api/healthz` of Paris
+
+### Bob / Robert — Studio + Auth/Workspaces
+- **App:** `apps/app` (Next.js) builds; auth routes present (login/magic/confirm); invites routes exist  
+- **Studio Shell:** copied UMD bundles into `/public/vendor/studio/` on build
+
+### Dieter — Design System
+- **Assets:** Tokens, icons SVG pipeline verified; copy into apps on build  
+- **A11y:** conventions enforced; continue coverage
+
+### Phoenix — Telemetry
+- **Ingest:** via Venice and/or Paris; enforce DB idempotency  
+- **Rollups:** implement job/cron in P2
+
+### Berlin/Helsinki (Observability/BI)
+- **Start:** wire Sentry; define rate limits; event export to warehouse in P2  
+- **PII:** none; only hashed origins
+
+### Prague/Stockholm/Milan (Marketing/Growth/i18n)
+- **Prague:** marketplace pages in P2  
+- **Stockholm:** feature flags integration in P2  
+- **Milan:** unify i18n config across apps
+
+### Lisbon/Zurich/Tokyo/Copenhagen/Denver
+- **P2:** initial integrations (email, webhooks, billing scaffolding, AI services, CDN)
+
+---
+
+## Verification Notes
+- “DONE” status is based on **present code + passing builds**.  
+- DB/infra not represented in the monorepo (e.g., Supabase SQL) are marked **PARTIAL*** unless verified elsewhere.
+
