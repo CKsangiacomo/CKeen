@@ -25,3 +25,7 @@ apps/app/public/dieter/**
 !apps/app/public/dieter/README.md
 
 .turbo
+
+# Clickeen stabilization (Paris artifacts)
+services/api/.next/
+services/api/node_modules/
