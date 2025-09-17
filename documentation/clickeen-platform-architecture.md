@@ -1,4 +1,4 @@
-# Architecture Overview
+# CLICKEEN Platform Architecture — Phase 1 (Frozen)
 
 - Canonical list → **CONTEXT.md**  
 - System docs → **systems/**  

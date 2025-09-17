@@ -29,3 +29,8 @@
 ### Runtime & Assets (Frozen)
 - Vercel uses Node 20 as declared by `"engines": { "node": "20.x" }`.  
 - Dieter assets are served as static files from `apps/app/public/dieter/` produced by **copy-on-build**. Symlinks are forbidden.
+### Additional server env (c-keen-api)
+- `INTERNAL_ADMIN_KEY` — header `x-ckeen-admin` guard for admin endpoints
+- `EDGE_CONFIG` — provisioned by Vercel Edge Config Integration
+- `EDGE_CONFIG_ID` — Edge Config store id (only needed if runtime writes enabled)
+- `VERCEL_API_TOKEN` — Vercel API token (only needed if runtime writes enabled; rotate regularly)
