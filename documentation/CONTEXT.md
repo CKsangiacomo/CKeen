@@ -51,3 +51,7 @@ This repo is the monorepo for **CLICKEEN (SaaS)**. The documentation in this fol
 - `documentation/verceldeployments.md` — env/keys per project
 
 > If you encounter an **“Oslo”** reference, remove it and align the doc to the **Paris — HTTP API** model (ADR-012).
+### Note on Claude Code (local CLI)
+Claude Code is installed and authenticated on the CEO’s machine.  
+It is **NOT part of the standard process**. Cursor AI remains the primary Full Stack Engineer for local repo operations.  
+Claude Code may only be used if explicitly required to unblock Cursor or perform local edits.  
