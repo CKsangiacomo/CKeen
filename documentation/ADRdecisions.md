@@ -143,7 +143,7 @@ Adopt **system UI font stack** and **SF Symbols** as design token base.
 Past cycles introduced instability because the principal engineer (GPT) drifted from the agreed scope. Extra scripts (ops/README, CI “house rules”), improper prompting (heredocs, zsh comments), and commits to temporary artifacts (SERVICES_INDEX.md) created noise and rework. Role boundaries also blurred between GPT (principal) and Cursor (execution).
 
 ### Decision
-- Scope for principal changes is **strictly limited to documentation/** and direct tooling (.github/workflows/docs-check.yml, tools/docs/generate-services.mjs).  
+- Scope for principal changes is **strictly limited to documentation/** and direct tooling (.github/workflows/docs-check.yml, ).  
 - `SERVICES_INDEX.md` is **temporary output only**. It must never be committed or diff-checked in CI.  
 - Prompts for execution must be copy/pasteable bash commands only. No heredocs, no inline `#` comments.  
 - Roles are explicit: **GPT = principal (process, design, decisions)**; **Cursor = execution (apply exact instructions)**.  

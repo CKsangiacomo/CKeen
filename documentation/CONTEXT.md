@@ -146,3 +146,11 @@ Clickeen is a SaaS platform with a pnpm monorepo structure. It contains apps, se
 4. Vercel automatically deploys the app, serving Studio assets along with app content.  
 
 ---
+## Documentation Index
+
+- [WhyClickeen.md](./WhyClickeen.md)
+- [Techphases.md](./Techphases.md)
+- [clickeen-platform-architecture.md](./clickeen-platform-architecture.md)
+- [ADRdecisions.md](./ADRdecisions.md)
+- [verceldeployments.md](./verceldeployments.md)
+- [FailuresRCAs-IMPORTANT.md](./FailuresRCAs-IMPORTANT.md)
