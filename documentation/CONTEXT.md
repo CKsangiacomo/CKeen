@@ -55,3 +55,4 @@ This repo is the monorepo for **CLICKEEN (SaaS)**. The documentation in this fol
 Claude Code is installed and authenticated on the CEO’s machine.  
 It is **NOT part of the standard process**. Cursor AI remains the primary Full Stack Engineer for local repo operations.  
 Claude Code may only be used if explicitly required to unblock Cursor or perform local edits.  
+- `documentation/dbschemacontext.md` — manual Supabase schema dump (source of truth)

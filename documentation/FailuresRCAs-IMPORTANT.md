@@ -36,3 +36,6 @@
 - Principal must confirm alignment with documentation before introducing new elements.  
 - CI workflows limited to documentation/ scope only.  
 
+**Prevention — Schema Dump Loss**
+- Risk: manual Supabase schema dump (`documentation/dbschemacontext.md`) accidentally deleted or overwritten.
+- Mitigation: file is canonical; never touched by automation. Protected by process.

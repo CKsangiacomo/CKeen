@@ -418,3 +418,4 @@ Each service must expose `/api/healthz` returning 200 on pass and 503 if a criti
 
 **NOTE:** Phase 1 is frozen: stability patch only (security guards, middleware fix, config hygiene, package exports). No infra or feature work in Phase 1.
 
+- Manual Supabase schema dump (`documentation/dbschemacontext.md`) must be preserved; never auto-deleted or overwritten.
