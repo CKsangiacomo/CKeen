@@ -20,21 +20,23 @@ function isPublic(pathname: string) {
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Create a single pass-through response for the lifetime of this request
+  const response = NextResponse.next({
+    request: { headers: request.headers },
+  });
+
   // Always allow public paths through
-  if (isPublic(pathname)) return NextResponse.next();
+  if (isPublic(pathname)) return response;
 
   // Never break the site if envs are missing in Preview
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !anon) {
     // Soft-allow: do not block, but don't crash middleware
-    return NextResponse.next();
+    return response;
   }
 
-  // Single response instance for all cookie writes
-  const response = NextResponse.next({
-    request: { headers: request.headers },
-  });
+  // Single response instance is created above
 
   try {
     const supabase = createServerClient(url, anon, {
