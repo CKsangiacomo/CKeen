@@ -415,3 +415,6 @@ Each service must expose `/api/healthz` returning 200 on pass and 503 if a criti
   "up": true,
   "deps": { "supabase": true, "edgeConfig": true }
 }
+
+**NOTE:** Phase 1 is frozen: stability patch only (security guards, middleware fix, config hygiene, package exports). No infra or feature work in Phase 1.
+
