@@ -152,3 +152,5 @@ Past cycles introduced instability because the principal engineer (GPT) drifted 
 - Prevents scope drift and CI churn.  
 - Keeps repo clean of temporary artifacts.  
 - Reduces hours of rework by enforcing clarity on roles and scope.  
+#### ADR-012 Edge Config writes model (stabilization note)
+Implementation v1 permits Edge Config **writes from runtime** using `EDGE_CONFIG_ID` + `VERCEL_API_TOKEN` scoped to the `c-keen-api` project and gated by `INTERNAL_ADMIN_KEY`. Preferred long-term: move writes to CI and keep runtime **read-only**.
