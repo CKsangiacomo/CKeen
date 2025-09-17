@@ -10,9 +10,3 @@ export function supabaseAdmin() {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   return createClient(url, serviceKey, { auth: { persistSession: false }});
 }
-
-// PHASE1-GUARD: block service-role outside local dev
-const __env = { NODE_ENV: process.env.NODE_ENV, VERCEL_ENV: process.env.VERCEL_ENV } as const;
-if (__env.VERCEL_ENV === 'production' || __env.VERCEL_ENV === 'preview' || __env.NODE_ENV !== 'development') {
-  throw new Error('Service role client must not be used outside local development');
-}
