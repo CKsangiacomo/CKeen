@@ -1,125 +1,53 @@
-CRITICAL P0 — For ALL AIs and humans: documentation/ is the single source of truth; you must read it and follow it. On ANY discrepancy, STOP and ask alignment questions before proceeding.
+CRITICAL P0 — documentation/ is the single source of truth for all AI & human work. You MUST read and follow it. If you see discrepancies, STOP and ask for alignment.
 
-# Clickeen Platform Context (AI-First)
+# CONTEXT
 
-This document is the **source of truth** for AI agents (CTO, Principal FS Eng, FS Eng) and humans when coordinating work in Phase-1. It encodes *frozen* deployment surfaces, invariants, and execution rules to prevent drift and rework.
+This repo is the monorepo for **CLICKEEN (SaaS)**. The documentation in this folder governs how humans and AIs work. If any code, script, or comment conflicts with documentation/, the docs win. Ask for alignment before proceeding.
 
----
+## Codename map (FROZEN for Phase 1)
+- **Paris — HTTP API** (`services/api`, Vercel project **c-keen-api**)  
+- **Venice — Embed Runtime** (`services/embed`, Vercel project **c-keen-embed**)  
+- **Studio — Dashboard App** (`apps/app`, Vercel project **c-keen-app**)  
+- **Prague — Marketing Site** (`apps/site`, Vercel project **c-keen-site**)  
+- **Atlas — Edge Config** (Vercel Edge Config store, read from runtime; writes: **CI-only**)  
+- **Phoenix — Idempotency** (Option B; enforced where applicable)  
+- **Oslo — RETIRED** (do not reintroduce; remove stale references when found)
 
-## Platform Positioning
-Clickeen is a SaaS platform. **Widgets are the entry wedge, not the full definition.** Infrastructure is the product in Phase-1; we optimize for the ability to create **30+ widgets** predictably.
+## Phase status (P1 frozen)
+**Built in P1**
+- `apps/site` (Prague) — marketing pages + gallery
+- `apps/app` (Studio) — auth flows, basic workspace/views
+- `services/embed` (Venice) — public embed runtime + preview and ingest endpoints
+- `services/api` (Paris) — health surface; server-secret–bounded project for future admin/secure endpoints
+- Atlas — Edge Config **read-only at runtime**; **writes only from CI** gated by `INTERNAL_ADMIN_KEY`
 
----
+**Not built in P1 (do not start without ADR)**
+- Billing & subscriptions
+- Workflow automation
+- Fine-grained RBAC beyond what exists
+- Runtime Edge Config writes (must stay CI-only)
 
-## Phase-1 Deployments (FROZEN)
-**Vercel projects (4):**
-- `c-keen-app` — Studio / Console (Next.js, node) → repo: `apps/app`
-- `c-keen-site` — Marketing (Next.js, node) → repo: `apps/site`
-- `c-keen-embed` — Embed service (Next.js API routes at **edge**) → repo: `services/embed`
-- `c-keen-api` — **Paris — HTTP API** (Next.js, **node** runtime) → repo: `services/api`
+## Rules of engagement (for all AIs & humans)
+1. **Read documentation/** first. If unclear, **ask**; do not guess.  
+2. **No placeholders.** If a value is unknown, stop and request it.  
+3. **Service boundaries are hard:** embed ≠ api ≠ app ≠ site.  
+4. **Secrets live only** in **c-keen-api** (server surface).  
+5. **CI-only** writes to Edge Config; runtime is **read-only**.  
+6. When changing behavior or surface area, land an **ADR** and update docs in the same PR.
 
-**Phase-1 Project Rule:** Four Vercel projects (frozen). **No additional projects in P1.** Any change requires an ADR.
+## Where things live
+- **Monorepo**: pnpm workspaces + Turbo (root `package.json` is the SoT)  
+- **Deploy projects (Vercel)**:  
+  - `c-keen-site` → `apps/site`  
+  - `c-keen-app` → `apps/app`  
+  - `c-keen-embed` → `services/embed`  
+  - `c-keen-api` → `services/api`  
+- **Edge Config**: store = **Atlas** (reads at runtime; writes via CI)
 
----
+## Canonical docs (start here)
+- `documentation/Techphases.md` — frozen P1 scope & phase gates  
+- `documentation/clickeen-platform-architecture.md` — system map & responsibilities  
+- `documentation/ADRdecisions.md` — authoritative decisions (incl. ADR-012)  
+- `documentation/verceldeployments.md` — env/keys per project
 
-## Workspace ↔ Project Map (P1)
-- `apps/app`        → `c-keen-app` (Studio/Console)
-- `apps/site`       → `c-keen-site` (Marketing)
-- `services/embed`  → `c-keen-embed` (Edge routes)
-- `services/api`    → `c-keen-api` (**Paris — HTTP API**)
-
----
-
-## Health & Observability (Canonical)
-Every service must expose **`/api/healthz`**:
-- **200** when critical deps are healthy; **503** otherwise.
-- Response shape:
-```json
-{
-  "sha": "<short-sha|unknown>",
-  "env": "production|preview|development",
-  "up": true,
-  "deps": { "supabase": true, "edgeConfig": true }
-}
-
-Timeout budget: ~1s per dependency probe (p95 target < 500ms in dev).
-
-⸻
-
-Edge Config Policy
-	•	Runtime: read-only via EDGE_CONFIG.
-	•	Writes: only in CI, using VERCEL_API_TOKEN scoped to the project + EDGE_CONFIG_ID.
-	•	Rationale: keep secrets and mutations out of public/embed surfaces; centralize governance.
-
-⸻
-
-Studio Shell
-	•	Not a Vercel project.
-	•	Source: packages/studio-shell.
-	•	Produces UMD bundles in dist/. Host apps copy on build into /public/vendor/studio/ (per ADR). No runtime fetches or symlinks in production.
-
-⸻
-
-Source of Truth (SoT)
-	•	Workspaces: pnpm-workspace.yaml is the only SoT. Root package.json.workspaces must be absent to avoid pnpm drift/warnings.
-	•	Architecture & decisions: documentation/ + ADRs (IDs referenced in code when applicable).
-	•	Runtime config: Vercel env + Edge Config (read-only at runtime).
-
-⸻
-
-Phase-1 (FROZEN) Invariants
-	•	Stack: Node 20.x, Next 14.2.5, React 18.2.
-	•	Embed budget: ≤ 28KB gz (loader + minimal runtime). Per-widget ≤ 10KB gz initial render.
-	•	Typed event bus & shared types for Studio/Widgets (no ad-hoc events).
-	•	Paris — HTTP API isolates secrets & server logic; embed stays edge-safe and public.
-
-⸻
-
-Environments & Secrets (Minimal)
-	•	Supabase: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE
-	•	Edge Config (runtime reads): EDGE_CONFIG
-	•	Edge Config (CI writes only): VERCEL_API_TOKEN, EDGE_CONFIG_ID
-	•	Admin guard: INTERNAL_ADMIN_KEY (HTTP header x-ckeen-admin on admin endpoints)
-
-⸻
-
-Team Roles & How to Address
-	•	CEO (Human): sets priorities, approves milestones.
-	•	CTO (Claude): architecture authority, ADR gatekeeper, reviews risky changes.
-	•	Principal FS Eng (ChatGPT): owns cross-service design, authors AI prompts, keeps docs canonical.
-	•	FS Eng (Cursor): executes prompts deterministically → branches/PRs; no improvisation.
-
-When writing to AIs, include exactly one fenced block headed by AIPrompt: <role>. Prompts must be zsh-safe, non-interactive, with timeouts on network commands.
-
-⸻
-
-Cursor Execution Rules (Canonical)
-	•	No blocking commands: no tail -f, gh run watch, interactive prompts, infinite loops.
-	•	No exit 1/0: scripts finish naturally; report via [OK]/[WARN]/[FAIL] echoes.
-	•	Timeouts: network commands wrapped (e.g., timeout 10 <cmd> or gtimeout on macOS).
-	•	Structure: start with cd /Users/<user>/code/CKeen; end with [DONE].
-	•	Git: never force-push; no deletes without explicit human-provided lists.
-
-⸻
-
-Branching & PR Protocol (P1)
-	•	Branch names: fix/<topic>, chore/<topic>, feat/<topic>, docs/<topic>.
-	•	One logical change per PR. Include “Why / What / Risk” in the PR body.
-	•	Merge strategy: Squash & merge. Then prune topic branches (local & remote).
-
-⸻
-
-Common Pitfalls (Do Not Do)
-	•	Re-introducing package.json.workspaces (pnpm drift).
-	•	Creating a 5th Vercel project in P1.
-	•	Writing Edge Config from runtime.
-	•	Importing from a root src/ tree (deleted; not referenced).
-	•	Ambiguous prompts (multiple blocks, “optional” steps, interactive flows).
-
-⸻
-
-Definition of Done (P1) — Any Change
-	1.	Builds pass: services/api, services/embed, apps/app, apps/site.
-	2.	/api/healthz returns 200 locally; dependency bits behave (Supabase / Edge Config).
-	3.	PR includes “Why / What / Risk”; references ADR if applicable.
-	4.	Docs updated if behavior/shape changed (especially CONTEXT.md, TechPhases.md).
+> If you encounter an **“Oslo”** reference, remove it and align the doc to the **Paris — HTTP API** model (ADR-012).
