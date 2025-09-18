@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fail if retired codename Oslo appears
+      - name: Fail if retired codename appears
         run: |
-          ! grep -R --line-number -I --exclude='scripts/scrub-oslo.sh' '\bOslo\b' . || (echo 'Retired codename Oslo found.' && exit 1)
+          ! grep -R --line-number -I '\bOslo\b' . || (echo 'Retired codename Oslo found in content.' && exit 1)
+          ! git ls-files | grep -i '/oslo' || (echo 'Retired codename Oslo found in filename/path.' && exit 1)
