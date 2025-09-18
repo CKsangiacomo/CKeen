@@ -5,7 +5,7 @@
 
 # Migration: v0 → v1
 
-- Consolidate Dieter into Oslo (served by c-keen-app)  
+- Consolidate Dieter assets served by c-keen-app via copy-on-build (ADR-005).  
 - Preview path standardized to `/dieter/components.html`
 
 

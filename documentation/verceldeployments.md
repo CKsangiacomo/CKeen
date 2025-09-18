@@ -17,7 +17,7 @@
 
 - Stack: Next.js on Vercel  
 - Hosts: Bob (Builder & Studio), Robert UI, Tokyo UI  
-- Serves: Oslo assets at /dieter/* (components.html, icons, tokens)  
+- Serves: Dieter assets at /dieter/* (components.html, icons, tokens)  
 - Root Directory: apps/app  
 - Build Command: pnpm build  
 - Install Command: (Vercel default) pnpm install  
@@ -29,6 +29,7 @@
 ### Runtime & Assets (Frozen)
 - Vercel uses Node 20 as declared by `"engines": { "node": "20.x" }`.  
 - Dieter assets are served as static files from `apps/app/public/dieter/` produced by **copy-on-build**. Symlinks are forbidden.
+- Edge Config writes are prohibited at runtime in P1; all writes happen in CI only.
 ### Additional server env (c-keen-api)
 - `INTERNAL_ADMIN_KEY` — header `x-ckeen-admin` guard for admin endpoints
 - `EDGE_CONFIG` — provisioned by Vercel Edge Config Integration
