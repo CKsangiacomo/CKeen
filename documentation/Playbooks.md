@@ -82,7 +82,7 @@
 **Symptoms:** Unexpected spacing/overflow or fonts.  
 **Checks:**
 - Studio avoids Shadow DOM; use **CSS containment** around host content.
-- Confirm Oslo/Dieter tokens are loaded and not overridden downstream.
+- Confirm Dieter tokens are loaded and not overridden downstream.
 
 **Fixes:**
 - Wrap host content in a container with `contain: layout style;` or similar.

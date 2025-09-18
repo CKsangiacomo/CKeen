@@ -12,7 +12,6 @@ This document is the canonical P1 snapshot. It describes what is built, what is 
 | **Paris — HTTP API**        | `services/api`   | `c-keen-api`   | Server-secret surface, `GET /api/healthz`, future admin  | **Done (P1, minimal)** |
 | **Atlas — Edge Config**     | *(Vercel store)* | N/A            | Config delivery to runtimes (reads only at runtime)      | **Done (P1)** |
 | **Phoenix — Idempotency**   | *(policy)*       | N/A            | Option B discipline across mutating endpoints            | **Policy in place** |
-| **Oslo**                    | —                | —              | **RETIRED**                                              | **Removed** |
 
 ### Phase intents
 - **P2** (not in this doc’s scope): billing, richer RBAC, more admin endpoints in Paris, workflows.  

@@ -1,0 +1,17 @@
+name: docs-guards
+on:
+  pull_request:
+    paths:
+      - '**/*'
+jobs:
+  docs_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Block retired "Dieter" references
+        run: |
+          ! grep -R --line-number -E '\bOslo\b' . || (echo 'Retired codename "Dieter" found.' && exit 1)
+      - name: Block Edge Config runtime write calls
+        run: |
+          ! grep -R --line-number -E 'edge-?config.*(PATCH|PUT)|/v[0-9]+/edge-config' . || (echo 'Runtime Edge Config write detected.' && exit 1)
+
