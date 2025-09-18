@@ -154,3 +154,81 @@ Past cycles introduced instability because the principal engineer (GPT) drifted 
 - Reduces hours of rework by enforcing clarity on roles and scope.  
 #### ADR-012 Edge Config writes model (stabilization note)
 Implementation v1 permits Edge Config **writes from runtime** using `EDGE_CONFIG_ID` + `VERCEL_API_TOKEN` scoped to the `c-keen-api` project and gated by `INTERNAL_ADMIN_KEY`. Preferred long-term: move writes to CI and keep runtime **read-only**.
+
+---
+
+## ADR: Accidental Introduction of Unscoped Workflows
+**Context:** `supabase-schema-sync.yml` added without CEO approval, overwrote handcrafted dbschemacontext.md.
+**Decision:** Remove all unapproved workflows; no new workflows without explicit Techphases freeze.
+**Consequences:** Data loss, wasted cycles, trust damage.
+
+---
+
+## ADR: Created Guardrail CI / PR Templates
+**Context:** Added `.github/pull_request_template.md`, guard-no-oslo.yml, docs-check, Dieter playground deploys.
+**Decision:** Delete all guardrail CI/templates. Only CEO-approved templates may exist.
+**Consequences:** PR blockage, complexity, wasted time.
+
+---
+
+## ADR: Polluting Repo with _reports Directory
+**Context:** Introduced `_reports/` artifacts (repomix status) into repo.
+**Decision:** Remove `_reports/` and forbid debug artifacts in repo.
+**Consequences:** Repo noise, confusion over source of junk.
+
+---
+
+## ADR: Forgetting to Scrub Oslo Fully
+**Context:** Multiple passes needed to remove “Oslo” references.
+**Decision:** Enforce one-pass full scans for codenames.
+**Consequences:** Days lost, repeated cycles.
+
+---
+
+## ADR: Failure to Respect “CEO Drives” Rule
+**Context:** Tasks (verification, UI checks) pushed back to CEO.
+**Decision:** AI executes fully; CEO reviews only.
+**Consequences:** Violated process, wasted CEO time.
+
+---
+
+## ADR: Reintroducing Deleted Patterns
+**Context:** After deletion, workflows/templates reappeared.
+**Decision:** Treat origin/main as truth; never reintroduce deleted patterns.
+**Consequences:** Confusion, CEO saw items reappear.
+
+---
+
+## ADR: Overcomplication of Simple Tasks
+**Context:** Simple deletes/commits wrapped in heavy guardrails.
+**Decision:** Keep prompts minimal, Phase-1 aligned.
+**Consequences:** Complexity, brittleness.
+
+---
+
+## ADR: PR Explosion Instead of Simple Direct Commits
+**Context:** Multiple PRs opened (`chore/final-scrub`, etc.) causing Vercel overload.
+**Decision:** Push direct to main for Phase-1; no PR sprawl.
+**Consequences:** Vercel rate-limited, failed deploys.
+
+---
+
+## ADR: Conflict Mismanagement
+**Context:** Merge conflicts pushed back to CEO.
+**Decision:** Default to keeping main stable unless CEO directs otherwise.
+**Consequences:** Stalled merges, broken trust.
+
+---
+
+## ADR: Inconsistent Use of Repo Sources
+**Context:** Mixed local repo, repomix, and GitHub UI states.
+**Decision:** Treat origin/main as single source of truth.
+**Consequences:** Discrepancies, wasted cycles.
+
+---
+
+## ADR: Noise in Communication
+**Context:** Repeated verbose explanations, contradictions.
+**Decision:** Tight, disciplined communication; Principal Engineer tone.
+**Consequences:** Time wasted, CEO frustration.
+
