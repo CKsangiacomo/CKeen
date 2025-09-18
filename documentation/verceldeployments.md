@@ -31,7 +31,9 @@
 - Dieter assets are served as static files from `apps/app/public/dieter/` produced by **copy-on-build**. Symlinks are forbidden.
 - Edge Config writes are prohibited at runtime in P1; all writes happen in CI only.
 ### Additional server env (c-keen-api)
-- `INTERNAL_ADMIN_KEY` — header `x-ckeen-admin` guard for admin endpoints
-- `EDGE_CONFIG` — provisioned by Vercel Edge Config Integration
-- `EDGE_CONFIG_ID` — Edge Config store id (only needed if runtime writes enabled)
-- `VERCEL_API_TOKEN` — Vercel API token (only needed if runtime writes enabled; rotate regularly)
+-  — header  guard for admin endpoints
+-  — provisioned by Vercel Edge Config Integration (read-only at runtime)
+
+### CI-only variables (never set in runtime)
+-  — Edge Config store id used by CI to publish config
+-  — Vercel API token used by CI to publish config (rotate regularly)
