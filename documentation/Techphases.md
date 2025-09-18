@@ -38,7 +38,7 @@ Authoritative, first-level technical specification for Clickeen across 3 phases.
   - Basic account settings; RLS enforced on all tenant data.
 - **Tech:** Supabase (Postgres + Auth + RLS), Next.js (dashboard).
 
-3) **Usage & Token Service** (**“Oslo” tokens**)
+3) **Usage & Token Service** (**“Dieter” tokens**)
 - **Why:** Enforce limits; instrument adoption funnel; secure embed calls.
 - **Scope (P1):**
   - Token issuance (workspace-scoped, widget-scoped), rotation, revocation.

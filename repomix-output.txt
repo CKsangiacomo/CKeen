@@ -255,7 +255,7 @@ documentation/
     lisbon.md
     michael.md
     milan.md
-    oslo.md
+    Dieter.md
     paris.md
     phoenix.md
     prague.md
@@ -7032,7 +7032,7 @@ Load Inter **only** from Google Fonts:
 ## Interfaces
 - Builder UI; Studio host shell at /studio (iframe loads /dieter/components.html)
 ## Dependencies
-- Depends on: Paris, Michael, Oslo, Copenhagen
+- Depends on: Paris, Michael, Dieter, Copenhagen
 ## Deployment
 - c-keen-app
 ## Rules
@@ -7179,8 +7179,8 @@ Load Inter **only** from Google Fonts:
 - Back: ../../CONTEXT.md
 </file>
 
-<file path="documentation/systems/oslo.md">
-# System: Oslo — Design System
+<file path="documentation/systems/Dieter.md">
+# System: Dieter — Design System
 ## Identity
 - Tier: Core
 - Purpose: Tokens, components, motion primitives (formerly "Dieter")
@@ -7352,7 +7352,7 @@ Load Inter **only** from Google Fonts:
 
 # Migration: v0 → v1
 
-- Consolidate Dieter into Oslo (served by c-keen-app)  
+- Consolidate Dieter into Dieter (served by c-keen-app)  
 - Preview path standardized to `/dieter/components.html`
 
 
@@ -7455,7 +7455,7 @@ Load Inter **only** from Google Fonts:
 **Symptoms:** Unexpected spacing/overflow or fonts.  
 **Checks:**
 - Studio avoids Shadow DOM; use **CSS containment** around host content.
-- Confirm Oslo/Dieter tokens are loaded and not overridden downstream.
+- Confirm dieter/Dieter tokens are loaded and not overridden downstream.
 
 **Fixes:**
 - Wrap host content in a container with `contain: layout style;` or similar.
@@ -8428,7 +8428,7 @@ export interface DieterValidationSummaryProps {
 # Dieter PRD (v1, Frozen)
 
 **Last updated:** 2025-09-09  
-**Owner:** Oslo/Dieter (Design System)  
+**Owner:** dieter/Dieter (Design System)  
 **Status:** ✅ Frozen for v1 (implementation green-light)
 
 ---
@@ -8618,7 +8618,7 @@ Studio is a standalone shell reused by multiple products (Bob, MiniBob, Dieter).
 - Scope: layout shell, chrome, theme + viewport toggles, panel collapse, typed events, slot mounting API  
 - Out of scope: resizing, shadow DOM, persistence, preview runtimes, templates  
 - Monorepo & Deploy: must follow CTO Execution Checklist (pnpm workspaces, Node 20.x, integrations in `/apps/app` for Bob, `/site` for MiniBob, `/dieter` for Dieter; no new Vercel projects)  
-- Design System: Studio shell uses Oslo/Dieter tokens and components where appropriate; no Shadow DOM  
+- Design System: Studio shell uses dieter/Dieter tokens and components where appropriate; no Shadow DOM  
 
 ---
 
@@ -8824,7 +8824,7 @@ Authoritative, first-level technical specification for Clickeen across 3 phases.
   - Basic account settings; RLS enforced on all tenant data.
 - **Tech:** Supabase (Postgres + Auth + RLS), Next.js (dashboard).
 
-3) **Usage & Token Service** (**“Oslo” tokens**)
+3) **Usage & Token Service** (**“Dieter” tokens**)
 - **Why:** Enforce limits; instrument adoption funnel; secure embed calls.
 - **Scope (P1):**
   - Token issuance (workspace-scoped, widget-scoped), rotation, revocation.
@@ -9223,7 +9223,7 @@ Each service must expose `/api/healthz` returning 200 on pass and 503 if a criti
 
 - Stack: Next.js on Vercel  
 - Hosts: Bob (Builder & Studio), Robert UI, Tokyo UI  
-- Serves: Oslo assets at /dieter/* (components.html, icons, tokens)  
+- Serves: Dieter assets at /dieter/* (components.html, icons, tokens)  
 - Root Directory: apps/app  
 - Build Command: pnpm build  
 - Install Command: (Vercel default) pnpm install  
@@ -11095,7 +11095,7 @@ This document is the canonical P1 snapshot. It describes what is built, what is 
 | **Paris — HTTP API**        | `services/api`   | `c-keen-api`   | Server-secret surface, `GET /api/healthz`, future admin  | **Done (P1, minimal)** |
 | **Atlas — Edge Config**     | *(Vercel store)* | N/A            | Config delivery to runtimes (reads only at runtime)      | **Done (P1)** |
 | **Phoenix — Idempotency**   | *(policy)*       | N/A            | Option B discipline across mutating endpoints            | **Policy in place** |
-| **Oslo**                    | —                | —              | **RETIRED**                                              | **Removed** |
+| **Dieter**                    | —                | —              | **RETIRED**                                              | **Removed** |
 
 ### Phase intents
 - **P2** (not in this doc’s scope): billing, richer RBAC, more admin endpoints in Paris, workflows.  
@@ -11357,7 +11357,7 @@ This repo is the monorepo for **CLICKEEN (SaaS)**. The documentation in this fol
 - **Prague — Marketing Site** (`apps/site`, Vercel project **c-keen-site**)  
 - **Atlas — Edge Config** (Vercel Edge Config store, read from runtime; writes: **CI-only**)  
 - **Phoenix — Idempotency** (Option B; enforced where applicable)  
-- **Oslo — RETIRED** (do not reintroduce; remove stale references when found)
+- **Dieter — RETIRED** (do not reintroduce; remove stale references when found)
 
 ## Phase status (P1 frozen)
 **Built in P1**
@@ -11396,7 +11396,7 @@ This repo is the monorepo for **CLICKEEN (SaaS)**. The documentation in this fol
 - `documentation/ADRdecisions.md` — authoritative decisions (incl. ADR-012)  
 - `documentation/verceldeployments.md` — env/keys per project
 
-> If you encounter an **“Oslo”** reference, remove it and align the doc to the **Paris — HTTP API** model (ADR-012).
+> If you encounter an **“Dieter”** reference, remove it and align the doc to the **Paris — HTTP API** model (ADR-012).
 ### Note on Claude Code (local CLI)
 Claude Code is installed and authenticated on the CEO’s machine.  
 It is **NOT part of the standard process**. Cursor AI remains the primary Full Stack Engineer for local repo operations.  

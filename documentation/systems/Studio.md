@@ -51,7 +51,7 @@ Studio is a standalone shell reused by multiple products (Bob, MiniBob, Dieter).
 - Scope: layout shell, chrome, theme + viewport toggles, panel collapse, typed events, slot mounting API  
 - Out of scope: resizing, shadow DOM, persistence, preview runtimes, templates  
 - Monorepo & Deploy: must follow CTO Execution Checklist (pnpm workspaces, Node 20.x, integrations in `/apps/app` for Bob, `/site` for MiniBob, `/dieter` for Dieter; no new Vercel projects)  
-- Design System: Studio shell uses Oslo/Dieter tokens and components where appropriate; no Shadow DOM  
+- Design System: Studio shell uses dieter/Dieter tokens and components where appropriate; no Shadow DOM  
 
 ---
 

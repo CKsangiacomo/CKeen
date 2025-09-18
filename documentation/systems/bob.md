@@ -5,7 +5,7 @@
 ## Interfaces
 - Builder UI; Studio host shell at /studio (iframe loads /dieter/components.html)
 ## Dependencies
-- Depends on: Paris, Michael, Oslo, Copenhagen
+- Depends on: Paris, Michael, Dieter, Copenhagen
 ## Deployment
 - c-keen-app
 ## Rules

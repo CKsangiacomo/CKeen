@@ -1,4 +1,4 @@
-# System: Oslo — Design System
+# System: Dieter — Design System
 ## Identity
 - Tier: Core
 - Purpose: Tokens, components, motion primitives (formerly "Dieter")
