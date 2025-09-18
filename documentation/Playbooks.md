@@ -128,7 +128,6 @@
 **Symptoms:** “Multiple versions of pnpm specified” in CI logs.  
 **Fix:**  
 1. Confirm root `package.json` `"packageManager"` (canonical).  
-2. Remove any pnpm `version:` from workflows.  
 3. Ensure deployable packages set `"engines": { "node": "20.x" }`.  
 4. Re-run CI with `pnpm install --frozen-lockfile`.  
 **Do Not:** Use `--no-frozen-lockfile` or pin a different pnpm in CI.

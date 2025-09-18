@@ -5,7 +5,6 @@
 
 # Migration: v0 → v1
 
-- Consolidate Dieter assets served by c-keen-app via copy-on-build (ADR-005).  
 - Preview path standardized to `/dieter/components.html`
 
 
@@ -19,6 +18,5 @@
 1. Declare pnpm only in root `package.json` (`"packageManager": "pnpm@10.15.1"` or current).  
 2. Ensure deployable packages declare `"engines": { "node": "20.x" }`.  
 3. Remove pnpm version from workflows; keep frozen installs.  
-4. Replace Dieter symlink with **copy-on-build** step to `apps/app/public/dieter/`.  
 **Rollback:** Revert workflow/manifest changes together; CI should fail on drift.
 

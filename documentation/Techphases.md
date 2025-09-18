@@ -204,7 +204,6 @@ Core tables (Supabase/Postgres):
 - `events_raw` (append-only usage stream), `usage_rollups_daily`
 - `api_keys` (hashed), `webhook_endpoints`, `webhook_deliveries`
 - `integrations` (per provider), `oauth_connections`
-- `workflows`, `workflow_triggers`, `workflow_runs`
 - `audit_logs`
 
 **RLS:**  
