@@ -11,7 +11,6 @@ This repo is the monorepo for **CLICKEEN (SaaS)**. The documentation in this fol
 - **Prague — Marketing Site** (`apps/site`, Vercel project **c-keen-site**)  
 - **Atlas — Edge Config** (Vercel Edge Config store, read from runtime; writes: **CI-only**)  
 - **Phoenix — Idempotency** (Option B; enforced where applicable)  
-- **Oslo — RETIRED** (do not reintroduce; remove stale references when found)
 
 ## Phase status (P1 frozen)
 **Built in P1**
@@ -50,7 +49,7 @@ This repo is the monorepo for **CLICKEEN (SaaS)**. The documentation in this fol
 - `documentation/ADRdecisions.md` — authoritative decisions (incl. ADR-012)  
 - `documentation/verceldeployments.md` — env/keys per project
 
-> If you encounter an **“Oslo”** reference, remove it and align the doc to the **Paris — HTTP API** model (ADR-012).
+> If you encounter an **“Dieter”** reference, remove it and align the doc to the **Paris — HTTP API** model (ADR-012).
 ### Note on Claude Code (local CLI)
 Claude Code is installed and authenticated on the CEO’s machine.  
 It is **NOT part of the standard process**. Cursor AI remains the primary Full Stack Engineer for local repo operations.  

@@ -1,7 +1,7 @@
 # Dieter PRD (v1, Frozen)
 
 **Last updated:** 2025-09-09  
-**Owner:** Oslo/Dieter (Design System)  
+**Owner:** dieter/Dieter (Design System)  
 **Status:** ✅ Frozen for v1 (implementation green-light)
 
 ---
