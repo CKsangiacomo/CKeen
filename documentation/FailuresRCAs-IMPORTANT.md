@@ -1,3 +1,40 @@
+# CRITICAL ERRORS TO NOT REPEAT
+
+1) Adding unapproved workflows/automation
+- Do not add GitHub Actions (e.g., schema syncs) or any automation without explicit CEO approval and Techphases freeze.
+
+2) Introducing PR templates / guardrails mid-execution
+- No PR templates or guardrail workflows unless frozen in Techphases and approved by CEO.
+
+3) Committing debug artifacts to repo
+- No `_reports/`, scratch files, or local audit outputs committed to the repo.
+
+4) Incomplete codename scrubs
+- All legacy codenames must be scrubbed in a single pass across **entire repo**, not just docs.
+
+5) Violating “CEO drives, AI executes”
+- Do not assign verification back to CEO. AI executes; CEO reviews.
+
+6) Reintroducing patterns that were removed
+- Treat `origin/main` as the **only** truth. Do not resurrect deleted files/patterns from old prompts.
+
+7) Overcomplicating simple changes
+- Keep prompts boring and minimal. No scaffolding that slows or confuses Phase-1 execution.
+
+8) Opening many PRs instead of committing to main
+- For Phase-1: commit to `main` directly (unless CEO says otherwise). Avoid PR sprawl that triggers extra checks.
+
+9) Deferring merge conflict decisions to CEO
+- Default to keeping `main` stable unless CEO instructs otherwise. Resolve conflicts decisively.
+
+10) Mixing sources of truth
+- Always align to `origin/main`. Do not mix local snapshots, repomix dumps, and UI states inconsistently.
+
+11) Verbose/noisy communication
+- Communicate like a Principal Engineer: concise, authoritative, and action-oriented.
+
+---
+
 # Failures & RCAs — Important
 
 ## RCA — pnpm Version Conflict in CI (ERR_PNPM_BAD_PM_VERSION)
