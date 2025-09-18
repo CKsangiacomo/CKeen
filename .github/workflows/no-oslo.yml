@@ -1,0 +1,13 @@
+name: guard-no-oslo
+on:
+  pull_request:
+    paths:
+      - '**/*'
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail if retired codename Oslo appears
+        run: |
+          ! grep -R --line-number -I --exclude='scripts/scrub-oslo.sh' '\bOslo\b' . || (echo 'Retired codename Oslo found.' && exit 1)
