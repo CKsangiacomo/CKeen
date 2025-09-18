@@ -98,7 +98,7 @@ Authoritative, first-level technical specification for Clickeen across 3 phases.
 - **Analytics:** PostHog (dashboard), tiny pixel endpoint for embed.
 - **Error Monitoring:** Sentry (embed + dashboard).
 - **Design System:** Dieter tokens + SF Symbols SVG set, system UI font stack.
-- **Hosting/CDN:** **TBD** between Vercel and Cloudflare (cost tables evaluated). Current dev likely Vercel.
+- **Hosting/CDN:** Vercel (frozen for Phase 1).
 - **CI/CD:** Git provider **+ GitHub Actions** (TBD exact jobs); Supabase CLI for migrations.
 - **Lint/Format/Test:** ESLint (strict), Prettier, **Vitest** (unit), **Playwright** (smoke) — adopt incrementally.
 
