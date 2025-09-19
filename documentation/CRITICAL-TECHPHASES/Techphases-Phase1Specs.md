@@ -9,7 +9,7 @@ If any conflict is found, STOP and escalate to CEO. Do not guess.
   - Budgets (size/latency) are guidance, not gates; enforcement is CEO decision.
   - Phase-1 has NO CSR fallback and uses ONLY a single SSR route for embeds.
   - GA includes ONLY Free/Paid plans; do not add tiers without CEO approval.
-  - Path note: the folder name “*Critical*TECHPHASES” is LITERAL; treat it as an exact path, not a glob.
+  - Path note: the folder name “CRITICAL-TECHPHASES” is LITERAL; treat it as an exact path, not a glob.
 
 - Edge SSR widgets (single route). Studio hosts Bob. Dieter = Base-6.
 - GA plans: FREE / PAID. Serial execution; CEO approves each task.

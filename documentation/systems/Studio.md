@@ -1,176 +1,136 @@
-# Studio PRD (v1, Frozen)
+STATUS: NORMATIVE — SINGLE SOURCE OF TRUTH (SCOPED)
 
-**Last updated:** 2025-09-09  
-**Owner:** Platform / CTO  
-**Status:** ✅ Frozen for v1 (implementation green-light)
+This document is authoritative for its scope. It must not conflict with:
+1) documentation/dbschemacontext.md (DB Truth) and
+2) documentation/CRITICAL-TECHPHASES/Techphases-Phase1Specs.md (Global Contracts).
+If any conflict is found, STOP and escalate to CEO. Do not guess.
 
----
+# Studio (Phase-1)
 
-## Summary
-Studio is a standalone shell reused by multiple products (Bob, MiniBob, Dieter). It provides chrome (topbar, template row), a 3-panel layout (left | center | right), theme + viewport toggles (affect center only), panel collapse, and a typed event bus. Studio does not own business logic, templates, preview rendering, persistence, or network calls. These are the responsibility of the host.
+## 1) Purpose (plain english)
+Studio is the container scaffolding for Bob: it handles nav, auth/workspace context, and theme/device toggles, and hosts a live, production-parity preview via **GET `/e/:publicId`** (single SSR embed route; **no CSR fallback** in Phase-1). Studio itself doesn’t render widgets or write the DB—Bob edits config; Paris/Venice execute. It must deliver **mind-blowing UX** on the few things it does: a crisp 3-area layout, an elegant **TopDrawer** for templates, instant **Light/Dark** and **Desktop/Mobile** switches, and buttery transitions—no jank.
 
----
+## 2) Must do (behavior)
+**Taxonomy:** **TopDrawer** (templates) · **ToolDrawer** (left editor shell for Bob) · **Workspace** (center live preview) · **SecondaryDrawer** (right; built now, off by default).
 
-## Goals
-- Provide a single reusable shell for all builders and internal tools  
-- Guarantee consistent UX and behavior (theme/viewport toggles, panel chrome)  
-- Define a tiny, stable API for hosts to inject content and react to shell events  
-- Enforce correctness via explicit error throwing, typed events, and predictable lifecycle  
+- **Single place to work:** everything happens in the **Builder**. Templates live in the **TopDrawer** (no separate “Library” screen).
+- **TopDrawer (templates):** collapsed by default; first template auto-applied. When opened, it **resizes to fit content** (up to a sensible max) and pushes the UI down—no overlap. Large sets support **horizontal carousel/scroll**.
+- **Switching templates:** **Bob** decides carry-over (**CARRYABLE / NON_CARRYABLE**); **Studio** handles UX.  
+  - **CARRYABLE →** switch immediately; keep compatible edits; brand overrides persist.  
+  - **NON_CARRYABLE →** guard: **Save & switch / Discard & switch / Cancel**.
+- **Workspace (preview):** always visible, center stage. It’s an **iframe** calling **GET `/e/:publicId`** (same SSR as production; **no CSR fallback**).  
+  - **Workspace header:** **Theme** (Light/Dark) and **Device** (Desktop/Mobile) live here. Changes feel instant; viewport+density switches are smooth.  
+  - **Live feel:** edits reflect **immediately** (light debounce for typing). Keep focus/scroll; show a lightweight skeleton while SSR is in flight.
+- **ToolDrawer (left):** this is **Bob’s editor UI**. Studio only provides the shell: collapsed/expanded states, smooth width changes, independent scroll, and room for Bob’s sticky actions. **Studio does not define sections.**
+- **SecondaryDrawer (right):** **built in Phase-1, off by default** (reserved for light “Assist”). When enabled, opens as a right drawer/sheet with simple, reversible suggestions.
+- **Pane rules & responsiveness:**  
+  - Both drawers have **collapsed/expanded** states; expanded width adapts to visible controls with simple **Apple/Google-style** transitions (no layout jumps).  
+  - **Workspace is always visible.** Collapse order: **ToolDrawer first**, then **SecondaryDrawer** (if enabled).  
+  - **Mobile:** only **Workspace** by default; drawers open as full-height sheets and close back to Workspace.
+- **Manage:** **Save** keeps config, **Reset** restores defaults, **Copy-Embed** renders the **same output** outside Studio.
+- **Honest states & a11y:** loading/empty/error mirror SSR responses; full keyboard nav, visible focus, clear labels; zero console errors.
 
----
+## 3) Tech Specs (Contracts)
 
-## Non-Goals
-- Template system  
-- Preview runtime (e.g. Venice integration)  
-- Persistence or network calls  
-- Resizing or panel width control in v1  
-- Shadow DOM encapsulation  
+**Stack & placement**
+- App: `c-keen-app` (Next.js 14, Node 20, pnpm) on Vercel App.
+- Preview: iframe → **Venice** (Edge SSR) via `GET /e/:publicId` (single route; no CSR fallback).
+- Data: Supabase via **Paris** (HTTP API). Studio never writes DB directly.
 
----
+**TopDrawer sizing & browsing**
+- CSS: `max-height: min(50vh, 400px); overflow: auto;`  
+- Push-down layout (do **not** overlay Workspace).  
+- Large sets: horizontal carousel/scroll with keyboard (←/→, Home/End). ESC closes; focus returns to trigger.
 
-## Primary Consumers
+**Preview URL (Workspace iframe)**
+- `src=/e/:publicId?ts={ms}&theme=light|dark&device=desktop|mobile`  
+  (`theme`/`device` are hints; SSR must still reflect saved config.)
 
-### Bob / MiniBob (Widget Builder & Editor)
-- Display a template selector row directly under the topbar  
-- Left panel: controls for features/edits derived from the selected template  
-- Center panel: live preview of the template with edits (critical feature)  
-- Right panel: editable fields/specs (flexible use)  
-- Host owns: template data, preview engine (e.g., Venice), persistence, and network calls  
+**Preview transition policy (no flash)**
+- Double-buffer iframe or overlay: preload new HTML; **cross-fade 150–200ms** (ease-out) new→in, old→out; preserve focus/scroll; no layout jank.
 
-### Dieter (Components Manager)
-- Right panel: list of components; clicking one updates the center panel  
-- Center panel: preview of all variants of the selected component  
-- Right panel: CSS and specs for the component  
-- Host owns: component catalog, rendering logic, persistence  
+**Focus/scroll preservation (iframe)**
+```js
+// Preserve scroll position across iframe reloads
+const y = iframe.contentWindow?.scrollY || 0;
+const x = iframe.contentWindow?.scrollX || 0;
+iframe.addEventListener('load', () => iframe.contentWindow?.scrollTo(x, y), { once: true });
 
-**Common behavior across all hosts**: theme toggle (light/dark) and viewport toggle (desktop/mobile) that apply only to the center panel.
+	•	Keep keyboard focus on the last interactive element in ToolDrawer when preview reloads.
 
----
+Live preview update
+	•	Edits: debounce 300–500ms, then save current config via Paris Instance Save endpoint
+(/api/instance/:publicId — method per Techphases-Phase1Specs; upsert semantics).
+	•	On success: reload iframe with new ?ts={ms} (preserve focus/scroll).
+	•	On 4xx/5xx: surface inline errors in ToolDrawer; do not jank Workspace.
 
-## Scope & Constraints
-- Scope: layout shell, chrome, theme + viewport toggles, panel collapse, typed events, slot mounting API  
-- Out of scope: resizing, shadow DOM, persistence, preview runtimes, templates  
-- Monorepo & Deploy: must follow CTO Execution Checklist (pnpm workspaces, Node 20.x, integrations in `/apps/app` for Bob, `/site` for MiniBob, `/dieter` for Dieter; no new Vercel projects)  
-- Design System: Studio shell uses dieter/Dieter tokens and components where appropriate; no Shadow DOM  
+Template switching (Bob decides, Studio orchestrates)
+	•	studio:template.change.request → { template_id: string }
+	•	Bob replies bob:template.change.assess → { result: "CARRYABLE"|"NON_CARRYABLE", carry_keys?: string[] }
+	•	If CARRYABLE: apply; save; refresh preview. If NON_CARRYABLE: guard; on confirm apply defaults; save; refresh.
+	•	Brand overrides persist across templates.
 
----
+Theme/Device (Workspace header)
+	•	studio:workspace.theme.set → { mode: "light"|"dark" } → update tokens; save (debounced); refresh preview.
+	•	studio:workspace.device.set → { device: "desktop"|"mobile" } → set viewport+density; refresh preview.
+	•	Theme tokens cross-fade ~200ms; device switch uses subtle scale 0.98→1.00 (200ms).
 
-## UI Structure (DOM & Accessibility)
+Drawers (shell only)
+	•	open()/close(); setWidth(px|preset) with animated transition; independent scroll; ESC closes topmost drawer/sheet on mobile.
 
-**Required slots (element IDs):**
-- `#slot-templateRow`: empty container under topbar (auto-hides when empty)  
-- `#slot-left`: left panel  
-- `#slot-center`: center panel body containing `#centerCanvas`  
-  - Studio applies classes here: `.studio-theme-light` / `.studio-theme-dark`, `.studio-viewport-desktop` / `.studio-viewport-mobile`  
-- `#slot-right`: right panel  
+422 field-path contract (Bob ↔ Paris)
+	•	Paris returns per-field errors: array of { path: string, message: string }.
+	•	path examples: content.items[2].title, style.theme, behavior.autoplay.
+	•	Bob surfaces inline at matching controls; unknown paths → generic error slot.
 
-**Accessibility roles:**
-- Topbar: `<header role="banner">`  
-- Template row: `role="region" aria-label="Template selector"`  
-- Panels: `role="region" aria-label="Left|Center|Right panel"`  
-- Toggles: `role="tablist"` with `role="tab"` and `aria-selected`  
+Motion principles (Studio-wide)
+	•	Timing: 150–300ms micro; 300–400ms macro.
+	•	Easing: cubic-bezier(0.4, 0, 0.2, 1) (no bounce).
+	•	Distance: hovers ≤2px; selections ≤8px.
+	•	Preference: fades over movement; acknowledge every action within ~50ms.
+	•	No layout jank: animate size changes; preserve scroll and focus.
 
-**Panel chrome:**
-- Header (icon, title, actions), body (host content)  
-- Collapse buttons for left/right panels  
+Loading-state hierarchy
+	•	<100ms: no indicator.
+	•	100–300ms: subtle opacity dip (e.g., 100%→85%).
+	•	300–1000ms: thin progress affordance (bar/spinner).
+	•	>1000ms: lightweight skeleton + short message.
 
----
+Performance (guidance, not gates)
+	•	Preview update p95 ≤ ~200ms end-to-end; UI transitions ≤ ~150–200ms at 60fps.
+	•	Budgets are guidance; enforcement is a CEO decision.
 
-## Behavior (v1)
-- **Theme toggle**: updates classes on `#centerCanvas` only, never `<html>`  
-- **Viewport toggle**: updates classes on `#centerCanvas` only  
-- **Panel collapse**: visually hides/shows panel; mounted content remains  
-- **Template row**: auto-hides when empty (CSS `display:none`), auto-shows on mount  
-- **Lifecycle**:  
-  - `studio:ready` event fires exactly once when DOM is ready  
-  - `ready()` can be called multiple times and resolves with current state  
+4) Use / Integrations (Consumers, Outputs, DB/API)
 
----
+Consumers
+	•	Bob renders inside ToolDrawer.
+	•	Workspace consumes Venice (GET /e/:publicId).
+	•	SecondaryDrawer: built but off by default; reserved for future Assist.
 
-## Public API (Frozen)
+Studio → Paris (HTTP API)
+	•	Instance Load: GET /api/instance/:publicId — load current config.
+	•	Instance Save (upsert): /api/instance/:publicId — save current config (debounced for edits; immediate on Save).
+(Use the HTTP method defined in Techphases-Phase1Specs.)
+	•	Entitlements: GET /api/entitlements — gate features (caps, advanced templates).
+	•	Tokens (list): GET /api/token — optional display; no issuance here.
 
-### Types
-type SlotType = 'left' | 'center' | 'right' | 'templateRow';
+Supabase (from dbschemacontext.md — do not drift)
+	•	widget_instances: read/update config (JSONB), schema_version, display metadata.
+	•	embed_tokens: read non-sensitive fields; validation server-side.
+	•	plan_features: read entitlements; writes service-role only.
+	•	events: Studio does not write usage; Venice posts usage async on real renders.
 
-type StudioState = {
-  theme: 'light' | 'dark';
-  viewport: 'desktop' | 'mobile';
-  panels: {
-    left:  { collapsed: boolean };
-    right: { collapsed: boolean };
-  };
-};
+Caching & invalidation
+	•	Venice SSR HTML is edge-cached; Studio forces fresh preview via ?ts={ms} after saves.
+	•	Server invalidates on instance config, token, or plan changes.
 
-type StudioEventMap = {
-  'studio:ready': StudioState;
-  'studio:theme': { theme: 'light' | 'dark' };
-  'studio:viewport': { viewport: 'desktop' | 'mobile' };
-  'studio:panel': { side: 'left' | 'right'; collapsed: boolean; source: 'user' | 'host' };
-};
+Security & RLS
+	•	All writes happen server-side in Paris with service-role.
+	•	Studio operates with user session; no client writes to events or plan_features.
+	•	Error taxonomy surfaced to users (from Venice/Paris): TOKEN_INVALID, TOKEN_REVOKED, NOT_FOUND, CONFIG_INVALID, RATE_LIMITED, SSR_ERROR.
 
-### API
-interface StudioAPI {
-  // Lifecycle
-  ready(): Promise<StudioState>; // resolves with current state, safe to call multiple times
-  destroy(): void;
+Outputs
+	•	Visual: production-parity HTML in Workspace.
+	•	Copy-Embed: snippet that renders the same output as Workspace.
+	•	State: persisted instance config for Venice to render publicly.
 
-  // Slot management (throws on conflict)
-  mount(slot: SlotType, element: HTMLElement): void;
-  unmount(slot: SlotType): void;
-  getSlot(slot: SlotType): HTMLElement | null;
-
-  // State
-  getState(): StudioState;
-  setTheme(theme: 'light' | 'dark'): void;          // affects center canvas only
-  setViewport(viewport: 'desktop' | 'mobile'): void; // affects center canvas only
-  togglePanel(side: 'left' | 'right', source?: 'host'): void;
-
-  // Events
-  on<T extends keyof StudioEventMap>(
-    event: T,
-    handler: (detail: StudioEventMap[T]) => void
-  ): () => void;
-}
-
----
-
-## Event Contracts
-- `studio:ready`: fires once; payload = current state  
-- `studio:theme`: payload = `{ theme }`  
-- `studio:viewport`: payload = `{ viewport }`  
-- `studio:panel`: payload = `{ side, collapsed, source }`  
-
----
-
-## Implementation Checklist
-1. Studio applies `.studio-theme-{light|dark}` to `#centerCanvas` only  
-2. Studio applies `.studio-viewport-{desktop|mobile}` to `#centerCanvas` only  
-3. Template row auto-hides when empty  
-4. All mount/unmount conflicts throw errors  
-5. `studio:ready` fires exactly once  
-6. Panel events include `source` field  
-
----
-
-## Deferred (Future Versions)
-- Resize events (v1.1 when real stories exist)  
-- Shadow DOM (never; use CSS containment instead)  
-- Panel width control (not needed in v1)  
-
----
-
-## Risks & Mitigations
-- **Host misuse**: hosts might ignore thrown errors. Mitigation: document strict usage in API guide.  
-- **Panel toggle feedback loops**: mitigated with `source` field on `studio:panel`.  
-- **Style conflicts**: mitigated via CSS containment rules, not Shadow DOM.  
-- **Performance**: hosts must mount once and update content, not repeatedly remount.  
-
----
-
-## Engineering Constraints (Frozen)
-- **Deterministic Build (ADR-004):** Studio consumes Dieter tokens/icons; builds require canonical pnpm & Node 20. CI uses `--frozen-lockfile`.  
-- **Icons Rendering:** Inline SVG fetched from `/dieter/icons/svg/<kebab>.svg`, normalized to `fill="currentColor"`, hydration-safe, cached in memory with bounded LRU+TTL.  
-- **Token Scoping:** Dieter `tokens.css` is transformed at build via `scripts/scope-tokens.js` to scope `:root` → `#centerCanvas` (no global bleed).  
-- **Asset Flow (ADR-005):** Dieter builds to `dieter/dist/`; copy to `apps/app/public/dieter/`.  
-- **Order:** `@ck/dieter` → copy assets → `@ck/studio-shell` → `@ck/app`.  
-- **Accessibility:** Decorative icons are `aria-hidden`; action icons include `aria-label`.
