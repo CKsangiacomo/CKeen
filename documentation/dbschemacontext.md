@@ -1,3 +1,14 @@
+STATUS: NORMATIVE — SINGLE SOURCE OF TRUTH (SCOPED)
+This document is authoritative for its scope. It must not conflict with:
+1) documentation/dbschemacontext.md (DB Truth) and
+2) documentation/*Critical*/TECHPHASES/Techphases-Phase1Specs.md (Global Contracts).
+If any conflict is found, STOP and escalate to CEO. Do not guess.
+
+## DB SCHEMA POLICY
+- This file is the canonical Supabase dump maintained by CEO.
+- Engineers MUST code to this file exactly. Schema-in-code drift is forbidden.
+- Changes require a DB CHANGE REQUEST (motivation + exact DDL) and an updated dump.
+
 db-schema-context.md — Complete DB snapshot
 
 1. File purpose
