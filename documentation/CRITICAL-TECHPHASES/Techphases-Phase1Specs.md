@@ -5,6 +5,36 @@ This document is authoritative for its scope. It must not conflict with:
 If any conflict is found, STOP and escalate to CEO. Do not guess.
 
 # Techphases-Phase1Specs (NORMATIVE)
+
+## Phase-1 Contracts — Locked
+
+> NORMATIVE. This section is the **only** source of truth for Phase-1 runtime contracts. Ignore any other mentions below; they are INFORMATIVE.
+
+### Venice (Edge SSR)
+- **Route:** `GET /e/:publicId`
+- **Returns:** `text/html; charset=utf-8` (server-rendered). **No CSR fallback** in Phase-1.
+- **Hints:** `?theme=light|dark&device=desktop|mobile&ts=<ms>` (preview parity only).
+- **Cache:** with `ts` → `no-store`; without → `public, max-age=60, s-maxage=60, stale-while-revalidate=300`.
+- **Honest states allowed** until Paris data is wired.
+
+### Paris (HTTP API · widget_instances)
+**Endpoints (MVP):**
+- `POST /api/instance` → Create instance.  
+  Input (optional): `{ publicId?: string, status?: 'draft'|'published'|'inactive', config?: object }`  
+  Defaults: server `publicId`, `status='draft'`, `config={}`. Conflicts → **409 ALREADY_EXISTS**.  
+  Returns **201** `{ publicId, status, config, updated_at }`.
+
+- `GET /api/instance/:publicId` → Load instance.  
+  Returns **200** `{ publicId, status, config, updated_at }` or **404 NOT_FOUND**.
+
+- `PUT /api/instance/:publicId` → **Update-only** (no upsert).  
+  Body: `{ config: object, status?: 'draft'|'published'|'inactive' }`.  
+  Missing row → **404**. Validation errors → **422** `[{ path, message }]` (dot/bracket paths).
+
+### Studio (preview integration)
+- **Iframe src:** `/e/:publicId?ts=<ms>&theme=light|dark&device=desktop|mobile`
+- **UX parity:** double-buffered preview (cross-fade, no white flash); TopDrawer push-down; Theme/Device toggles in Workspace header.
+- **SecondaryDrawer:** present but **OFF by default** in Phase-1.
 ## S0. Scope & Principles
   - Budgets (size/latency) are guidance, not gates; enforcement is CEO decision.
   - Phase-1 has NO CSR fallback and uses ONLY a single SSR route for embeds.
