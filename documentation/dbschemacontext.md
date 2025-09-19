@@ -9,6 +9,12 @@ If any conflict is found, STOP and escalate to CEO. Do not guess.
 - Engineers MUST code to this file exactly. Schema-in-code drift is forbidden.
 - Changes require a DB CHANGE REQUEST (motivation + exact DDL) and an updated dump.
 
+
+SERVICE-ROLE BOUNDARIES (REMINDER)
+- plan_features and any billing/entitlement writes: service-role ONLY.
+- events writes happen via server/API; clients DO NOT write directly to tables.
+- embed_tokens reveal only non-sensitive fields to anon; validation happens server-side.
+
 db-schema-context.md — Complete DB snapshot
 
 1. File purpose
