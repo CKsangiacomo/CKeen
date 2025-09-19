@@ -1,3 +1,9 @@
+STATUS: INFORMATIVE — CONTEXT ONLY
+Do NOT implement from this file. For specifications, see:
+1) documentation/dbschemacontext.md (DB Truth)
+2) documentation/*Critical*/TECHPHASES/Techphases-Phase1Specs.md (Global Contracts)
+3) documentation/systems/<System>.md (System PRD, if Phase-1)
+
 TXT
 # TechPhases.md
 
