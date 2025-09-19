@@ -1,3 +1,9 @@
+STATUS: INFORMATIVE — CONTEXT ONLY
+Do NOT implement from this file. For specifications, see:
+1) documentation/dbschemacontext.md (DB Truth)
+2) documentation/*Critical*/TECHPHASES/Techphases-Phase1Specs.md (Global Contracts)
+3) documentation/systems/<System>.md (System PRD, if Phase-1)
+
 # CLICKEEN Platform Architecture — Phase 1 (Frozen)
 
 This document is the canonical P1 snapshot. It describes what is built, what is out of scope for P1, and the boundaries between surfaces. All AIs and humans must follow this document. Architecture changes require an ADR and doc updates in the same PR.
