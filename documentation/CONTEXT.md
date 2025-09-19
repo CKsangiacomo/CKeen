@@ -1,3 +1,21 @@
+STATUS: INFORMATIVE — CONTEXT ONLY
+Do NOT implement from this file. For specifications, see:
+1) documentation/dbschemacontext.md (DB Truth)
+2) documentation/*Critical*/TECHPHASES/Techphases-Phase1Specs.md (Global Contracts)
+3) documentation/systems/<System>.md (System PRD, if Phase-1)
+
+## AUTHORITY & PRECEDENCE (HIGH-LEVEL)
+1) dbschemacontext.md — NORMATIVE DB Truth; code must match.
+2) *Critical*/TECHPHASES/Techphases-Phase1Specs.md — NORMATIVE Global Contracts.
+3) /documentation/systems/<System>.md — NORMATIVE PRDs for Phase-1 systems.
+Everything else here is INFORMATIVE and non-executable.
+
+## DB SCHEMA POLICY (POINTER)
+- dbschemacontext.md is canonical (Supabase dump by CEO).
+- Engineers may request schema changes with motivation + exact DDL.
+- Until updated by CEO, always code to the dump. No schema-in-code drift.
+
+
 CRITICAL P0 — documentation/ is the single source of truth for all AI & human work. You MUST read and follow it. If you see discrepancies, STOP and ask for alignment.
 
 # CONTEXT
