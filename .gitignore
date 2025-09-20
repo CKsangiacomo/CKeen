@@ -26,3 +26,7 @@ services/api/.next/
 services/api/node_modules/
 test-results
 tsconfig.tsbuildinfo
+
+# Local tooling caches
+.zencoder/
+playwright-report/
