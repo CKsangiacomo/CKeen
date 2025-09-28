@@ -1,422 +1,379 @@
-STATUS: INFORMATIVE — CONTEXT ONLY
-Do NOT implement from this file. For specifications, see:
-1) documentation/dbschemacontext.md (DB Truth)
-2) documentation/*Critical*/TECHPHASES/Techphases-Phase1Specs.md (Global Contracts)
-3) documentation/systems/<System>.md (System PRD, if Phase-1)
-
-TXT
-# TechPhases.md
+# Techphases.md (Phase-1, Freeze Version)
 
 **Purpose**  
-Authoritative, first-level technical specification for Clickeen across 3 phases. Defines services required per phase, why they exist, what they include at that phase, and the concrete stack choices we’ve already aligned on. This doc is the starting point for roadmapping and scoping.
+This document defines the technical phases of Clickeen across Phase-1, Phase-2, and Phase-3.  
+It establishes which **systems** exist (codenames, responsibilities) and which **services** deploy them.  
+This is the authoritative roadmap for humans and AIs.
 
-**Guiding principles**
-- **Product-led, self-serve.** No sales-led dependencies in the stack or flows.
-- **Modular from day one.** Start unified (modular monolith), split into services only when scale demands it.
-- **Size + speed as features.** Embed script budget is hard (see budgets).
-- **Security by default.** Postgres RLS, least privilege, token scope + rotation.
-- **DX matters.** pnpm workspaces, strict linting, type-safe APIs, one-task-at-a-time execution.
-- **No guessing.** If a dependency or design isn’t confirmed here, mark **TBD** and raise before implementation.
+- Sections marked **NORMATIVE** = binding specifications.  
+- Sections marked **INFORMATIVE** = context only.
 
 ---
 
-## Phase 1 — Widgets (Trojan Horse)
+## Authority & Conflict Resolution (NORMATIVE)
 
-**Goal:** Ship first widgets + infra. Prove distribution, self-serve onboarding, and usage capture with a <28KB embed.
-
-### Services in Phase 1 (what & why)
-
-1) **Embed Service**
-- **Why:** Core delivery of widgets to any website; single snippet integrates, auto-updates.
-- **Scope (P1):**
-  - Public **embed loader** (vanilla TS) served via CDN; budget **≤28KB gz** total (loader + minimal runtime).
-  - Widget bootstrapper, DOM mounting, attribute/config parsing, feature flags.
-  - Versioning (`/embed/v{semver}/loader.js`) and default alias (`/embed/latest/loader.js`).
-  - Lightweight, **queue-safe event bus** for widget events (no external deps).
-  - Minimal client metrics (load start/end, errors) with **fire-and-forget pixel** endpoint.
-- **Tech:** TypeScript, small bundler (**esbuild** or **rollup**, pick smallest bundle), CDN (**Vercel Edge** or **Cloudflare** TBD), Sentry (errors).
-
-2) **Auth & Workspace Service**
-- **Why:** Needed to claim widgets, manage ownership, and secure admin UIs.
-- **Scope (P1):**
-  - Email/password + magic link via **Supabase Auth** (JWT).
-  - **Workspaces** (orgs) with ownership; single role (Owner) initially.
-  - Basic account settings; RLS enforced on all tenant data.
-- **Tech:** Supabase (Postgres + Auth + RLS), Next.js (dashboard).
-
-3) **Usage & Token Service** (**“Dieter” tokens**)
-- **Why:** Enforce limits; instrument adoption funnel; secure embed calls.
-- **Scope (P1):**
-  - Token issuance (workspace-scoped, widget-scoped), rotation, revocation.
-  - Rate-limit counters (simple per-token window).
-  - Usage counters (views, loads, interactions) aggregated daily.
-- **Tech:** Supabase (tables, SQL functions), Edge function(s) for write endpoints.
-
-4) **Billing Service (stub)**
-- **Why:** Turn on monetization path without full UI.
-- **Scope (P1):**
-  - **Stripe** products/prices created; webhook receiver that records customer + subscription rows.
-  - No full paywall yet; gated flags available to enable per-workspace.
-- **Tech:** Stripe + minimal serverless endpoint, Supabase tables to mirror subscription state.
-
-5) **System UI / Design Tokens (“Dieter”)**
-- **Why:** Shared design foundation across dashboard + widgets.
-- **Scope (P1):**
-  - **System UI font stack** (no Ubuntu/Roboto), light/dark tokens, spacing/typography scales.
-  - **SF Symbols** integration (all 6,950 SVGs) under `/tools/sf-symbols/svgs/`.
-  - Icon component + zero-maintenance pipeline (indexing by name, tree-shakeable).
-- **Tech:** TS/React UI package, CSS vars tokens, PostCSS; icon build script.
-
-6) **Widget(s)**
-- **Why:** Real value + distribution.
-- **Scope (P1):**
-  - First widget(s): **Form widget** (per previous roadmap), plus minimal variants if time.
-  - Client-only render with optional SSR stub, themeable via CSS vars from Dieter.
-  - No heavy deps; size folded into overall loader budget if embedded, or code-split on demand.
-- **Tech:** React (minimal), TS; **no** third-party UI libs.
-
-7) **Drafts + Claim Flow (“Bob”)**
-- **Why:** Convert public installs into accounts.
-- **Scope (P1):**
-  - Anonymous widget draft token created on first load; **claim** flow ties it to a workspace after signup.
-  - Rate-limited claim attempts; audit trail (triggers already discussed).
-- **Tech:** Supabase tables + triggers (claim audit), simple claim UI in dashboard.
-
-8) **Observability & Health (seed)**
-- **Why:** Find issues fast, keep uptime.
-- **Scope (P1):**
-  - Sentry client/server integration (embed + dashboard).
-  - `/healthz` endpoints, uptime pings.
-  - Product analytics baseline via **PostHog** in dashboard (not embed).
-- **Tech:** Sentry SDKs, PostHog web snippet (dashboard only).
+- **DB Truth (`dbschemacontext.md`)** is canonical for schema and table definitions.  
+- **System specs (`documentation/systems/*.md`)** (e.g., Venice, Paris, Geneva) are canonical for API/payload shapes.  
+- **Techphases.md** is architectural guidance.  
+- If there is any conflict: **DB Truth and system specs win.**
 
 ---
 
-### Phase 1 Stack (confirmed + used)
+## Systems vs. Services
 
-- **Language:** TypeScript everywhere.
-- **Frontend/Dashboard:** React + **Next.js** (already present), minimal server actions or API routes.
-- **Embed Loader/Runtime:** Vanilla TS + minimal React (only where needed), esbuild/rollup bundling.
-- **Package/Workspace:** **pnpm** workspaces (6 projects noted). Lockfile committed.
-- **Database:** **Supabase Postgres** (+ Auth, Realtime optional later).
-- **Auth:** Supabase Auth (JWT) with RLS for multi-tenant isolation.
-- **Billing:** Stripe (webhook → Supabase).
-- **Analytics:** PostHog (dashboard), tiny pixel endpoint for embed.
-- **Error Monitoring:** Sentry (embed + dashboard).
-- **Design System:** Dieter tokens + SF Symbols SVG set, system UI font stack.
-- **Hosting/CDN:** Vercel (frozen for Phase 1).
-- **CI/CD:** Git provider **+ GitHub Actions** (TBD exact jobs); Supabase CLI for migrations.
-- **Lint/Format/Test:** ESLint (strict), Prettier, **Vitest** (unit), **Playwright** (smoke) — adopt incrementally.
+- **Systems** = logical architecture components with codenames (e.g., Venice, Paris, Bob).  
+- **Services** = concrete deployable units (Vercel projects, Supabase functions, etc.) that host one or more systems.
+
+Example:  
+- Venice (system) = Embed Runtime.  
+- c-keen-embed (service) = Vercel deployment that serves Venice.
 
 ---
 
-### Phase 1 Data Model (first cut)
+## Codename Map (Systems)
 
-Core tables (Supabase/Postgres):
-- `users` (auth-linked profile)
-- `workspaces` (tenant)
-- `workspace_members` (P1 may be implicit Owner only)
-- `widgets` (definition metadata)
-- `widget_instances` (deployed unit; anonymous until claim)
-- `widget_claim_audit` (attempts + triggers; **rate-limit trigger present**)
-- `embed_tokens` (workspace/widget scoped; status, scopes, last_rotated_at)
-- `usage_counters_daily` (per token/widget/day: views, loads, interactions)
-- `stripe_customers`, `stripe_subscriptions` (mirror Stripe state; stub in P1)
+- Phase-1 systems (scope; specs live in `documentation/systems/`. If a system doc is missing, treat it as informative until added; do not assume implementation.)
+  - Atlas — Config & Cache Layer  
+  - Berlin — Observability & Security (app/site surfaces; never embeds)  
+  - Bob — Widget Builder UI  
+  - Studio — Scaffolding shell (code in `apps/app/builder-shell/`, served at `/studio`; layout/nav/iframe isolation, shared toggles; not a standalone product surface)  
+  - Cairo — Custom Domains  
+  - Denver — Asset Storage & CDN  
+  - Dieter — Design System  
+  - Geneva — Schema Registry  
+  - Michael — Data Plane  
+  - Phoenix — Idempotency Layer  
+  - Venice — Embed Runtime  
+  - Paris — HTTP API  
+  - Prague — Marketing Site
 
-**RLS:**  
-- All tenant data is **workspace-scoped** with `workspace_id` FK.  
-- Policies: `auth.uid()` must map to a member of the workspace (Owner role P1).
-
----
-
-### Phase 1 Security Baseline
-
-- **RLS enabled by default** on all tenant tables; deny-all + explicit allow policies.
-- **Embed tokens**: random, 128-bit (min), scoped to widget/workspace; rotate via dashboard.
-- **Rate limiting**: per token for write endpoints; exponential backoff after failures.
-- **CSP**: strict in dashboard (`script-src 'self'` + Sentry/PostHog domains). Embed publishes a safe list in docs.
-- **PII**: avoid storing in embed events; only aggregate counters.
-- **Secrets**: .env via Vercel/Cloudflare secrets; never in repo.
+- Future systems (Phase-2/3, informative only; specs may not yet exist)
+  - Copenhagen — AI Orchestration (not implemented in Phase-1; spec TBD)  
+  - Helsinki — Analytics Warehouse (not implemented in Phase-1; spec TBD)  
+  - Lisbon — Email/Notifications (Phase-2)  
+  - Robert — Notification Router (Phase-2)  
+  - Tokyo — Job/Workflow Orchestrator (Phase-2)
 
 ---
 
-### Phase 1 Performance/Size Budgets
+## Canonical Glossary (NORMATIVE)
 
-- **Embed loader total** (loader + minimal runtime): **≤28KB gz** (Venice target).
-- **Per-widget incremental** (lazy chunk): **≤10KB gz** initial render.
-- **Load time**: first byte ≤100ms at edge; TTI < 1s on 4G for simple widget.
-- **Third-party deps**: zero unless absolutely necessary; no UI frameworks.
+- Widget — functional unit (e.g., form, FAQ).  
+- Template — pre-designed style for a widget (layout + skin + density). Templates are data-only (JSON).  
+- Instance — specific deployment of a widget (private config + publicId).  
+- Draft — unclaimed instance created on first play; claim binds it to a workspace.  
+- Embed delivery — SSR HTML from Venice at `GET /e/:publicId`.  
+  - Consumers may embed via iframe (inline) or loader script (overlay). SSR HTML is canonical (no client React in embeds).  
+- Single tag — the embed snippet a website places; widget type determines inline vs overlay.  
+- Templates as data — structured JSON; switching templates changes config only, not code.
 
-**CI enforcement:**  
-- `size-limit`/bundlesize checks on embed output.  
-- Lint rule preventing accidental imports (e.g., lodash full).  
-- PR fails if budgets exceeded.
-
----
-
-## Phase 2 — Low-Cost SaaS for SMBs
-
-**Goal:** Layer broader SaaS capabilities on top of widget footprint. Multi-user, integrations, real billing. Keep self-serve simplicity.
-
-### Services in Phase 2 (evolutions/new)
-
-1) **Embed Service (evolve)**
-- Advanced analytics (CTR, conversion events), A/B hooks, perf tuning per widget.
-- Cached config manifests at edge; per-workspace feature flags.
-
-2) **Auth & Workspace (evolve)**
-- Roles & permissions (Owner, Admin, Member).
-- Multiple workspaces per user; invitations; basic audit log.
-
-3) **Usage & Token (evolve)**
-- Event-level logs (append-only table) with rollups to daily aggregates.
-- Tiered quotas; soft-then-hard limit behavior; usage UI.
-
-4) **Billing (full)**
-- Self-serve subscriptions in-app, upgrade/downgrade, proration, dunning.
-- Per-workspace plan entitlements → feature gating via server flags.
-- Invoices + receipts via Stripe Customer Portal.
-
-5) **Integration Service (new)**
-- First-party connectors: Google (OAuth), Slack (webhooks), Stripe (billing already), email (TBD: Resend/Sendgrid).
-- Webhooks for outbound events (workspace-scoped signing secret).
-
-6) **Workflow/Orchestration (new)**
-- Lightweight automations: triggers (usage thresholds, form submission), actions (email, Slack, webhook).
-- Rate-limited, retried delivery; dead-letter logging.
-
-7) **Observability & Health (expand) – “Berlin”**
-- SLOs + error budgets; alerting (PagerDuty **TBD**).
-- Centralized logs (supabase logs + dashboard viewer); Sentry release health.
-
-8) **Docs/Dev Portal (new)**
-- Public docs for embed, tokens, webhooks, API keys; examples.
+Casing: All JSON examples here use camelCase. For DB table/column names, always refer to DB Truth (`dbschemacontext.md`). Do not infer casing.
 
 ---
 
-### Phase 2 Stack Additions
+## Phase-1 Overview (NORMATIVE)
 
-- **OAuth** (Google) via NextAuth **TBD** or Supabase OAuth providers.
-- **Email** provider **TBD** (Resend/SendGrid) with domain auth.
-- **Job/Queue**: lightweight queue **TBD** (Cloudflare Queues or simple cron + table outbox).
-- **API Keys** for server-to-server integrations (separate from embed tokens).
-- **Docs site**: Docusaurus or Next.js app route; lives in `apps/docs`.
+Scope
+- Widgets: 20–30 widget types (GA list defined in Phase-1 Specs).
+- Templates: 10–20 per widget type (~200–600 total).
+- Renderer: one renderer per widget type; templates are data-only.
+- Embed: versioned loader path, ≤28KB gzipped, tiny event bus (publish/subscribe).
+- Per-widget budget: ≤10KB gzipped initial render.
+- Plans:
+  - Free → 1 active widget, includes “Made with Clickeen” branding
+  - Paid → unlimited widgets, no branding, premium templates
 
----
-
-### Phase 2 Data Model (additions)
-
-- `roles` / `workspace_members` (role column)
-- `events_raw` (append-only usage stream), `usage_rollups_daily`
-- `api_keys` (hashed), `webhook_endpoints`, `webhook_deliveries`
-- `integrations` (per provider), `oauth_connections`
-- `audit_logs`
-
-**RLS:**  
-- Extended to role checks. Webhook deliveries exposed via signed URL, not public.
+Non-Goals
+- Per-template JavaScript
+- Client-side React runtime in embeds
+- Third-party scripts in embeds (Berlin instrumentation lives only in app/site surfaces)
+- Cookies/localStorage in embeds
+- Phase-2/3 features (roles, deep integrations, enterprise)
 
 ---
 
-### Phase 2 Security
+## Guiding Principles (NORMATIVE)
 
-- **API keys** hashed + prefix displayed once; rotate/revoke.
-- **Webhook signatures** (HMAC-SHA256 with per-endpoint secret).
-- **Audit log** of security events (role changes, token rotations).
-- **Secrets**: per-env isolation; least-privileged service keys.
-
----
-
-### Phase 2 Performance
-
-- Keep embed budgets; offload heavy analytics to event stream/rollups.
-- Edge config manifests served from KV/edge cache (**TBD**: Vercel Edge Config or Cloudflare KV).
+- Product-led, self-serve
+- Modular from day one (split only when scale demands)
+- Size + speed are features (strict budgets)
+- Security by default (RLS, scoped tokens, least privilege)
+- DX matters (pnpm, linting, type safety)
+- No guessing — escalate if unspecified
 
 ---
 
-## Phase 3 — Enterprise Platform
+## Template Composition (NORMATIVE)
 
-**Goal:** Enterprise-grade features at a fraction of legacy cost while preserving product-led simplicity.
+- Templates are JSON objects:
+  - id, widgetType, layout, skin, density, accents?, tokens?, schemaVersion, defaults, slots?
+- Composition precedence: `instance.config → template.defaults → theme.tokenOverrides`.
+- Source of truth:
+  - Paris — instance configs & entitlements.
+  - Geneva — schemas/catalog.
+  - Atlas — edge cache only (read-through); never authoritative.
+- Renderer: server renderer per widget type → HTML string (pure; no inline handlers).
+- Inheritance: variants may extend a base + provide diff; flattened at build.
+- Validation: JSON Schema per widget type; invalid → 422 with `[ { path, message } ]`.
 
-### Services in Phase 3 (evolutions/new)
-
-1) **Embed Service (enterprise)**
-- Per-tenant isolation toggles; SLA monitoring dashboards; signed config manifests.
-- Region routing / data residency **TBD** (if required).
-
-2) **Auth & Workspace (enterprise)**
-- **SSO/SAML**, **SCIM** provisioning, granular permissions, full audit trails.
-- Suspensions, legal holds, export tooling.
-
-3) **Usage & Token (enterprise)**
-- Cross-service metering + consolidated enterprise reporting.
-- Contractual quota enforcement; overage reporting.
-
-4) **Billing (enterprise)**
-- Custom contracts (manual adjustments), seat-based pricing support.
-- Invoicing net terms; tax/VAT compliance (Stripe Tax).
-
-5) **Integration Service (deep)**
-- Salesforce/HubSpot connectors, advanced mapping + backfill jobs.
-- Signed inbound API for partners.
-
-6) **Workflow/Orchestration (advanced)**
-- Multi-step, conditional automations; replay; idempotency keys.
-- Visual run history with redelivery.
-
-7) **Observability & Health (mature)**
-- Error budgets per tier, tenant-level dashboards, synthetic tests per region.
-- Incident playbooks.
-
-8) **Compliance & Security (new)**
-- SOC 2 readiness controls, DPA/GPDR features (export/delete), data retention policies.
-- KMS/At-Rest encryption posture documentation (Supabase/PG native).
+See also: systems/geneva.md (schemas) and systems/paris.md (catalog + instance creation).
 
 ---
 
-### Phase 3 Stack Additions (TBD until contracted)
+## SSR Data Flow & Caching (NORMATIVE)
 
-- **SSO/SAML** (WorkOS or custom SAML), **SCIM** (WorkOS or custom).
-- **Data residency** options (multi-project Supabase, region pinning).
-- **Advanced queue** if needed (e.g., Cloudflare Queues, Upstash Kafka **TBD**).
+- Route: `GET /e/:publicId` (Venice).
+- Auth policy (clarifier)
+  - Published instances: public GET; no token required.
+  - Draft/inactive/protected: require embed token (or workspace JWT in Studio).
+  - Venice enforces branding exactly as returned by Paris (no client overrides).
+- Steps
+  1) Validate entitlements; validate embed token only if required (draft/inactive).  
+  2) Load instance snapshot + entitlements from Paris.  
+  3) Load template schema/catalog from Geneva (Atlas mirror optional).  
+  4) Resolve config → render SSR HTML (+ “Made with Clickeen” backlink).  
+  5) Write usage (pixel; idempotent; rate-limited).  
+  6) Apply cache headers (canonical TTLs, ETag/Last-Modified, Vary; see Phase‑1 Specs for exact values).
+- Preview parity (Studio): `/e/:publicId?ts=<ms>&theme=light|dark&device=desktop|mobile` (double-buffer, no white flash).
+- Errors: TOKEN_INVALID, TOKEN_REVOKED, NOT_FOUND, CONFIG_INVALID, RATE_LIMITED, SSR_ERROR.
+- Recovery: degrade gracefully with fallbacks when dependencies are unavailable.
 
----
-
-### Phase 3 Data Model (additions)
-
-- `enterprise_accounts`, `contracts`, `seats`
-- `saml_connections`, `scim_provisioning`
-- `compliance_artifacts`, `retention_policies`
-- `incident_reports`
-
-**RLS:**  
-- Auditable admin overrides with justification logs.
-
----
-
-## Repository & Workspace Structure (baseline)
-
-/apps
-  /dashboard           # Next.js app (admin UI)
-  /embed-service       # Embed endpoints + static loader builds
-  /docs                # Public docs (P2+)
-/packages
-  /ui-dieter           # Design tokens, primitives, theme
-  /embed-runtime       # Loader + runtime (vanilla TS + tiny React where needed)
-  /icons               # SF Symbols wrapper components + build scripts
-  /analytics-client    # Tiny client for pixel posting (used by embed)
-/services              # (optional) splitouts post-P1 if needed
-/tools
-  /sf-symbols/svgs     # 6,950 SVGs (extracted)
-  /scripts             # repo scripts (release, size checks, etc.)
-
-**pnpm**  
-- Commit `pnpm-lock.yaml`.  
-- Install policy:
-  - First time: `pnpm install --no-frozen-lockfile` → commit lockfile
-  - CI/local thereafter: `pnpm install --frozen-lockfile`
-
-**NPM scripts (examples)**  
-- `build`: typecheck + build all packages/apps  
-- `lint`, `format`, `test`, `test:e2e`  
-- `sizecheck`: run bundle size checks on embed output
+References: systems/venice.md (embed, caching, CSP) and systems/paris.md (instance API).
 
 ---
 
-## CI/CD (minimum viable)
+## Widget State & Data (NORMATIVE)
 
-**P1 pipelines**
-- **PR:** typecheck, lint, unit tests, **sizecheck** (embed budgets), preview deploy.
-- **Main merge:** build + deploy; run supabase migrations using **Supabase CLI**; smoke checks.
-- **Keys/Secrets:** stored per-env (no repo).
+- Presentational widgets: render-only (template + instance config).
+- Data-collecting widgets (e.g., forms):
+  - Endpoint: `POST /api/submit/:publicId` (Paris).
+  - Server-side validation authoritative; client-side validation optional UX.
+  - Anonymous submissions tied to draft token.
+  - Retention: bounded (value set in DB Truth / Phase-1 Specs).
+  - On claim: submissions re-keyed to workspace.
 
-**Release/versioning**
-- Semantic versions for **embed runtime**.  
-- `latest` alias always points to most recent stable; pin via `vX.Y.Z` when needed.  
-- Release notes auto-posted to `documentation/CHANGELOG.md`.
-
----
-
-## Acceptance criteria per Phase
-
-**Phase 1**
-- Embed loader ≤28KB gz; first widget ships and renders across 3 test CMSs.
-- Anonymous draft → claim flow works; workspace created and owns widget.
-- Usage counters increment; basic dashboard view shows last 7 days.
-- Sentry shows errors; health checks green; PostHog events flowing (dashboard only).
-- Stripe webhooks create subscription rows (behind feature flags).
-
-**Phase 2**
-- Multi-user roles; invitations; audit log for role changes.
-- Billing fully self-serve; plan entitlements gate features.
-- Integrations: Google OAuth + Slack webhook live; webhook signatures verified.
-- Workflows: one trigger → one action with retries + run history.
-- Docs site live with token/API/webhook sections.
-
-**Phase 3**
-- SSO/SAML + SCIM for at least one IdP; audit log meets enterprise bar.
-- Consolidated usage & contract quotas; enterprise invoices.
-- Deep CRM integration (Salesforce/HubSpot) with backfill job and mapping UI.
-- Compliance controls: data export/delete, retention policies, incident report templates.
+See also: systems/paris.md (submission endpoints).
 
 ---
 
-## Open decisions (raise before implementation)
+## Builder (Bob + Studio) (NORMATIVE)
 
-- **Hosting target** for prod: Vercel vs Cloudflare (cost vs DX).  
-- **Edge config store** for per-workspace manifests: Vercel Edge Config vs Cloudflare KV.  
-- **Job/Queue** provider (P2): Cloudflare Queues vs DB-backed outbox.  
-- **Email** provider (P2): Resend vs SendGrid.  
-- **SSO/SAML/SCIM** vendor (P3): WorkOS vs custom.
+- Bob (system) — Widget Builder UI: configuration, previews, drafts, claim flow, template switching rules.
+- Studio (system) — scaffolding shell (`apps/app/builder-shell/`, route `/studio`): provides container, layout, iframe isolation, shared nav/theme/device toggles, and error surfacing. Studio itself is not a standalone product surface.
 
----
+Builder UX rules
+- One working surface (no separate “library” screen).
+- TopDrawer (templates) collapses by default; first template auto-applies; push-down (no overlay).
+- ToolDrawer is Bob’s editor UI; Studio only provides shell & transitions.
+- Workspace is always visible (iframe calling `/e/:publicId`); light debounce on edits; preserve focus/scroll; cross-fade preview.
+- Mobile: drawers open as sheets; close back to Workspace.
 
-## Non-goals (for now)
-
-- On-prem deployments.  
-- Native mobile SDKs.  
-- Heavy analytics in the embed (keep it lean; aggregate server-side).
+See also: systems/bob.md and systems/studio.md (scaffolding contracts).
 
 ---
 
-## Appendix — Table & Policy Sketches (P1)
+## Token Taxonomy (NORMATIVE)
 
-**Example: `embed_tokens`**
-- `id (uuid)`, `workspace_id`, `widget_id`, `token (hashed)`, `scopes text[]`, `status enum(active,revoked)`, `created_at`, `last_rotated_at`
-- **Policy:** token readable only via server; embed receives opaque public token not stored in DB as plaintext.
+- JWT — user auth (Supabase).
+- Embed token — identifies instance/draft; scoped; rotatable/revocable.
+- Usage/pixel token — usage events; idempotent.
+- No “template tokens.”
 
-**Example: `usage_counters_daily`**
-- `(date, workspace_id, widget_id, token_id) → views, loads, interactions`
-- **Policy:** select restricted to workspace members.
+See also: systems/paris.md (token issuance/revoke, rate limits).
 
-**RLS default**
-```sql
--- deny all
-alter table ... enable row level security;
-create policy deny_all on ... for all using (false);
+---
 
--- allow workspace members
-create policy tenant_read on ... for select using (
-  exists (
-    select 1 from workspace_members m
-    where m.workspace_id = ...workspace_id and m.user
-### Phase 1 Deployments (FROZEN)
+## Behavior & Animations (NORMATIVE)
 
-- **Vercel projects (4):**
-  - `c-keen-app` — Studio/Console (Next.js)
-  - `c-keen-site` — Marketing site (Next.js)
-  - `c-keen-embed` — Embed service at edge (Next.js / edge routes)
-  - `c-keen-api` — **Paris — HTTP API** (Next.js / node runtime)
-- **Rule:** No additional projects in P1 (frozen).
-- **Edge Config:** **Vercel Edge Config** in P1 (runtime read-only). Any writes are performed in CI using a scoped `VERCEL_API_TOKEN` with `EDGE_CONFIG_ID`.
+- CSS-first: animations/transitions via tokens & skins.
+- Per-widget JS: allowed only for interactivity CSS cannot do (FAQ expand, form validation/async submit, testimonial autoplay).
+- Bundle ≤10KB gz per widget behavior engine.
+- CSP: no `eval`, no `unsafe-inline`, no third-party, no storage.
+- Behavior is driven by config flags (e.g., expandMode, autoplay, successMode).
 
-#### Health endpoint spec (all services)
+---
 
-Each service must expose `/api/healthz` returning 200 on pass and 503 if a critical dependency fails. The response MUST include the following shape:
+## Loader & Event Bus (NORMATIVE)
 
-```json
-{
-  "sha": "<short-sha|unknown>",
-  "env": "production|preview|development",
-  "up": true,
-  "deps": { "supabase": true, "edgeConfig": true }
-}
+- Loader pathing: `/embed/v{semver}/loader.js` and `/embed/latest/loader.js` (CI alone updates `latest`).
+- Event bus (overlays):
+  - `.publish(event, payload)`
+  - `.subscribe(event, handler)` → `unsubscribe()`
+  - Buffers until ready
+  - Events: `open`, `close`, `ready`, plus widget-specific events
+
+References: systems/venice.md (versioned loader + bus API).
+
+---
+
+## Accessibility Baseline (NORMATIVE)
+
+- WCAG AA color contrast; visible focus states.
+- Forms: labels associated via for/id; errors via aria-describedby; aria-live for errors/success.
+- Overlays: focus trap, Escape to close, return focus to opener; restore focus on close.
+- All interactive controls keyboard-operable.
+
+References: systems/venice.md (accessibility requirements).
+
+---
+
+## PLG Metrics & Attribution (NORMATIVE)
+
+- Backlink: “Made with Clickeen” → `https://clickeen.com/?ref=widget&id={publicId}`.
+- Funnel: impressions (widget loads) → link clicks → account creations.
+- Storage: `userAttribution` (workspaceId, sourcePublicId, timestamp).
+- KPIs: viral coefficient; unique domains (eTLD+1 via Referer); time-to-embed (firstInteraction → embedCodeCopied).
+- Free plan: unlimited drafts; exactly 1 active instance (`embedCodeGenerated=true`). Downgrade → others marked inactive.
+- Premium templates: badged; free users can preview but must upgrade to select.
+- Expansion tracking: widgets-per-workspace over time; adoption order; average widgets/account.
+
+---
+
+## Systems (Phase-1 Scope)
+
+- Venice — Embed Runtime  
+- Paris — HTTP API  
+- Bob — Widget Builder UI  
+- Studio — Scaffolding shell  
+- Atlas — Config cache  
+- Berlin — Observability/logs/security (app/site surfaces only; never in embeds)  
+- Denver — Assets/CDN  
+- Cairo — Custom domains  
+- Dieter — Design system  
+- Geneva — Schema registry  
+- Michael — Data plane  
+- Phoenix — Idempotency  
+- Prague — Marketing site
+
+(Other systems — Copenhagen, Helsinki, Lisbon, Robert, Tokyo — are defined but not implemented until Phase-2/3.)
+
+---
+
+## Services (Deployments)
+
+Note: Only Phase‑1 surfaces are active; Phase‑2/3 items listed here are placeholders, not deployed in Phase‑1.
+
+- c-keen-embed — hosts Venice, Atlas cache layer.  
+- c-keen-api — hosts Paris (and Geneva/Phoenix surfaces as needed).  
+- c-keen-app — hosts builder-shell scaffolding, Bob UI, Cairo (Phase‑1), Berlin (Phase‑1), Lisbon (Phase‑2 placeholder), Robert (Phase‑2 placeholder), Tokyo (Phase‑2 placeholder).  
+  > Note: these systems share the same runtime. They are hosted surfaces, not separate deployments.  
+- c-keen-site — hosts Prague.  
+- Supabase — hosts Michael (Postgres/RLS), Helsinki (Phase‑2/3 placeholder, warehouse), Copenhagen (Phase‑2/3 placeholder, AI).
+
+---
+
+## Phase-1 Stack (NORMATIVE)
+
+- TypeScript everywhere
+- Next.js (Prague, Studio/Bob scaffolding & UI)
+- Vanilla TS (Venice runtime)
+- Supabase Postgres + Auth (Michael)
+- Stripe (stub)
+- PostHog + Sentry (Studio/Prague only; never in embeds)
+- pnpm workspaces, esbuild/rollup
+- Vercel hosting (frozen Phase-1)
+- GitHub Actions CI/CD
+- ESLint, Prettier, Vitest, Playwright
+
+---
+
+## Phase-1 Data Model (NORMATIVE)
+
+- users, workspaces, workspaceMembers
+- widgets, widgetInstances, widgetClaimAudit
+- embedTokens, usageCountersDaily, userAttribution
+- stripeCustomers, stripeSubscriptions
+
+RLS: deny-all default; explicit allow via workspace membership.
+
+Note: This section mirrors DB Truth for orientation. The authoritative schema is documentation/dbschemacontext.md.
+
+---
+
+## Phase-1 Security (NORMATIVE)
+
+- RLS enforced everywhere
+- Embed tokens: 128-bit random, rotatable
+- Rate limiting on writes
+- Strict CSP: `script-src 'self'` (no third-party in embeds)
+- Privacy: no PII in embed events; aggregates only
+- Secrets in env; never in repo
+
+---
+
+## Phase-1 Performance (NORMATIVE)
+
+- Loader ≤28KB gz (CI-enforced)
+- Per-widget initial ≤10KB gz
+- Edge TTFB ≤100ms; TTI <1s (4G)
+- No unnecessary third-party deps
+- CI bundle size checks
+
+Note: Embed performance budgets mirror the normative specification in systems/venice.md to avoid drift.
+
+---
+
+## Phase-2 — Low-Cost SaaS (INFORMATIVE)
+
+- Multi-user roles & invites
+- Full billing UI (Stripe)
+- Integrations (Google OAuth, Slack, email)
+- Webhooks + API keys
+- Workflow automation (trigger→action)
+- Berlin observability expansion
+- Public docs/dev portal
+
+---
+
+## Phase-3 — Enterprise Platform (INFORMATIVE)
+
+- SSO/SAML, SCIM, advanced roles
+- Enterprise billing (seat-based, contracts)
+- Deep CRM integrations (Salesforce, HubSpot)
+- Compliance (SOC2, GDPR, retention)
+- Tenant dashboards, SLA monitoring
+
+---
+
+## Repository & CI/CD (NORMATIVE)
+
+- Monorepo with pnpm workspaces; lockfile committed
+- Vercel projects:
+  - c-keen-app → Studio scaffolding, Bob UI, Cairo, Lisbon, Robert, Tokyo, Berlin
+  - c-keen-site → Prague
+  - c-keen-embed → Venice, Atlas
+  - c-keen-api → Paris, Geneva, Phoenix
+- Supabase projects: Michael, Helsinki, Copenhagen
+- CI: PR → typecheck, lint, unit tests, sizecheck, preview deploy
+- Merge → build, deploy, migrations, smoke checks
+- Release: semantic versions, `latest` alias, changelog
+
+---
+
+## Acceptance Criteria (NORMATIVE)
+
+Phase-1
+- Loader ≤28KB gz; per-widget initial ≤10KB gz
+- Widget renders across 3 CMSs
+- Draft → Claim flow works
+- Usage counters increment; KPIs visible (7-day history)
+- Error reporting works in Studio/Prague (no third-party in embeds)
+- `/api/healthz` endpoints green
+- Stripe webhooks create subscription rows (behind flags)
+- Retention + free-plan rules enforced per DB Truth/Specs
+- Preview rate limiting enforced
+- Viral attribution pipeline live (impressions→clicks→signups)
+- Bob (builder UI) works correctly within Studio scaffolding
+- Dashboard shows KPIs (viral coefficient, time-to-embed, unique domains, free vs paid)
+
+Phase-2
+- Roles & invites; self-serve billing
+- Integrations (Google OAuth, Slack webhook)
+- Workflows live (1 trigger→1 action)
+- Docs site live
+
+Phase-3
+- SSO/SAML + SCIM
+- Enterprise quotas + invoices
+- CRM integrations (Salesforce/HubSpot)
+- Compliance (export/delete, retention, incidents)

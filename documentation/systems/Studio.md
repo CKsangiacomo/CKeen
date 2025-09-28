@@ -8,7 +8,7 @@ If any conflict is found, STOP and escalate to CEO. Do not guess.
 # Studio (Phase-1)
 
 ## 1) Purpose (plain english)
-Studio is the container scaffolding for Bob: it handles nav, auth/workspace context, and theme/device toggles, and hosts a live, production-parity preview via **GET `/e/:publicId`** (single SSR embed route; **no CSR fallback** in Phase-1). Studio itself doesn’t render widgets or write the DB—Bob edits config; Paris/Venice execute. It must deliver **mind-blowing UX** on the few things it does: a crisp 3-area layout, an elegant **TopDrawer** for templates, instant **Light/Dark** and **Desktop/Mobile** switches, and buttery transitions—no jank.
+Studio is the container scaffolding for Bob. The code lives in `apps/app/builder-shell/` and is served at the `/studio` route; it handles nav, auth/workspace context, and theme/device toggles, and hosts a live, production-parity preview via **GET `/e/:publicId`** (single SSR embed route; **no CSR fallback** in Phase-1). Studio itself doesn’t render widgets or write the DB—Bob edits config; Paris/Venice execute. It must deliver **mind-blowing UX** on the few things it does: a crisp 3-area layout, an elegant **TopDrawer** for templates, instant **Light/Dark** and **Desktop/Mobile** switches, and buttery transitions—no jank.
 
 ## 2) Must do (behavior)
 **Taxonomy:** **TopDrawer** (templates) · **ToolDrawer** (left editor shell for Bob) · **Workspace** (center live preview) · **SecondaryDrawer** (right; built now, off by default).
@@ -106,6 +106,7 @@ Consumers
 	•	Bob renders inside ToolDrawer.
 	•	Workspace consumes Venice (GET /e/:publicId).
 	•	SecondaryDrawer: built but off by default; reserved for future Assist.
+	•	Studio shell itself runs the Dieter React component library (buttons, drawers, etc.); the iframe preview remains pure SSR HTML from Venice (no React in the rendered widget).
 
 Studio → Paris (HTTP API)
 	•	Instance Load: GET /api/instance/:publicId — load current config.
@@ -133,4 +134,3 @@ Outputs
 	•	Visual: production-parity HTML in Workspace.
 	•	Copy-Embed: snippet that renders the same output as Workspace.
 	•	State: persisted instance config for Venice to render publicly.
-

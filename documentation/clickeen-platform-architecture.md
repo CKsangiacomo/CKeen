@@ -1,67 +1,155 @@
 STATUS: INFORMATIVE — CONTEXT ONLY
 Do NOT implement from this file. For specifications, see:
-1) documentation/dbschemacontext.md (DB Truth)
-2) documentation/*Critical*/TECHPHASES/Techphases-Phase1Specs.md (Global Contracts)
-3) documentation/systems/<System>.md (System PRD, if Phase-1)
+- documentation/CRITICAL-TECHPHASES/Techphases.md (architecture & global contracts)
+- documentation/CRITICAL-TECHPHASES/Techphases-Phase1Specs.md (Phase‑1 contracts)
+- documentation/dbschemacontext.md (DB Truth)
+- documentation/systems/venice.md, documentation/systems/paris.md, documentation/systems/geneva.md (system PRDs)
+
+Authority order: DB Truth > Phase‑1 Specs > System PRDs > Techphases > WhyClickeen.
 
 # CLICKEEN Platform Architecture — Phase 1 (Frozen)
 
-This document is the canonical P1 snapshot. It describes what is built, what is out of scope for P1, and the boundaries between surfaces. All AIs and humans must follow this document. Architecture changes require an ADR and doc updates in the same PR.
+This document is the canonical Phase‑1 architecture snapshot: what’s in scope, boundaries between surfaces, and how the platform fits together. Architecture changes require an ADR and doc updates in the same PR.
 
-## System map (P1)
+---
 
-| System (Codename) | Repo Path            | Deploy Surface (Vercel) | Responsibility (P1)                                       | Status |
+## Canonical Concepts (Phase‑1)
+
+- Widget — functional unit (e.g., contact form, FAQ, testimonials)
+- Template — data‑only preset for a widget (layout, skin, density, tokens, defaults)
+- Instance — a saved, private copy of a template with user edits; identified by publicId
+- Single tag — inline = iframe; overlays/popups = script that injects an iframe; both load Venice SSR HTML
+- Templates are data — switching templates changes config, not code
+- JSON casing — API payloads are camelCase; DB casing follows DB Truth
+
+---
+
+## System map (Phase‑1 scope)
+
+| System (Codename) | Repo Path         | Deploy Surface (Vercel)            | Responsibility (Phase‑1)                                        | Status            |
 |---|---|---|---|---|
-| **Prague — Marketing Site** | `apps/site`   | `c-keen-site`  | Marketing pages, gallery, static content                 | **Done (P1)** |
-| **Studio — Dashboard App**  | `apps/app`    | `c-keen-app`   | Auth flows, basic workspace views, serving Dieter assets | **Done (P1)** |
-| **Venice — Embed Runtime**  | `services/embed` | `c-keen-embed` | Public embed runtime (edge), ingest/preview endpoints    | **Done (P1)** |
-| **Paris — HTTP API**        | `services/api`   | `c-keen-api`   | Server-secret surface, `GET /api/healthz`, future admin  | **Done (P1, minimal)** |
-| **Atlas — Edge Config**     | *(Vercel store)* | N/A            | Config delivery to runtimes (reads only at runtime)      | **Done (P1)** |
-| **Phoenix — Idempotency**   | *(policy)*       | N/A            | Option B discipline across mutating endpoints            | **Policy in place** |
+| Prague — Marketing Site | apps/site | c-keen-site | Marketing pages, gallery, static content | Active (P1) |
+| Studio — Scaffolding Shell | apps/app/builder-shell | c-keen-app | Shell served at /studio (layout/nav/iframe isolation, theme/device toggles); not a standalone product surface | Active (P1) |
+| Bob — Widget Builder UI | apps/app | c-keen-app | Builder UI (config, previews, drafts/claim, template switching rules) | Active (P1) |
+| Venice — Embed Runtime | services/embed | c-keen-embed | Public SSR embeds, preview flags, pixel, loader for overlays | Active (P1) |
+| Paris — HTTP API | services/api | c-keen-api | Instances, tokens, entitlements, submissions, usage, health | Active (P1) |
+| Geneva — Schema Registry | services/api | c-keen-api | Widget/template schemas, validation contracts | Active (P1) |
+| Atlas — Edge Config | — (Vercel Edge Config) | — | Config cache/mirror (read‑only at runtime; CI‑only writes) | Active (P1) |
+| Michael — Data Plane | Supabase | Supabase | Postgres + RLS (authoritative DB) | Active (P1) |
+| Phoenix — Idempotency | services/api | c-keen-api | Idempotency enforcement on mutating endpoints | Active (P1) |
+| Berlin — Observability/Security | apps/app, services/api | c-keen-app, c-keen-api | Logs/metrics/rate limits for app/site surfaces; Sentry/PostHog only outside embeds | Active (P1) |
+| Cairo — Custom Domains | apps/app | c-keen-app | Domain provisioning/validation (Phase‑1 scope) | Active (P1) |
+| Denver — Assets/CDN | services/api | c-keen-api | Asset storage (signed URLs) and delivery | Active (P1) |
+| Dieter — Design System | apps/app | c-keen-app | Tokens, foundations, components; embeds output SSR HTML/CSS only | Active (P1) |
 
-### Phase intents
-- **P2** (not in this doc’s scope): billing, richer RBAC, more admin endpoints in Paris, workflows.  
-- **P3**: scale/perf features, analytics, extended automation.
+Phase‑2/3 systems (e.g., Copenhagen, Helsinki, Lisbon, Robert, Tokyo) are placeholders and not deployed in Phase‑1.
+
+---
 
 ## Deploy surfaces
 
-- `apps/site` → **c-keen-site** (Next 14.2.5; static pages + minimal API routes)  
-- `apps/app` → **c-keen-app** (Next 14.2.5; middleware for auth; Dieter assets copy-on-build per ADR-005)  
-- `services/embed` → **c-keen-embed** (Next 14.2.5; **edge** runtime; public APIs only)  
-- `services/api` → **c-keen-api** (Next 14.2.5; **nodejs** runtime; server-secrets boundary)
+- apps/site → c-keen-site (Prague)
+- apps/app → c-keen-app (builder-shell scaffolding + Bob UI + Cairo + Berlin)
+- services/embed → c-keen-embed (Venice; edge runtime)
+- services/api → c-keen-api (Paris + Geneva + Phoenix; node runtime)
+- Supabase → Michael (Postgres + RLS; DB Truth source)
 
-## Paris — health surface (P1)
-- `GET /api/healthz` → `200` with `{ sha, env, up, deps: { supabase, edgeConfig } }`; returns `503` if critical deps fail.  
-- Runtime: **nodejs**.  
-- **Secrets live here** (server-only).  
-- **Edge Config**: read-only at runtime; CI writes only (see ADR-012 note).
+---
 
-## Edge Config (Atlas)
-- Reads from runtimes (Embed/App/Site/Api).  
-- **Writes** happen in **CI** using `VERCEL_API_TOKEN` + `EDGE_CONFIG_ID`, gated by `INTERNAL_ADMIN_KEY`.  
-- Never write from runtime.
+## Embed Architecture (Venice)
 
-## Security boundaries
-- Public embed (Venice) never holds server secrets.  
-- All privileged operations move to Paris (API).  
-- Apps use public keys/anon tokens only in the client; server interactions cross to Paris when secrets are required.
+- Route: GET /e/:publicId → SSR HTML (canonical; no CSR fallback)
+- Auth policy:
+  - Published: public; no token required
+  - Draft/Inactive/Protected: valid embed token required (or workspace session in Studio)
+- Caching (Phase‑1 canonical):
+  - Published: Cache-Control: public, max-age=300, s-maxage=600, stale-while-revalidate=1800
+  - Draft: Cache-Control: public, max-age=60, s-maxage=60, stale-while-revalidate=300
+  - Preview (?ts): Cache-Control: no-store
+- Validators: ETag + Last-Modified=updatedAt; support If-None-Match/If-Modified-Since; Vary: Authorization, X-Embed-Token
+- Overlay loader (popups/bars):
+  - Small script injects a positioned iframe to /e/:publicId
+  - Minimal event bus: open, close, ready; publish/subscribe with buffer‑until‑ready
+  - Bundle budget ≤ 28KB gz; no third‑party deps
+- Accessibility: WCAG AA; labeled form controls; aria-live; overlays focus trap and Esc; keyboard operable
+- CSP (embeds): strict; no third‑party; no storage; form-action 'self' (proxy via Venice)
+- Backlink: “Made with Clickeen” in SSR HTML for free plan
+- Branding: Paris is authoritative; Venice must enforce branding flags from responses
 
-## Observability (P1)
-- Health surface in Paris.  
-- CI checks: lockfile integrity, Dieter assets, basic doc validation.  
-- Add platform logging/metrics in P2.
+---
 
-## Data & auth (P1)
-- Supabase public URL + anon key in app/site where needed; JWKS health-probed in Paris.  
-- Admin/auth secrets remain in **c-keen-api** only.
+## Template & Render Model
+
+- One server renderer per widget type → HTML string (pure; no inline handlers)
+- Template descriptor: { layout, skin, density, accents[], tokens?, defaults, schemaVersion }
+- Composition precedence: instance.config → template.defaults → theme.tokenOverrides
+- Validation: JSON Schema per widgetType; invalid → 422 with [{ path, message }]
+- Authorities:
+  - Paris — instance configs & entitlements
+  - Geneva — schemas/catalog
+  - Atlas — cache/mirror only; never authoritative
+
+---
+
+## Data Flows
+
+1) SSR view
+- Venice validates entitlements (and token if required) → fetches instance from Paris → fetches schema/catalog from Geneva (via Atlas mirror when available) → renders SSR HTML → writes usage (pixel) → sets cache/validator headers
+
+2) Submissions (data‑collecting widgets)
+- POST /s/:publicId to Venice → validates + proxies to Paris POST /api/submit/:publicId → server‑side validation; rate‑limited; no PII in embed events
+
+3) Usage/Attribution
+- Venice pixel → Paris /api/usage (idempotent) → aggregates in Michael → KPIs surfaced in the app (Bob experiences shown inside the builder-shell scaffolding; no third-party in embeds)
+
+---
+
+## Plans & Entitlements (Phase‑1)
+
+- Free: 1 active widget; branding enforced; preview premium templates but cannot select
+- Paid: unlimited widgets; branding removable; premium templates available
+- Paris returns effective entitlements; Venice follows responses exactly
+
+---
+
+## Performance (Phase‑1)
+
+- Loader ≤ 28KB gz; per‑widget initial ≤ 10KB gz
+- Edge TTFB ≤ 100ms; TTI < 1s (4G)
+- CI enforces bundle budgets
+Note: Embed budgets mirror systems/venice.md (normative).
+
+---
+
+## Security & Privacy
+
+- Supabase RLS enforced (Michael)
+- Embed tokens: 128‑bit random; rotatable/revocable
+- Rate limiting on writes
+- No third‑party scripts/cookies/storage in embeds; Sentry/PostHog allowed only in app/site (Berlin)
+- Secrets live in c-keen-api only (server surface)
+
+---
+
+## Observability (Phase‑1)
+
+- Health surface: GET /api/healthz (Paris) with dependency details
+- Logs/metrics/rate limits via Berlin in app/site and API; never in embeds
+- CI checks: lockfile integrity, Dieter asset generation, doc validation
+
+---
 
 ## Change control
-- Any cross-surface change requires an ADR and doc updates in the same PR.  
-- Documentation drift is a P0 incident; fix docs first.
 
-## Appendix: ADR-012 summary (Paris separation)
-- **Decision**: Paris is a separate Vercel project to contain secrets and server-only endpoints.  
-- **Rationale**: strict boundary between public embeddable code and secret-bearing surfaces.  
-- **Health**: dependency-aware healthz.  
-- **Edge Config**: runtime read-only; CI-only writes.  
-- **Risks**: cold starts, schema drift; mitigated via health checks and docs-as-code.
+- Any cross‑surface change requires an ADR and docs updated in the same PR
+- Documentation drift is a P0 incident; fix docs first
+
+---
+
+## Appendix: ADR‑012 summary (Paris separation)
+
+- Decision: Paris is a separate Vercel project to contain secrets and server‑only endpoints
+- Rationale: strict boundary between public embeddable code and secret‑bearing surfaces
+- Health: dependency‑aware healthz
+- Edge Config: runtime read‑only; CI‑only writes
+- Risks: cold starts and schema drift; mitigated via health checks and docs‑as‑code
