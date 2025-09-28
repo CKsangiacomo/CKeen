@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { StudioShell } from './components/StudioShell';
+import { StudioShell } from '../builder-shell/components/StudioShell';
 
 export const metadata: Metadata = {
   title: 'Studio · Clickeen',
